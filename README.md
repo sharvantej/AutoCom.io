@@ -2,6 +2,11 @@
 
 Desktop control dashboard for show cues and device triggers (Resolume, grandMA3, vMix, HTTP, audio, and generic TCP/OSC).
 
+## App Link
+
+- GitHub Repository: [OSC Dashboard](https://github.com/sharvantej/OSC-Dashboard)
+- Latest Release: [Download for Windows](https://github.com/sharvantej/OSC-Dashboard/releases/latest)
+
 ## Features
 
 - Visual dashboard with floating edit window (draggable)

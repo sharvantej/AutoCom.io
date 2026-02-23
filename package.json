@@ -23,7 +23,8 @@
       "logo.*"
     ],
     "win": {
-      "target": "nsis"
+      "target": "nsis",
+      "icon": "logo.ico"
     },
     "nsis": {
       "oneClick": false,
