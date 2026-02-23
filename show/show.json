@@ -1,0 +1,23 @@
+{
+  "cues": {
+    "show_intro": [
+      {
+        "type": "parallel",
+        "steps": [
+          { "type": "resolume_clip", "layer": 1, "clip": 1 },
+          { "type": "lighting_cue", "cue": "go" },
+          { "type": "audio_track", "track": "track1" }
+        ]
+      },
+      {
+        "type": "delay",
+        "ms": 2000
+      },
+      {
+        "type": "resolume_clip",
+        "layer": 1,
+        "clip": 2
+      }
+    ]
+  }
+}

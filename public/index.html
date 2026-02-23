@@ -1,0 +1,177 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>OSC Controller</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="icon" type="image/svg+xml" href="/logo.svg" />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+
+  <body>
+    <div id="appTopbar" class="app-topbar" aria-label="Dashboard actions">
+      <button class="ui-btn btn-secondary btn-md" type="button" data-top-action="add">
+        New Button
+      </button>
+      <button class="ui-btn btn-primary btn-md" type="button" data-top-action="save">
+        Save Layout
+      </button>
+      <button class="ui-btn btn-secondary btn-md" type="button" data-top-action="toggle-edit">
+        Toggle Edit
+      </button>
+      <button class="ui-btn btn-secondary btn-md" type="button" data-top-action="toggle-connections">
+        Connections
+      </button>
+      <button class="ui-btn btn-secondary btn-md" type="button" data-top-action="toggle-logs">
+        Logs
+      </button>
+      <button class="ui-btn btn-secondary btn-md" type="button" data-top-action="focus-dashboard">
+        Focus Dashboard
+      </button>
+      <button class="ui-btn btn-secondary btn-md" type="button" data-top-action="clear-active">
+        Clear Active
+      </button>
+      <button class="ui-btn btn-secondary btn-md" type="button" data-top-action="shortcuts">
+        Shortcuts
+      </button>
+    </div>
+
+    <div id="editBar">
+      <div class="button-group" role="group" aria-label="Layout actions">
+        <button class="ui-btn btn-secondary btn-md addBtn" onclick="addButton()">Add</button>
+        <span class="button-group-separator" aria-hidden="true"></span>
+        <button class="ui-btn btn-primary-destructive btn-md deleteBtn" onclick="deleteSelectedButton()">
+          Delete
+        </button>
+        <span class="button-group-separator" aria-hidden="true"></span>
+        <button class="ui-btn btn-primary btn-md saveBtn" onclick="saveLayout()">
+          <span class="btn-icon-leading" aria-hidden="true">&#10003;</span>
+          Save
+        </button>
+        <span class="button-group-separator" aria-hidden="true"></span>
+        <button class="ui-btn btn-secondary btn-md exitBtn" onclick="toggleEdit(false)">Exit</button>
+      </div>
+      <div id="buttonInspector" class="button-inspector" aria-label="Selected button controls">
+        <label>
+          X
+          <input id="btnXInput" type="number" min="0" step="1" />
+        </label>
+        <label>
+          Y
+          <input id="btnYInput" type="number" min="0" step="1" />
+        </label>
+        <label>
+          W
+          <input id="btnWInput" type="number" min="60" step="1" />
+        </label>
+        <label>
+          H
+          <input id="btnHInput" type="number" min="40" step="1" />
+        </label>
+        <label>
+          Text px
+          <input id="btnFsInput" type="number" min="8" max="120" step="1" />
+        </label>
+      </div>
+      <span id="dirtyBadge" class="dirty-badge">Unsaved</span>
+    </div>
+
+    <div id="connections-panel">
+      <div id="connections-view"></div>
+      <div id="connections-edit" style="display: none"></div>
+    </div>
+
+    <div id="logPanel">
+      <div id="logTitle" class="typography-h2">Action Logs</div>
+      <div id="logList"></div>
+    </div>
+
+    <div id="dashboardViewport">
+      <div id="canvas"></div>
+    </div>
+
+    <div id="sequenceEditorModal" class="seq-modal hidden" aria-hidden="true">
+      <div class="seq-modal-backdrop" data-seq-close="true"></div>
+      <div class="seq-modal-content">
+        <div class="seq-topbar">
+          <h2 class="typography-h2">Button Sequence Editor</h2>
+          <div class="seq-meta">
+            <label>
+              Label
+              <input id="seq-button-label" type="text" />
+            </label>
+            <label>
+              Color
+              <input id="seq-button-color" type="color" />
+            </label>
+            <label>
+              Preset
+              <select id="seq-preset-select"></select>
+            </label>
+            <label>
+              X
+              <input id="seq-button-x" type="number" min="0" />
+            </label>
+            <label>
+              Y
+              <input id="seq-button-y" type="number" min="0" />
+            </label>
+            <label>
+              Width
+              <input id="seq-button-w" type="number" min="60" />
+            </label>
+            <label>
+              Height
+              <input id="seq-button-h" type="number" min="40" />
+            </label>
+            <label>
+              Text (px)
+              <input id="seq-button-font-size" type="number" min="8" max="120" />
+            </label>
+            <button id="seq-insert-preset-btn" type="button">Insert Preset</button>
+          </div>
+        </div>
+
+        <div class="seq-main">
+          <div class="seq-left">
+            <div class="seq-left-actions">
+              <button id="seq-add-task-root-btn" type="button">+ Task</button>
+              <button id="seq-add-delay-root-btn" type="button">+ Delay</button>
+              <button id="seq-add-parallel-root-btn" type="button">+ Parallel</button>
+            </div>
+            <div id="seq-errors" class="seq-errors"></div>
+            <div id="seq-rows" class="seq-rows"></div>
+          </div>
+
+          <div class="seq-right">
+            <div id="seq-form" class="seq-form"></div>
+          </div>
+        </div>
+
+        <div class="seq-footer">
+          <button id="seq-delete-btn" class="seq-danger" type="button">
+            Delete Button
+          </button>
+          <div class="seq-footer-right">
+            <button id="seq-cancel-btn" type="button">Cancel</button>
+            <button id="seq-apply-btn" class="seq-primary" type="button">
+              Apply
+            </button>
+            <button id="seq-apply-close-btn" class="seq-primary" type="button">
+              Apply & Close
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+      window.socket = io();
+    </script>
+    <script src="sequence-editor.js"></script>
+    <script src="main.js"></script>
+    <script src="connections.js"></script>
+  </body>
+</html>
+

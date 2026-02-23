@@ -1,0 +1,52 @@
+{
+  "name": "auto-osc-controller",
+  "version": "1.0.0",
+  "main": "electron-main.js",
+  "scripts": {
+    "start": "nodemon --watch server.js --watch engine/ --ignore show/ --exec \"electron .\"",
+    "dist": "npm run dist:installer",
+    "dist:win": "electron-builder --win nsis",
+    "dist:clean": "powershell -NoProfile -Command \"if (Test-Path dist) { Remove-Item dist -Recurse -Force }\"",
+    "dist:prune": "powershell -NoProfile -Command \"if (Test-Path 'dist\\win-unpacked') { Remove-Item 'dist\\win-unpacked' -Recurse -Force }; if (Test-Path 'dist\\builder-debug.yml') { Remove-Item 'dist\\builder-debug.yml' -Force }; if (Test-Path 'dist\\builder-effective-config.yaml') { Remove-Item 'dist\\builder-effective-config.yaml' -Force }; Get-ChildItem 'dist' -Filter '*.blockmap' -ErrorAction SilentlyContinue | Remove-Item -Force\"",
+    "dist:installer": "npm run dist:clean && npm run dist:win && npm run dist:prune"
+  },
+  "build": {
+    "appId": "com.autoosc.controller",
+    "productName": "OSC Controller",
+    "files": [
+      "*.js",
+      "devices/**/*",
+      "engine/**/*",
+      "public/**/*",
+      "show/**/*",
+      "logo.*"
+    ],
+    "win": {
+      "target": "nsis"
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": "always",
+      "differentialPackage": false
+    },
+    "mac": {
+      "icon": "logo.svg"
+    },
+    "linux": {
+      "icon": "logo.svg"
+    }
+  },
+  "dependencies": {
+    "express": "^5.2.1",
+    "osc": "^2.4.5",
+    "socket.io": "^4.8.3"
+  },
+  "devDependencies": {
+    "electron": "^40.6.0",
+    "electron-builder": "^26.8.1",
+    "electron-reloader": "^1.2.3",
+    "nodemon": "^3.1.0"
+  }
+}
