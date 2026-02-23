@@ -12,7 +12,8 @@
   },
   "build": {
     "appId": "com.autoosc.controller",
-    "productName": "OSC Controller",
+    "productName": "Automation Companion",
+    "artifactName": "Automation Companion Setup.${ext}",
     "files": [
       "*.js",
       "devices/**/*",
@@ -29,7 +30,9 @@
       "perMachine": false,
       "allowToChangeInstallationDirectory": true,
       "createDesktopShortcut": "always",
-      "differentialPackage": false
+      "differentialPackage": false,
+      "installerIcon": "logo.ico",
+      "uninstallerIcon": "logo.ico"
     },
     "mac": {
       "icon": "logo.svg"

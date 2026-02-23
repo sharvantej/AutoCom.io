@@ -50,6 +50,43 @@ document.addEventListener("DOMContentLoaded", () => {
     connectionsPanel.classList.add("connections-editing");
   }
 
+  function appendBlankConnectionRow() {
+    const grid = document.getElementById("connections-edit-grid");
+    if (!grid) return;
+    grid.appendChild(createEditRow());
+  }
+
+  async function removeConnectionByName(name) {
+    if (!name || !currentConnections[name]) {
+      alert(`Connection "${name || ""}" not found.`);
+      return;
+    }
+    const next = { ...currentConnections };
+    delete next[name];
+    await persistConnections(next);
+    currentConnections = next;
+    await loadConnections();
+    switchToViewMode();
+  }
+
+  function resolveConnectionName(input) {
+    const names = Object.keys(currentConnections || {});
+    if (!names.length) return "";
+    const raw = String(input || "").trim();
+    if (!raw) return "";
+
+    const asIndex = Number(raw);
+    if (Number.isInteger(asIndex) && asIndex >= 1 && asIndex <= names.length) {
+      return names[asIndex - 1];
+    }
+
+    const exact = names.find((name) => name === raw);
+    if (exact) return exact;
+
+    const ci = names.find((name) => name.toLowerCase() === raw.toLowerCase());
+    return ci || "";
+  }
+
   function switchToViewMode() {
     connectionsView.style.display = "block";
     connectionsEdit.style.display = "none";
@@ -110,7 +147,7 @@ document.addEventListener("DOMContentLoaded", () => {
       wrapper.appendChild(item);
     }
 
-    connectionsView.innerHTML = '<h2 class="typography-h2">Connections</h2>';
+    connectionsView.innerHTML = "";
     connectionsView.appendChild(wrapper);
     connectionsView.appendChild(editButton);
   }
@@ -186,29 +223,16 @@ document.addEventListener("DOMContentLoaded", () => {
     connectionsEdit.innerHTML = '<h2 class="typography-h2">Edit Connections</h2>';
     connectionsEdit.appendChild(list);
 
-    const addBtn = document.createElement("button");
-    addBtn.id = "add-connection-btn";
-    addBtn.type = "button";
-    addBtn.className = "ui-btn btn-secondary btn-md";
-    addBtn.textContent = "Add Connection";
-
     const actions = document.createElement("div");
     actions.className = "button-group";
     actions.setAttribute("role", "group");
     actions.setAttribute("aria-label", "Connection editor actions");
-    actions.appendChild(addBtn);
-
-    const sep1 = document.createElement("span");
-    sep1.className = "button-group-separator";
-    sep1.setAttribute("aria-hidden", "true");
-    actions.appendChild(sep1);
-    actions.appendChild(saveButton);
-
-    const sep2 = document.createElement("span");
-    sep2.className = "button-group-separator";
-    sep2.setAttribute("aria-hidden", "true");
-    actions.appendChild(sep2);
     actions.appendChild(cancelButton);
+    const sep = document.createElement("span");
+    sep.className = "button-group-separator";
+    sep.setAttribute("aria-hidden", "true");
+    actions.appendChild(sep);
+    actions.appendChild(saveButton);
 
     connectionsEdit.appendChild(actions);
   }
@@ -306,11 +330,6 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   connectionsEdit.addEventListener("click", (event) => {
-    if (event.target.id === "add-connection-btn") {
-      document.getElementById("connections-edit-grid").appendChild(createEditRow());
-      return;
-    }
-
     if (event.target.classList.contains("remove-connection-btn")) {
       event.target.closest(".connection-edit-item")?.remove();
       return;
@@ -344,6 +363,41 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     });
   }
+
+  window.connectionsUi = {
+    openEditor(addBlank = false) {
+      switchToEditMode();
+      if (addBlank) appendBlankConnectionRow();
+    },
+    promptDelete() {
+      const names = Object.keys(currentConnections || {});
+      if (!names.length) {
+        alert("No connections available to delete.");
+        return;
+      }
+
+      const list = names.map((name, idx) => `${idx + 1}. ${name}`).join("\n");
+      const input = window.prompt(
+        `Delete connection:\n${list}\n\nType number or name:`,
+        "1",
+      );
+      if (!input || !String(input).trim()) return;
+
+      const resolved = resolveConnectionName(input);
+      if (!resolved) {
+        alert("Connection not found. Please enter a valid number or exact name.");
+        return;
+      }
+
+      const ok = window.confirm(`Delete connection "${resolved}"?`);
+      if (!ok) return;
+
+      removeConnectionByName(resolved).catch((err) => {
+        console.error("Failed to delete connection:", err);
+        alert("Failed to delete connection.");
+      });
+    },
+  };
 
   loadConnections();
 });

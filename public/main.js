@@ -7,6 +7,13 @@ let clickLock = false;
 let layoutBaseline = "";
 let layoutDirty = false;
 let manipulatingLayout = false;
+let saveToastTimer = null;
+let scrollMode = "true";
+let editToolMode = "move";
+let snapToGrid = false;
+let showBorders = true;
+let borderColor = "#576172";
+const GRID_SIZE = 20;
 const sequenceEditor = window.SequenceEditor ? new window.SequenceEditor() : null;
 const WORKSPACE_MIN_W = 2400;
 const WORKSPACE_MIN_H = 1400;
@@ -24,13 +31,42 @@ function clampInt(value, min, fallback) {
   return Math.max(min, Math.round(n));
 }
 
+function snapValue(value) {
+  if (!snapToGrid) return value;
+  return Math.round(value / GRID_SIZE) * GRID_SIZE;
+}
+
 function normalizeButton(btn) {
+  const kind = String(btn.kind || "button").toLowerCase();
+  btn.kind = ["label", "image"].includes(kind) ? kind : "button";
   btn.x = clampInt(btn.x, 0, 0);
   btn.y = clampInt(btn.y, 0, 0);
   btn.w = clampInt(btn.w, 60, 160);
   btn.h = clampInt(btn.h, 40, 80);
   btn.fontSize = clampInt(btn.fontSize, 8, 20);
   btn.label = String(btn.label || "Button");
+  btn.textColor = String(btn.textColor || "#e5e7eb");
+  btn.src = String(btn.src || "");
+}
+
+function normalizeLayout() {
+  layout.buttons = Array.isArray(layout.buttons) ? layout.buttons : [];
+  layout.buttons.forEach((btn) => normalizeButton(btn));
+  layout.backgroundColor = normalizeColorValue(layout.backgroundColor, "#252c36");
+}
+
+function applyCanvasAppearance() {
+  const viewport = document.getElementById("dashboardViewport");
+  if (!viewport) return;
+  viewport.style.backgroundColor = layout.backgroundColor || "#252c36";
+}
+
+function applyBorderVisibility() {
+  document.body.classList.toggle("no-tile-borders", !showBorders);
+  document.documentElement.style.setProperty(
+    "--tile-border-color",
+    normalizeColorValue(borderColor, "#576172"),
+  );
 }
 
 function selectedButton() {
@@ -42,43 +78,66 @@ function selectedButton() {
 }
 
 function syncInspector() {
+  const labelInput = document.getElementById("btnLabelInput");
   const xInput = document.getElementById("btnXInput");
   const yInput = document.getElementById("btnYInput");
   const wInput = document.getElementById("btnWInput");
   const hInput = document.getElementById("btnHInput");
   const fsInput = document.getElementById("btnFsInput");
-  if (!xInput || !yInput || !wInput || !hInput || !fsInput) return;
+  const bgInput = document.getElementById("btnBgInput");
+  const textColorInput = document.getElementById("btnTextColorInput");
+  if (!labelInput || !xInput || !yInput || !wInput || !hInput || !fsInput || !bgInput || !textColorInput) return;
 
   const btn = selectedButton();
   const disabled = !editMode || !btn;
-  [xInput, yInput, wInput, hInput, fsInput].forEach((input) => {
+  [labelInput, xInput, yInput, wInput, hInput, fsInput, bgInput, textColorInput].forEach((input) => {
     input.disabled = disabled;
   });
 
   if (!btn) {
+    labelInput.value = "";
     xInput.value = "";
     yInput.value = "";
     wInput.value = "";
     hInput.value = "";
     fsInput.value = "";
+    bgInput.value = "#2ecc71";
+    textColorInput.value = "#e5e7eb";
     return;
   }
 
   normalizeButton(btn);
+  const isImage = btn.kind === "image";
+  labelInput.value = String(btn.label || "");
   xInput.value = String(btn.x);
   yInput.value = String(btn.y);
   wInput.value = String(btn.w);
   hInput.value = String(btn.h);
   fsInput.value = String(btn.fontSize || 20);
+  bgInput.value = normalizeColorValue(btn.color, "#2ecc71");
+  textColorInput.value = normalizeColorValue(btn.textColor, "#e5e7eb");
+
+  labelInput.disabled = disabled || isImage;
+  bgInput.disabled = disabled || isImage;
+  textColorInput.disabled = disabled || isImage;
+}
+
+function normalizeColorValue(value, fallback) {
+  const raw = String(value || "").trim();
+  if (/^#[0-9a-fA-F]{6}$/.test(raw)) return raw;
+  return fallback;
 }
 
 function bindInspector() {
+  const labelInput = document.getElementById("btnLabelInput");
   const xInput = document.getElementById("btnXInput");
   const yInput = document.getElementById("btnYInput");
   const wInput = document.getElementById("btnWInput");
   const hInput = document.getElementById("btnHInput");
   const fsInput = document.getElementById("btnFsInput");
-  if (!xInput || !yInput || !wInput || !hInput || !fsInput) return;
+  const bgInput = document.getElementById("btnBgInput");
+  const textColorInput = document.getElementById("btnTextColorInput");
+  if (!labelInput || !xInput || !yInput || !wInput || !hInput || !fsInput || !bgInput || !textColorInput) return;
 
   const applyField = (field, min, fallback) => {
     const btn = selectedButton();
@@ -91,7 +150,11 @@ function bindInspector() {
       fontSize: fsInput,
     };
     const source = sourceMap[field];
-    btn[field] = clampInt(source?.value, min, fallback);
+    let value = clampInt(source?.value, min, fallback);
+    if (["x", "y", "w", "h"].includes(field)) {
+      value = Math.max(min, snapValue(value));
+    }
+    btn[field] = value;
     refreshDirtyState();
     render();
   };
@@ -101,6 +164,27 @@ function bindInspector() {
   wInput.addEventListener("input", () => applyField("w", 60, 160));
   hInput.addEventListener("input", () => applyField("h", 40, 80));
   fsInput.addEventListener("input", () => applyField("fontSize", 8, 20));
+  labelInput.addEventListener("input", () => {
+    const btn = selectedButton();
+    if (!btn) return;
+    btn.label = String(labelInput.value || "");
+    refreshDirtyState();
+    render();
+  });
+  bgInput.addEventListener("input", () => {
+    const btn = selectedButton();
+    if (!btn) return;
+    btn.color = bgInput.value;
+    refreshDirtyState();
+    render();
+  });
+  textColorInput.addEventListener("input", () => {
+    const btn = selectedButton();
+    if (!btn) return;
+    btn.textColor = textColorInput.value;
+    refreshDirtyState();
+    render();
+  });
 }
 
 function ensureCanvasBounds() {
@@ -126,21 +210,163 @@ function ensureCanvasBounds() {
   canvas.style.height = `${maxY}px`;
 }
 
-function focusDashboard(target = "top") {
+function restoreDockPosition() {
+  const dock = document.getElementById("editBar");
+  if (!dock) return;
+  const x = Number(localStorage.getItem("dockX"));
+  const y = Number(localStorage.getItem("dockY"));
+  if (Number.isFinite(x) && Number.isFinite(y)) {
+    dock.style.left = `${Math.max(0, x)}px`;
+    dock.style.top = `${Math.max(0, y)}px`;
+  }
+}
+
+function initDockOptions() {
+  const snapBox = document.getElementById("snapGridCheckbox");
+  const borderBox = document.getElementById("showBorderCheckbox");
+  const borderColorInput = document.getElementById("borderColorInput");
+  if (!snapBox || !borderBox) return;
+
+  snapToGrid = localStorage.getItem("snapToGrid") === "true";
+  const borderStored = localStorage.getItem("showBorders");
+  showBorders = borderStored == null ? true : borderStored === "true";
+  borderColor = normalizeColorValue(
+    localStorage.getItem("borderColor"),
+    "#576172",
+  );
+
+  snapBox.checked = snapToGrid;
+  borderBox.checked = showBorders;
+  if (borderColorInput) {
+    borderColorInput.value = borderColor;
+  }
+  applyBorderVisibility();
+
+  snapBox.addEventListener("change", () => {
+    snapToGrid = snapBox.checked;
+    localStorage.setItem("snapToGrid", String(snapToGrid));
+  });
+
+  borderBox.addEventListener("change", () => {
+    showBorders = borderBox.checked;
+    localStorage.setItem("showBorders", String(showBorders));
+    applyBorderVisibility();
+  });
+
+  borderColorInput?.addEventListener("input", () => {
+    borderColor = normalizeColorValue(borderColorInput.value, "#576172");
+    localStorage.setItem("borderColor", borderColor);
+    applyBorderVisibility();
+  });
+}
+
+function initDockDrag() {
+  const dock = document.getElementById("editBar");
+  const head = dock?.querySelector(".tool-dock-head");
+  if (!dock || !head) return;
+
+  head.addEventListener("mousedown", (event) => {
+    if (event.target.closest("button")) return;
+    event.preventDefault();
+    const startX = event.clientX;
+    const startY = event.clientY;
+    const rect = dock.getBoundingClientRect();
+    const baseLeft = rect.left;
+    const baseTop = rect.top;
+
+    function move(next) {
+      const nx = Math.max(0, Math.round(baseLeft + (next.clientX - startX)));
+      const ny = Math.max(0, Math.round(baseTop + (next.clientY - startY)));
+      dock.style.left = `${nx}px`;
+      dock.style.top = `${ny}px`;
+      localStorage.setItem("dockX", String(nx));
+      localStorage.setItem("dockY", String(ny));
+    }
+
+    function up() {
+      window.removeEventListener("mousemove", move);
+      window.removeEventListener("mouseup", up);
+    }
+
+    window.addEventListener("mousemove", move);
+    window.addEventListener("mouseup", up);
+  });
+}
+
+function showSaveToast(message, isError = false) {
+  const toast = document.getElementById("saveToast");
+  if (!toast) return;
+
+  toast.textContent = message;
+  toast.style.borderColor = isError ? "#b91c1c" : "#475569";
+  toast.style.background = isError ? "#3f1d1d" : "#111827";
+  toast.classList.add("visible");
+
+  if (saveToastTimer) clearTimeout(saveToastTimer);
+  saveToastTimer = setTimeout(() => {
+    toast.classList.remove("visible");
+  }, 1800);
+}
+
+function setEditToolMode(mode) {
+  editToolMode = mode === "resize" ? "resize" : "move";
+  document.body.classList.toggle("edit-mode-move", editToolMode === "move");
+  document.body.classList.toggle("edit-mode-resize", editToolMode === "resize");
+  const buttons = document.querySelectorAll(".tool-mode-btn[data-tool-mode]");
+  buttons.forEach((btn) => {
+    btn.classList.toggle("is-active", btn.dataset.toolMode === editToolMode);
+  });
+}
+
+function normalizeScrollMode(mode) {
+  const value = String(mode || "").toLowerCase();
+  if (["true", "false", "vertical", "horizontal", "always"].includes(value)) {
+    return value;
+  }
+  return "true";
+}
+
+function applyScrollMode(mode) {
   const viewport = document.getElementById("dashboardViewport");
   if (!viewport) return;
 
-  const btn = target === "selected" ? selectedButton() : null;
-  if (btn) {
-    viewport.scrollTo({
-      left: Math.max(0, btn.x - 120),
-      top: Math.max(0, btn.y - 120),
-      behavior: "smooth",
-    });
+  scrollMode = normalizeScrollMode(mode);
+  localStorage.setItem("dashboardScrollMode", scrollMode);
+
+  if (scrollMode === "false") {
+    viewport.style.overflowX = "hidden";
+    viewport.style.overflowY = "hidden";
+    return;
+  }
+  if (scrollMode === "vertical") {
+    viewport.style.overflowX = "hidden";
+    viewport.style.overflowY = "auto";
+    return;
+  }
+  if (scrollMode === "horizontal") {
+    viewport.style.overflowX = "auto";
+    viewport.style.overflowY = "hidden";
+    return;
+  }
+  if (scrollMode === "always") {
+    viewport.style.overflowX = "scroll";
+    viewport.style.overflowY = "scroll";
     return;
   }
 
-  viewport.scrollTo({ left: 0, top: 0, behavior: "smooth" });
+  viewport.style.overflowX = "auto";
+  viewport.style.overflowY = "auto";
+}
+
+function initScrollControl() {
+  const select = document.getElementById("scrollModeSelect");
+  if (!select) return;
+  const stored = normalizeScrollMode(localStorage.getItem("dashboardScrollMode"));
+  select.value = stored;
+  applyScrollMode(stored);
+  select.addEventListener("change", () => {
+    applyScrollMode(select.value);
+  });
 }
 
 document.addEventListener("keydown", (event) => {
@@ -174,32 +400,38 @@ document.addEventListener("keydown", (event) => {
     (btn) => String(btn.id) === String(selectedEditButtonId),
   );
   if (!selected) return;
+  if (editToolMode !== "move") return;
 
   const step = event.shiftKey ? 10 : 1;
+  const moveStep = snapToGrid ? GRID_SIZE : step;
   if (event.key === "ArrowLeft") {
     event.preventDefault();
-    selected.x = Math.max(0, selected.x - step);
+    selected.x = Math.max(0, selected.x - moveStep);
+    if (snapToGrid) selected.x = Math.max(0, snapValue(selected.x));
     refreshDirtyState();
     render();
     return;
   }
   if (event.key === "ArrowRight") {
     event.preventDefault();
-    selected.x = selected.x + step;
+    selected.x = selected.x + moveStep;
+    if (snapToGrid) selected.x = Math.max(0, snapValue(selected.x));
     refreshDirtyState();
     render();
     return;
   }
   if (event.key === "ArrowUp") {
     event.preventDefault();
-    selected.y = Math.max(0, selected.y - step);
+    selected.y = Math.max(0, selected.y - moveStep);
+    if (snapToGrid) selected.y = Math.max(0, snapValue(selected.y));
     refreshDirtyState();
     render();
     return;
   }
   if (event.key === "ArrowDown") {
     event.preventDefault();
-    selected.y = selected.y + step;
+    selected.y = selected.y + moveStep;
+    if (snapToGrid) selected.y = Math.max(0, snapValue(selected.y));
     refreshDirtyState();
     render();
     return;
@@ -217,7 +449,13 @@ function toggleEdit(state) {
     selectedEditButtonId = null;
   }
   document.body.classList.toggle("editing", editMode);
-  document.getElementById("editBar").style.display = editMode ? "flex" : "none";
+  const dock = document.getElementById("editBar");
+  const toggleBtn = dock?.querySelector("[data-tool-action='toggle-edit']");
+  if (dock) {
+    dock.style.display = editMode ? "flex" : "none";
+  }
+  if (dock) dock.classList.toggle("is-editing", editMode);
+  if (toggleBtn) toggleBtn.textContent = editMode ? "x" : "o";
   syncInspector();
   refreshDirtyState();
   render();
@@ -226,10 +464,11 @@ function toggleEdit(state) {
 async function loadLayout() {
   const res = await fetch("/api/layout");
   layout = await res.json();
-  layout.buttons = Array.isArray(layout.buttons) ? layout.buttons : [];
-  layout.buttons.forEach((btn) => normalizeButton(btn));
+  normalizeLayout();
   layoutBaseline = JSON.stringify(layout);
   refreshDirtyState();
+  applyCanvasAppearance();
+  syncCanvasSettings();
   render();
 }
 
@@ -239,25 +478,37 @@ function render() {
 
   for (const btn of layout.buttons) {
     normalizeButton(btn);
+    const isLabel = btn.kind === "label";
+    const isImage = btn.kind === "image";
     const el = document.createElement("div");
-    el.className = "tile";
+    el.className = `tile ${isLabel ? "tile-label" : ""} ${isImage ? "tile-image" : ""}`;
     el.dataset.btnId = String(btn.id);
-    el.innerText = btn.label;
+    el.innerText = isImage ? "" : btn.label;
     el.style.left = `${btn.x}px`;
     el.style.top = `${btn.y}px`;
     el.style.width = `${btn.w}px`;
     el.style.height = `${btn.h}px`;
     el.style.fontSize = `${btn.fontSize || 20}px`;
+    el.style.color = btn.textColor || "#e5e7eb";
 
     const defaultColor = "#2ecc71";
     const activeColor = "#e74c3c";
 
-    if (String(btn.id) === String(activeButtonId)) {
+    if (!isLabel && !isImage && String(btn.id) === String(activeButtonId)) {
       el.style.background = activeColor;
       el.classList.add("active");
       if (systemRunning) el.classList.add("active-running");
     } else {
       el.style.background = btn.color || defaultColor;
+    }
+
+    if (isImage) {
+      const img = document.createElement("img");
+      img.className = "tile-image-media";
+      img.src = btn.src || "";
+      img.alt = btn.label || "image";
+      img.draggable = false;
+      el.appendChild(img);
     }
 
     if (editMode && String(btn.id) === String(selectedEditButtonId)) {
@@ -270,6 +521,7 @@ function render() {
         applyEditSelectionVisual();
         return;
       }
+      if (isLabel || isImage) return;
       if (clickLock) return;
 
       clickLock = true;
@@ -306,18 +558,47 @@ function render() {
       if (editMode) {
         selectedEditButtonId = String(btn.id);
         applyEditSelectionVisual();
-        startDrag(event, btn, el);
+        if (editToolMode === "move") {
+          startDrag(event, btn, el);
+        } else if (editToolMode === "resize") {
+          const dir = getResizeDirection(el, event);
+          if (dir) {
+            startResizeByEdge(event, btn, el, dir);
+          }
+        }
       }
     };
 
-    el.ondblclick = () => {
-      if (editMode) editButton(btn);
+    el.onmousemove = (event) => {
+      if (
+        !editMode ||
+        editToolMode !== "resize" ||
+        String(btn.id) !== String(selectedEditButtonId)
+      ) {
+        el.style.cursor = editMode ? "pointer" : "pointer";
+        return;
+      }
+      const dir = getResizeDirection(el, event);
+      el.style.cursor = dir ? `${dir}-resize` : "default";
+    };
+    el.onmouseleave = () => {
+      el.style.cursor = editMode ? "pointer" : "pointer";
     };
 
-    const resizer = document.createElement("div");
-    resizer.className = "resizer";
-    resizer.onmousedown = (event) => startResize(event, btn, el);
-    el.appendChild(resizer);
+    el.ondblclick = () => {
+      if (!editMode) return;
+      if (isLabel) {
+        const next = window.prompt("Label text", btn.label || "");
+        if (typeof next === "string" && next.trim()) {
+          btn.label = next.trim();
+          refreshDirtyState();
+          render();
+        }
+        return;
+      }
+      if (isImage) return;
+      editButton(btn);
+    };
 
     canvas.appendChild(el);
   }
@@ -346,6 +627,7 @@ function addButton() {
 
   layout.buttons.push({
     id: Date.now(),
+    kind: "button",
     label,
     x: 140,
     y: 140,
@@ -353,12 +635,95 @@ function addButton() {
     h: 80,
     fontSize: 20,
     color: "#2ecc71",
+    textColor: "#f5f5f5",
     tasks: [],
   });
 
   refreshDirtyState();
   selectedEditButtonId = String(layout.buttons[layout.buttons.length - 1].id);
   render();
+}
+
+function addLabelBox() {
+  const defaultLabel = "Label";
+  let label = defaultLabel;
+  try {
+    const entered = window.prompt("Label text?", defaultLabel);
+    if (typeof entered === "string" && entered.trim()) {
+      label = entered.trim();
+    }
+  } catch {}
+
+  layout.buttons.push({
+    id: Date.now() + 1,
+    kind: "label",
+    label,
+    x: 180,
+    y: 180,
+    w: 220,
+    h: 44,
+    fontSize: 18,
+    color: "#232933",
+    textColor: "#d1d5db",
+    tasks: [],
+  });
+
+  refreshDirtyState();
+  selectedEditButtonId = String(layout.buttons[layout.buttons.length - 1].id);
+  render();
+}
+
+function addImageBox(src) {
+  if (!src) return;
+  layout.buttons.push({
+    id: Date.now() + 2,
+    kind: "image",
+    label: "Image",
+    src,
+    x: 220,
+    y: 220,
+    w: 320,
+    h: 180,
+    fontSize: 16,
+    color: "#000000",
+    textColor: "#e5e7eb",
+    tasks: [],
+  });
+
+  refreshDirtyState();
+  selectedEditButtonId = String(layout.buttons[layout.buttons.length - 1].id);
+  render();
+}
+
+function initImagePicker() {
+  const picker = document.getElementById("imagePicker");
+  if (!picker) return;
+  picker.addEventListener("change", () => {
+    const file = picker.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      addImageBox(String(reader.result || ""));
+      picker.value = "";
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+function syncCanvasSettings() {
+  const canvasBgInput = document.getElementById("canvasBgInput");
+  if (!canvasBgInput) return;
+  canvasBgInput.value = normalizeColorValue(layout.backgroundColor, "#252c36");
+}
+
+function initCanvasSettings() {
+  const canvasBgInput = document.getElementById("canvasBgInput");
+  if (!canvasBgInput) return;
+  canvasBgInput.addEventListener("input", () => {
+    layout.backgroundColor = normalizeColorValue(canvasBgInput.value, "#252c36");
+    applyCanvasAppearance();
+    refreshDirtyState();
+  });
 }
 
 async function editButton(btn) {
@@ -380,6 +745,7 @@ async function editButton(btn) {
     button: btn,
     connections,
     onApply: (updated) => {
+      if (btn.kind === "label") return;
       btn.label = updated.label;
       btn.color = updated.color;
       btn.x = clampInt(updated.x, 0, btn.x || 0);
@@ -387,6 +753,7 @@ async function editButton(btn) {
       btn.w = clampInt(updated.w, 60, btn.w || 160);
       btn.h = clampInt(updated.h, 40, btn.h || 80);
       btn.fontSize = clampInt(updated.fontSize, 8, btn.fontSize || 20);
+      btn.textColor = String(updated.textColor || btn.textColor || "#f5f5f5");
       btn.tasks = updated.tasks;
       refreshDirtyState();
       render();
@@ -406,8 +773,14 @@ function startDrag(event, btn, el) {
   let sy = event.clientY;
 
   function move(next) {
-    btn.x = Math.max(0, Math.round(btn.x + (next.clientX - sx)));
-    btn.y = Math.max(0, Math.round(btn.y + (next.clientY - sy)));
+    let nx = Math.max(0, Math.round(btn.x + (next.clientX - sx)));
+    let ny = Math.max(0, Math.round(btn.y + (next.clientY - sy)));
+    if (snapToGrid) {
+      nx = Math.max(0, snapValue(nx));
+      ny = Math.max(0, snapValue(ny));
+    }
+    btn.x = nx;
+    btn.y = ny;
     el.style.left = `${btn.x}px`;
     el.style.top = `${btn.y}px`;
     sx = next.clientX;
@@ -426,20 +799,82 @@ function startDrag(event, btn, el) {
   window.addEventListener("mouseup", up);
 }
 
-function startResize(event, btn, el) {
+function getResizeDirection(el, event) {
+  const rect = el.getBoundingClientRect();
+  const edge = 8;
+  const left = event.clientX - rect.left <= edge;
+  const right = rect.right - event.clientX <= edge;
+  const top = event.clientY - rect.top <= edge;
+  const bottom = rect.bottom - event.clientY <= edge;
+
+  if (top && left) return "nw";
+  if (top && right) return "ne";
+  if (bottom && left) return "sw";
+  if (bottom && right) return "se";
+  if (top) return "n";
+  if (bottom) return "s";
+  if (left) return "w";
+  if (right) return "e";
+  return "";
+}
+
+function startResizeByEdge(event, btn, el, dir) {
   event.stopPropagation();
   event.preventDefault();
   manipulatingLayout = true;
-  let sx = event.clientX;
-  let sy = event.clientY;
+
+  const start = {
+    sx: event.clientX,
+    sy: event.clientY,
+    x: btn.x,
+    y: btn.y,
+    w: btn.w,
+    h: btn.h,
+  };
 
   function move(next) {
-    btn.w = Math.max(60, Math.round(btn.w + (next.clientX - sx)));
-    btn.h = Math.max(40, Math.round(btn.h + (next.clientY - sy)));
+    const dx = next.clientX - start.sx;
+    const dy = next.clientY - start.sy;
+    let x = start.x;
+    let y = start.y;
+    let w = start.w;
+    let h = start.h;
+
+    if (dir.includes("e")) w = Math.max(60, Math.round(start.w + dx));
+    if (dir.includes("s")) h = Math.max(40, Math.round(start.h + dy));
+    if (dir.includes("w")) {
+      w = Math.max(60, Math.round(start.w - dx));
+      x = Math.round(start.x + (start.w - w));
+    }
+    if (dir.includes("n")) {
+      h = Math.max(40, Math.round(start.h - dy));
+      y = Math.round(start.y + (start.h - h));
+    }
+
+    if (x < 0) {
+      w = Math.max(60, w + x);
+      x = 0;
+    }
+    if (y < 0) {
+      h = Math.max(40, h + y);
+      y = 0;
+    }
+
+    if (snapToGrid) {
+      x = Math.max(0, snapValue(x));
+      y = Math.max(0, snapValue(y));
+      w = Math.max(60, snapValue(w));
+      h = Math.max(40, snapValue(h));
+    }
+
+    btn.x = x;
+    btn.y = y;
+    btn.w = w;
+    btn.h = h;
+    el.style.left = `${btn.x}px`;
+    el.style.top = `${btn.y}px`;
     el.style.width = `${btn.w}px`;
     el.style.height = `${btn.h}px`;
-    sx = next.clientX;
-    sy = next.clientY;
     ensureCanvasBounds();
     syncInspector();
   }
@@ -478,13 +913,13 @@ async function saveLayout() {
 
   if (!res.ok) {
     const text = await res.text();
-    alert(`Failed to save layout: ${text}`);
+    showSaveToast(`Save failed: ${text}`, true);
     return;
   }
 
   layoutBaseline = JSON.stringify(layout);
   refreshDirtyState();
-  alert("Layout saved");
+  showSaveToast("Layout saved (Ctrl+S)");
 }
 
 function deleteSelectedButton() {
@@ -509,17 +944,22 @@ function deleteSelectedButton() {
   render();
 }
 
-function initTopbarActions() {
-  const topbar = document.getElementById("appTopbar");
-  if (!topbar) return;
+function initDockActions() {
+  const dock = document.getElementById("editBar");
+  if (!dock) return;
 
-  topbar.addEventListener("click", (event) => {
-    const actionItem = event.target.closest("[data-top-action]");
+  dock.addEventListener("click", (event) => {
+    const actionItem = event.target.closest("[data-tool-action]");
     if (!actionItem) return;
 
-    const action = actionItem.dataset.topAction;
+    const action = actionItem.dataset.toolAction;
     if (action === "add") addButton();
+    if (action === "add-label") addLabelBox();
+    if (action === "add-image") document.getElementById("imagePicker")?.click();
+    if (action === "set-mode-move") setEditToolMode("move");
+    if (action === "set-mode-resize") setEditToolMode("resize");
     if (action === "save") saveLayout();
+    if (action === "delete") deleteSelectedButton();
     if (action === "toggle-edit") toggleEdit(!editMode);
     if (action === "clear-active") {
       activeButtonId = null;
@@ -527,18 +967,56 @@ function initTopbarActions() {
       render();
     }
     if (action === "toggle-connections") {
-      document.getElementById("connections-panel")?.classList.toggle("panel-hidden");
+      setSidebarTab("connections");
     }
     if (action === "toggle-logs") {
-      document.getElementById("logPanel")?.classList.toggle("panel-hidden");
-    }
-    if (action === "focus-dashboard") {
-      focusDashboard(editMode ? "selected" : "top");
+      setSidebarTab("logs");
     }
     if (action === "shortcuts") {
       alert("Shortcuts:\nG = Toggle Edit\nC = Clear Active\nCtrl+N = New Button\nCtrl+S = Save Layout");
     }
   });
+}
+
+function setSidebarTab(tab) {
+  const showLogs = tab !== "connections";
+  const connectionsPane = document.getElementById("connections-panel");
+  const logsPane = document.getElementById("logPanel");
+  const tabConnections = document.getElementById("tabConnections");
+  const tabLogs = document.getElementById("tabLogs");
+  const footer = document.querySelector(".right-footer");
+  if (!connectionsPane || !logsPane || !tabConnections || !tabLogs) return;
+
+  connectionsPane.classList.toggle("active", !showLogs);
+  logsPane.classList.toggle("active", showLogs);
+  tabConnections.classList.toggle("active", !showLogs);
+  tabLogs.classList.toggle("active", showLogs);
+  tabConnections.setAttribute("aria-selected", showLogs ? "false" : "true");
+  tabLogs.setAttribute("aria-selected", showLogs ? "true" : "false");
+  footer?.classList.toggle("hidden", showLogs);
+}
+
+function initSidebarTabs() {
+  const tabConnections = document.getElementById("tabConnections");
+  const tabLogs = document.getElementById("tabLogs");
+  const addDeviceBtn = document.getElementById("addDeviceBtn");
+  const deleteDeviceBtn = document.getElementById("deleteDeviceBtn");
+
+  tabConnections?.addEventListener("click", () => setSidebarTab("connections"));
+  tabLogs?.addEventListener("click", () => setSidebarTab("logs"));
+
+  addDeviceBtn?.addEventListener("click", () => {
+    setSidebarTab("connections");
+    window.connectionsUi?.openEditor?.(true);
+  });
+
+  deleteDeviceBtn?.addEventListener("click", () => {
+    setSidebarTab("connections");
+    window.connectionsUi?.promptDelete?.();
+  });
+
+  // Default first load state per requirement: logs tab visible.
+  setSidebarTab("logs");
 }
 
 setInterval(async () => {
@@ -570,5 +1048,14 @@ if (window.socket) {
 }
 
 bindInspector();
+restoreDockPosition();
+initDockDrag();
+initDockOptions();
+initDockActions();
+initSidebarTabs();
+initScrollControl();
+initCanvasSettings();
+initImagePicker();
+setEditToolMode("move");
+toggleEdit(false);
 loadLayout();
-initTopbarActions();

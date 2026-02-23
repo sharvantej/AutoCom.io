@@ -4,17 +4,63 @@ Desktop control dashboard for show cues and device triggers (Resolume, grandMA3,
 
 ## Features
 
-- Visual button dashboard with drag/resize editing
+- Visual dashboard with floating edit window (draggable)
 - Per-button task sequences (serial, delay, parallel)
-- Device connections manager with status indicators
-- Action log panel
+- Right sidebar with switchable tabs:
+  - `Connections`
+  - `Action Logs` (default on startup)
+- Connection management with status indicators and active toggles
 - Sequence editor with:
   - Apply (save, keep open)
   - Apply & Close
   - Cancel (discard unsaved modal changes)
-- Pixel-based button controls (X, Y, W, H, text size)
+- Pixel-based inspector controls:
+  - Title
+  - X, Y
+  - W, H
+  - Text size
+  - BG color
+  - Text color
+- Edit tool modes:
+  - Move mode (drag selected item on canvas)
+  - Resize mode (resize from all edges/corners)
+- Label boxes for dashboard organization (non-trigger items)
+- Image widgets (add image to dashboard, move/resize anywhere)
+- Canvas background color control
+- Grid lines shown only in edit mode
+- Snap-to-grid option
+- Show/hide borders option with global border color
+- Scroll mode options in floating editor (`True`, `False`, `Vertical`, `Horizontal`, `Always`)
+- Hidden visual scrollbars for cleaner on-screen output
+- Save toast popup (`Ctrl+S`) instead of blocking alert
 - Scrollable workspace for large button layouts
 - Windows installer build (`.exe`)
+
+## Editor Controls
+
+- Toggle edit mode: `G`
+- Save layout: `Ctrl+S`
+- Add button: `Ctrl+N`
+- Clear active button: `C`
+
+In edit mode:
+
+- Select an item with single click
+- Move item when `Move` tool is selected
+- Resize item when `Resize` tool is selected
+- Use inspector fields for precise layout and styling changes
+- Drag floating edit window by its header to reposition it
+
+## Sidebar Tabs
+
+- `Action Logs` tab:
+  - displays runtime logs
+  - no add/delete device footer actions shown
+- `Connections` tab:
+  - view/edit connections
+  - footer actions:
+    - `Add Device` (opens add connection editor)
+    - `Delete Device` (delete by number or name)
 
 ## Tech Stack
 
@@ -57,7 +103,7 @@ npm run dist
 
 Output:
 
-- `dist/OSC Controller Setup 1.0.0.exe`
+- `dist/Automation Companion Setup.exe`
 
 This installer is configured for normal install flow (not one-click) and allows selecting installation directory.
 
