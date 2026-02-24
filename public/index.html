@@ -2,9 +2,9 @@
 <html>
   <head>
     <meta charset="UTF-8" />
-    <title>OSC Controller</title>
+    <title>Bunny</title>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <link rel="icon" type="image/svg+xml" href="/logo.svg" />
+    <link rel="icon" type="image/x-icon" href="/logo.ico" />
     <link rel="stylesheet" href="style.css" />
   </head>
 
@@ -85,10 +85,20 @@
     <div id="rightSidebar" class="right-sidebar">
       <div class="right-tabs" role="tablist" aria-label="Sidebar tabs">
         <button id="tabConnections" class="right-tab" type="button" role="tab" aria-selected="false">
-          Connections
+          <span class="heroicon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 3.75h7.5v7.5h-7.5zm9 0h7.5v7.5h-7.5zm-9 9h7.5v7.5h-7.5zm9 0h7.5v7.5h-7.5z" />
+            </svg>
+          </span>
+          <span>Connections</span>
         </button>
         <button id="tabLogs" class="right-tab active" type="button" role="tab" aria-selected="true">
-          Action Logs
+          <span class="heroicon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5m-16.5 5.25h16.5m-16.5 5.25h16.5" />
+            </svg>
+          </span>
+          <span>Action Logs</span>
         </button>
       </div>
       <div class="right-body">
@@ -102,10 +112,44 @@
         </div>
       </div>
       <div class="right-footer">
-        <button id="addDeviceBtn" class="right-footer-btn" type="button">Add Device</button>
-        <button id="deleteDeviceBtn" class="right-footer-btn" type="button">Delete Device</button>
+        <button id="addDeviceBtn" class="right-footer-btn" type="button">
+          <span class="heroicon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+            </svg>
+          </span>
+          <span>Add Device</span>
+        </button>
+        <button id="manageDeviceBtn" class="right-footer-btn" type="button">
+          <span class="heroicon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 0 0-2 2v11a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2v-5m-1.414-9.414a2 2 0 1 1 2.828 2.828L11.828 15H9v-2.828z" />
+            </svg>
+          </span>
+          <span>Manage Device</span>
+        </button>
       </div>
     </div>
+    <button
+      id="sidebarDockToggle"
+      class="sidebar-dock-toggle"
+      type="button"
+      aria-controls="rightSidebar"
+      aria-label="Toggle Connections and Logs panel"
+      aria-expanded="true"
+      title="Close Connections and Logs panel"
+    >
+      <span class="dock-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            d="M9 6l6 6-6 6"
+          />
+        </svg>
+      </span>
+      <span class="dock-label">Toggle Connections and Logs panel</span>
+    </button>
 
     <div id="dashboardViewport">
       <div id="canvas"></div>

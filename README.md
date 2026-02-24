@@ -1,6 +1,6 @@
 # OSC Dashboard
 
-Desktop control dashboard for show cues and device triggers (Resolume, grandMA3, vMix, HTTP, audio, and generic TCP/OSC).
+Desktop control dashboard for show cues and device triggers (Resolume, grandMA3, vMix, ATEM, OBS, HTTP, audio, and generic TCP/OSC).
 
 ## App Link
 
@@ -11,6 +11,7 @@ Desktop control dashboard for show cues and device triggers (Resolume, grandMA3,
 
 - Visual dashboard with floating edit window (draggable)
 - Per-button task sequences (serial, delay, parallel)
+- Preset shortcut insertion in Sequence Editor (built-in + JSON catalogs)
 - Right sidebar with switchable tabs:
   - `Connections`
   - `Action Logs` (default on startup)
@@ -60,12 +61,12 @@ In edit mode:
 
 - `Action Logs` tab:
   - displays runtime logs
-  - no add/delete device footer actions shown
+  - no add/manage device footer actions shown
 - `Connections` tab:
   - view/edit connections
   - footer actions:
     - `Add Device` (opens add connection editor)
-    - `Delete Device` (delete by number or name)
+    - `Manage Device` (pick one device to edit)
 
 ## Tech Stack
 
@@ -78,8 +79,9 @@ In edit mode:
 - `electron-main.js` - Electron app entry
 - `server.js` - API + socket server
 - `engine/` - cue/task execution and transport logic
-- `devices/` - device-specific helpers
 - `public/` - frontend UI (HTML/CSS/JS)
+  - `public/vmix-shortcuts.json` - vMix function catalog for builder mode
+  - `public/shortuts.json` - shortcut preset catalog for companion-style modules
 - `show/` - layout, connections, and show cue data
 
 ## Requirements
@@ -108,7 +110,7 @@ npm run dist
 
 Output:
 
-- `dist/Automation Companion Setup.exe`
+- `dist/Bunny Setup.exe`
 
 This installer is configured for normal install flow (not one-click) and allows selecting installation directory.
 
@@ -120,6 +122,25 @@ Repository defaults are in `show/`:
 - `show/layout.json`
 - `show/connections.json`
 - `show/show.json`
+
+Preset catalogs loaded by the frontend:
+
+- `public/vmix-shortcuts.json`
+- `public/shortuts.json`
+
+`shortuts.json` currently includes preset templates for:
+
+- BMD ATEM
+- Resolume Arena
+- MA Lighting grandMA3
+- Generic HTTP
+- RossTalk
+- BMD Videohub
+- Generic SWP-08
+- OBS Studio
+- Behringer X32
+- Generic TCP/UDP
+- Ross XPression
 
 ## Git Notes
 

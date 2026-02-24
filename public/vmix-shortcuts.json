@@ -1,0 +1,7086 @@
+{
+  "source": "https://www.vmix.com/help29/ShortcutFunctionReference.html",
+  "generatedAt": "2026-02-24T19:35:19.381Z",
+  "versionHint": "vMix help29",
+  "transitionsNote": "Transitions such as Fade, Zoom and Cut can also be used as Function values as documented by vMix.",
+  "totalFunctions": 775,
+  "categories": [
+    {
+      "name": "General",
+      "count": 9
+    },
+    {
+      "name": "Audio",
+      "count": 107
+    },
+    {
+      "name": "Transition",
+      "count": 32
+    },
+    {
+      "name": "Output",
+      "count": 31
+    },
+    {
+      "name": "Title",
+      "count": 24
+    },
+    {
+      "name": "Input",
+      "count": 276
+    },
+    {
+      "name": "Overlay",
+      "count": 62
+    },
+    {
+      "name": "PlayList",
+      "count": 5
+    },
+    {
+      "name": "Scripting",
+      "count": 5
+    },
+    {
+      "name": "Replay",
+      "count": 175
+    },
+    {
+      "name": "NDI",
+      "count": 5
+    },
+    {
+      "name": "OMT",
+      "count": 2
+    },
+    {
+      "name": "PTZ",
+      "count": 22
+    },
+    {
+      "name": "Preset",
+      "count": 3
+    },
+    {
+      "name": "DataSources",
+      "count": 9
+    },
+    {
+      "name": "Browser",
+      "count": 8
+    }
+  ],
+  "functions": [
+    {
+      "name": "ActivatorRefresh",
+      "category": "General",
+      "description": "Refresh all activator device lights and controls",
+      "parameters": "None",
+      "paramKeys": []
+    },
+    {
+      "name": "CallManagerShowHide",
+      "category": "General",
+      "description": "",
+      "parameters": "None",
+      "paramKeys": []
+    },
+    {
+      "name": "KeyPress",
+      "category": "General",
+      "description": "Value = Key",
+      "parameters": "Value",
+      "paramKeys": [
+        "Value"
+      ]
+    },
+    {
+      "name": "SendKeys",
+      "category": "General",
+      "description": "Send keys to active window\nValue = Keys",
+      "parameters": "Value",
+      "paramKeys": [
+        "Value"
+      ]
+    },
+    {
+      "name": "SetDynamicValue1",
+      "category": "General",
+      "description": "Set Dynamic Value to use when specifying Dynamic1 as a shortcut value.\nValue = Value",
+      "parameters": "Value",
+      "paramKeys": [
+        "Value"
+      ]
+    },
+    {
+      "name": "SetDynamicValue2",
+      "category": "General",
+      "description": "Set Dynamic Value to use when specifying Dynamic2 as a shortcut value.\nValue = Value",
+      "parameters": "Value",
+      "paramKeys": [
+        "Value"
+      ]
+    },
+    {
+      "name": "SetDynamicValue3",
+      "category": "General",
+      "description": "Set Dynamic Value to use when specifying Dynamic3 as a shortcut value.\nValue = Value",
+      "parameters": "Value",
+      "paramKeys": [
+        "Value"
+      ]
+    },
+    {
+      "name": "SetDynamicValue4",
+      "category": "General",
+      "description": "Set Dynamic Value to use when specifying Dynamic4 as a shortcut value.\nValue = Value",
+      "parameters": "Value",
+      "paramKeys": [
+        "Value"
+      ]
+    },
+    {
+      "name": "Undo",
+      "category": "General",
+      "description": "Undo closing Input.",
+      "parameters": "None",
+      "paramKeys": []
+    },
+    {
+      "name": "Audio",
+      "category": "Audio",
+      "description": "Toggle Audio Mute On/Off",
+      "parameters": "Input",
+      "paramKeys": [
+        "Input"
+      ]
+    },
+    {
+      "name": "AudioAuto",
+      "category": "Audio",
+      "description": "",
+      "parameters": "Input",
+      "paramKeys": [
+        "Input"
+      ]
+    },
+    {
+      "name": "AudioAutoOff",
+      "category": "Audio",
+      "description": "",
+      "parameters": "Input",
+      "paramKeys": [
+        "Input"
+      ]
+    },
+    {
+      "name": "AudioAutoOn",
+      "category": "Audio",
+      "description": "",
+      "parameters": "Input",
+      "paramKeys": [
+        "Input"
+      ]
+    },
+    {
+      "name": "AudioBus",
+      "category": "Audio",
+      "description": "M,A,B,C,D,E,F,G\nValue = Bus",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "AudioBusOff",
+      "category": "Audio",
+      "description": "M,A,B,C,D,E,F,G\nValue = Bus",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "AudioBusOn",
+      "category": "Audio",
+      "description": "M,A,B,C,D,E,F,G\nValue = Bus",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "AudioChannelMatrixApplyPreset",
+      "category": "Audio",
+      "description": "Apply preset to channel matrix\nValue = Preset Name",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "AudioMixerShowHide",
+      "category": "Audio",
+      "description": "",
+      "parameters": "None",
+      "paramKeys": []
+    },
+    {
+      "name": "AudioOff",
+      "category": "Audio",
+      "description": "",
+      "parameters": "Input",
+      "paramKeys": [
+        "Input"
+      ]
+    },
+    {
+      "name": "AudioOn",
+      "category": "Audio",
+      "description": "",
+      "parameters": "Input",
+      "paramKeys": [
+        "Input"
+      ]
+    },
+    {
+      "name": "AudioPluginOff",
+      "category": "Audio",
+      "description": "Turn off Audio Plugin, starting from 1\nValue = Plugin Number",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "AudioPluginOn",
+      "category": "Audio",
+      "description": "Turn on Audio Plugin, starting from 1\nValue = Plugin Number",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "AudioPluginOnOff",
+      "category": "Audio",
+      "description": "Toggle on/off Audio Plugin, starting from 1\nValue = Plugin Number",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "AudioPluginShow",
+      "category": "Audio",
+      "description": "Show Audio Plugin Editor, starting from 1\nValue = Plugin Number",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "BusAAudio",
+      "category": "Audio",
+      "description": "",
+      "parameters": "None",
+      "paramKeys": []
+    },
+    {
+      "name": "BusAAudioOff",
+      "category": "Audio",
+      "description": "",
+      "parameters": "None",
+      "paramKeys": []
+    },
+    {
+      "name": "BusAAudioOn",
+      "category": "Audio",
+      "description": "",
+      "parameters": "None",
+      "paramKeys": []
+    },
+    {
+      "name": "BusAAudioPluginOff",
+      "category": "Audio",
+      "description": "Turn off Audio Plugin, starting from 1\nValue = Plugin Number",
+      "parameters": "Value",
+      "paramKeys": [
+        "Value"
+      ]
+    },
+    {
+      "name": "BusAAudioPluginOn",
+      "category": "Audio",
+      "description": "Turn on Audio Plugin, starting from 1\nValue = Plugin Number",
+      "parameters": "Value",
+      "paramKeys": [
+        "Value"
+      ]
+    },
+    {
+      "name": "BusAAudioPluginOnOff",
+      "category": "Audio",
+      "description": "Toggle on/off Audio Plugin, starting from 1\nValue = Plugin Number",
+      "parameters": "Value",
+      "paramKeys": [
+        "Value"
+      ]
+    },
+    {
+      "name": "BusAAudioPluginShow",
+      "category": "Audio",
+      "description": "Show Audio Plugin Editor, starting from 1\nValue = Plugin Number",
+      "parameters": "Value",
+      "paramKeys": [
+        "Value"
+      ]
+    },
+    {
+      "name": "BusBAudio",
+      "category": "Audio",
+      "description": "",
+      "parameters": "None",
+      "paramKeys": []
+    },
+    {
+      "name": "BusBAudioOff",
+      "category": "Audio",
+      "description": "",
+      "parameters": "None",
+      "paramKeys": []
+    },
+    {
+      "name": "BusBAudioOn",
+      "category": "Audio",
+      "description": "",
+      "parameters": "None",
+      "paramKeys": []
+    },
+    {
+      "name": "BusBAudioPluginOff",
+      "category": "Audio",
+      "description": "Turn off Audio Plugin, starting from 1\nValue = Plugin Number",
+      "parameters": "Value",
+      "paramKeys": [
+        "Value"
+      ]
+    },
+    {
+      "name": "BusBAudioPluginOn",
+      "category": "Audio",
+      "description": "Turn on Audio Plugin, starting from 1\nValue = Plugin Number",
+      "parameters": "Value",
+      "paramKeys": [
+        "Value"
+      ]
+    },
+    {
+      "name": "BusBAudioPluginOnOff",
+      "category": "Audio",
+      "description": "Toggle on/off Audio Plugin, starting from 1\nValue = Plugin Number",
+      "parameters": "Value",
+      "paramKeys": [
+        "Value"
+      ]
+    },
+    {
+      "name": "BusBAudioPluginShow",
+      "category": "Audio",
+      "description": "Show Audio Plugin Editor, starting from 1\nValue = Plugin Number",
+      "parameters": "Value",
+      "paramKeys": [
+        "Value"
+      ]
+    },
+    {
+      "name": "BusXAudio",
+      "category": "Audio",
+      "description": "M,A,B,C,D,E,F,G\nValue = Bus",
+      "parameters": "Value",
+      "paramKeys": [
+        "Value"
+      ]
+    },
+    {
+      "name": "BusXAudioOff",
+      "category": "Audio",
+      "description": "M,A,B,C,D,E,F,G\nValue = Bus",
+      "parameters": "Value",
+      "paramKeys": [
+        "Value"
+      ]
+    },
+    {
+      "name": "BusXAudioOn",
+      "category": "Audio",
+      "description": "M,A,B,C,D,E,F,G\nValue = Bus",
+      "parameters": "Value",
+      "paramKeys": [
+        "Value"
+      ]
+    },
+    {
+      "name": "BusXAudioPluginOff",
+      "category": "Audio",
+      "description": "Turn off Audio Plugin, starting from 1\nValue = Bus,PluginNumber",
+      "parameters": "Value",
+      "paramKeys": [
+        "Value"
+      ]
+    },
+    {
+      "name": "BusXAudioPluginOn",
+      "category": "Audio",
+      "description": "Turn on Audio Plugin, starting from 1\nValue = Bus,PluginNumber",
+      "parameters": "Value",
+      "paramKeys": [
+        "Value"
+      ]
+    },
+    {
+      "name": "BusXAudioPluginOnOff",
+      "category": "Audio",
+      "description": "Toggle on/off Audio Plugin, starting from 1\nValue = Bus,PluginNumber",
+      "parameters": "Value",
+      "paramKeys": [
+        "Value"
+      ]
+    },
+    {
+      "name": "BusXAudioPluginShow",
+      "category": "Audio",
+      "description": "Show Audio Plugin Editor, starting from 1\nValue = Bus,PluginNumber",
+      "parameters": "Value",
+      "paramKeys": [
+        "Value"
+      ]
+    },
+    {
+      "name": "BusXSendToMaster",
+      "category": "Audio",
+      "description": "M,A,B,C,D,E,F,G\nValue = Bus",
+      "parameters": "Value",
+      "paramKeys": [
+        "Value"
+      ]
+    },
+    {
+      "name": "BusXSendToMasterOff",
+      "category": "Audio",
+      "description": "M,A,B,C,D,E,F,G\nValue = Bus",
+      "parameters": "Value",
+      "paramKeys": [
+        "Value"
+      ]
+    },
+    {
+      "name": "BusXSendToMasterOn",
+      "category": "Audio",
+      "description": "M,A,B,C,D,E,F,G\nValue = Bus",
+      "parameters": "Value",
+      "paramKeys": [
+        "Value"
+      ]
+    },
+    {
+      "name": "BusXSolo",
+      "category": "Audio",
+      "description": "M,A,B,C,D,E,F,G\nValue = Bus",
+      "parameters": "Value",
+      "paramKeys": [
+        "Value"
+      ]
+    },
+    {
+      "name": "BusXSoloOff",
+      "category": "Audio",
+      "description": "M,A,B,C,D,E,F,G\nValue = Bus",
+      "parameters": "Value",
+      "paramKeys": [
+        "Value"
+      ]
+    },
+    {
+      "name": "BusXSoloOn",
+      "category": "Audio",
+      "description": "M,A,B,C,D,E,F,G\nValue = Bus",
+      "parameters": "Value",
+      "paramKeys": [
+        "Value"
+      ]
+    },
+    {
+      "name": "MasterAudio",
+      "category": "Audio",
+      "description": "",
+      "parameters": "None",
+      "paramKeys": []
+    },
+    {
+      "name": "MasterAudioOff",
+      "category": "Audio",
+      "description": "",
+      "parameters": "None",
+      "paramKeys": []
+    },
+    {
+      "name": "MasterAudioOn",
+      "category": "Audio",
+      "description": "",
+      "parameters": "None",
+      "paramKeys": []
+    },
+    {
+      "name": "MasterAudioPluginOff",
+      "category": "Audio",
+      "description": "Turn off Audio Plugin, starting from 1\nValue = Plugin Number",
+      "parameters": "Value",
+      "paramKeys": [
+        "Value"
+      ]
+    },
+    {
+      "name": "MasterAudioPluginOn",
+      "category": "Audio",
+      "description": "Turn on Audio Plugin, starting from 1\nValue = Plugin Number",
+      "parameters": "Value",
+      "paramKeys": [
+        "Value"
+      ]
+    },
+    {
+      "name": "MasterAudioPluginOnOff",
+      "category": "Audio",
+      "description": "Toggle on/off Audio Plugin, starting from 1\nValue = Plugin Number",
+      "parameters": "Value",
+      "paramKeys": [
+        "Value"
+      ]
+    },
+    {
+      "name": "MasterAudioPluginShow",
+      "category": "Audio",
+      "description": "Show Audio Plugin Editor, starting from 1\nValue = Plugin Number",
+      "parameters": "Value",
+      "paramKeys": [
+        "Value"
+      ]
+    },
+    {
+      "name": "SetBalance",
+      "category": "Audio",
+      "description": "Value = Balance -1-1",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "SetBusAVolume",
+      "category": "Audio",
+      "description": "Value = Volume 0-100",
+      "parameters": "Value",
+      "paramKeys": [
+        "Value"
+      ]
+    },
+    {
+      "name": "SetBusAVolumeFade",
+      "category": "Audio",
+      "description": "Set volume gradually over x milliseconds.\nValue = Volume 0-100,Milliseconds",
+      "parameters": "Value",
+      "paramKeys": [
+        "Value"
+      ]
+    },
+    {
+      "name": "SetBusBVolume",
+      "category": "Audio",
+      "description": "Value = Volume 0-100",
+      "parameters": "Value",
+      "paramKeys": [
+        "Value"
+      ]
+    },
+    {
+      "name": "SetBusBVolumeFade",
+      "category": "Audio",
+      "description": "Set volume gradually over x milliseconds.\nValue = Volume 0-100,Milliseconds",
+      "parameters": "Value",
+      "paramKeys": [
+        "Value"
+      ]
+    },
+    {
+      "name": "SetBusCVolume",
+      "category": "Audio",
+      "description": "Value = Volume 0-100",
+      "parameters": "Value",
+      "paramKeys": [
+        "Value"
+      ]
+    },
+    {
+      "name": "SetBusCVolumeFade",
+      "category": "Audio",
+      "description": "Set volume gradually over x milliseconds.\nValue = Volume 0-100,Milliseconds",
+      "parameters": "Value",
+      "paramKeys": [
+        "Value"
+      ]
+    },
+    {
+      "name": "SetBusDVolume",
+      "category": "Audio",
+      "description": "Value = Volume 0-100",
+      "parameters": "Value",
+      "paramKeys": [
+        "Value"
+      ]
+    },
+    {
+      "name": "SetBusDVolumeFade",
+      "category": "Audio",
+      "description": "Set volume gradually over x milliseconds.\nValue = Volume 0-100,Milliseconds",
+      "parameters": "Value",
+      "paramKeys": [
+        "Value"
+      ]
+    },
+    {
+      "name": "SetBusEVolume",
+      "category": "Audio",
+      "description": "Value = Volume 0-100",
+      "parameters": "Value",
+      "paramKeys": [
+        "Value"
+      ]
+    },
+    {
+      "name": "SetBusEVolumeFade",
+      "category": "Audio",
+      "description": "Set volume gradually over x milliseconds.\nValue = Volume 0-100,Milliseconds",
+      "parameters": "Value",
+      "paramKeys": [
+        "Value"
+      ]
+    },
+    {
+      "name": "SetBusFVolume",
+      "category": "Audio",
+      "description": "Value = Volume 0-100",
+      "parameters": "Value",
+      "paramKeys": [
+        "Value"
+      ]
+    },
+    {
+      "name": "SetBusFVolumeFade",
+      "category": "Audio",
+      "description": "Set volume gradually over x milliseconds.\nValue = Volume 0-100,Milliseconds",
+      "parameters": "Value",
+      "paramKeys": [
+        "Value"
+      ]
+    },
+    {
+      "name": "SetBusGVolume",
+      "category": "Audio",
+      "description": "Value = Volume 0-100",
+      "parameters": "Value",
+      "paramKeys": [
+        "Value"
+      ]
+    },
+    {
+      "name": "SetBusGVolumeFade",
+      "category": "Audio",
+      "description": "Set volume gradually over x milliseconds.\nValue = Volume 0-100,Milliseconds",
+      "parameters": "Value",
+      "paramKeys": [
+        "Value"
+      ]
+    },
+    {
+      "name": "SetGain",
+      "category": "Audio",
+      "description": "Value = Gain dB 0-24",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "SetGainChannel1",
+      "category": "Audio",
+      "description": "Value = Gain dB 0-24",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "SetGainChannel2",
+      "category": "Audio",
+      "description": "Value = Gain dB 0-24",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "SetHeadphonesVolume",
+      "category": "Audio",
+      "description": "Value = Volume 0-100",
+      "parameters": "Value",
+      "paramKeys": [
+        "Value"
+      ]
+    },
+    {
+      "name": "SetMasterVolume",
+      "category": "Audio",
+      "description": "Value = Volume 0-100",
+      "parameters": "Value",
+      "paramKeys": [
+        "Value"
+      ]
+    },
+    {
+      "name": "SetMasterVolumeFade",
+      "category": "Audio",
+      "description": "Set volume gradually over x milliseconds.\nValue = Volume 0-100,Milliseconds",
+      "parameters": "Value",
+      "paramKeys": [
+        "Value"
+      ]
+    },
+    {
+      "name": "SetVolume",
+      "category": "Audio",
+      "description": "Value = Volume 0-100",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "SetVolumeBusMixer",
+      "category": "Audio",
+      "description": "Set Volume of an Input's Bus Mixer (M,A,B,C,D,E,F,G)\nValue = Bus,Volume 0-100",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "SetVolumeBusMixerA",
+      "category": "Audio",
+      "description": "Set Volume of an Input's A Bus\nValue = Volume 0-100",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "SetVolumeBusMixerB",
+      "category": "Audio",
+      "description": "Set Volume of an Input's B Bus\nValue = Volume 0-100",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "SetVolumeBusMixerC",
+      "category": "Audio",
+      "description": "Set Volume of an Input's C Bus\nValue = Volume 0-100",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "SetVolumeBusMixerD",
+      "category": "Audio",
+      "description": "Set Volume of an Input's D Bus\nValue = Volume 0-100",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "SetVolumeBusMixerE",
+      "category": "Audio",
+      "description": "Set Volume of an Input's E Bus\nValue = Volume 0-100",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "SetVolumeBusMixerF",
+      "category": "Audio",
+      "description": "Set Volume of an Input's F Bus\nValue = Volume 0-100",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "SetVolumeBusMixerG",
+      "category": "Audio",
+      "description": "Set Volume of an Input's G Bus\nValue = Volume 0-100",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "SetVolumeBusMixerM",
+      "category": "Audio",
+      "description": "Set Volume of an Input's Master Bus\nValue = Volume 0-100",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "SetVolumeChannel1",
+      "category": "Audio",
+      "description": "When using SeparateMono on an Audio Input, this can be used to set channel volumes independently.\nValue = Volume 0-100",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "SetVolumeChannel2",
+      "category": "Audio",
+      "description": "When using SeparateMono on an Audio Input, this can be used to set channel volumes independently.\nValue = Volume 0-100",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "SetVolumeChannelMixer",
+      "category": "Audio",
+      "description": "Set Volume of an Input's sub channel (1 to 16)\nValue = Channel,Volume 0-100",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "SetVolumeChannelMixer1",
+      "category": "Audio",
+      "description": "Set Volume of an Input's sub channel 1\nValue = Volume 0-100",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "SetVolumeChannelMixer10",
+      "category": "Audio",
+      "description": "Set Volume of an Input's sub channel 10\nValue = Volume 0-100",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "SetVolumeChannelMixer11",
+      "category": "Audio",
+      "description": "Set Volume of an Input's sub channel 11\nValue = Volume 0-100",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "SetVolumeChannelMixer12",
+      "category": "Audio",
+      "description": "Set Volume of an Input's sub channel 12\nValue = Volume 0-100",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "SetVolumeChannelMixer13",
+      "category": "Audio",
+      "description": "Set Volume of an Input's sub channel 13\nValue = Volume 0-100",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "SetVolumeChannelMixer14",
+      "category": "Audio",
+      "description": "Set Volume of an Input's sub channel 14\nValue = Volume 0-100",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "SetVolumeChannelMixer15",
+      "category": "Audio",
+      "description": "Set Volume of an Input's sub channel 15\nValue = Volume 0-100",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "SetVolumeChannelMixer16",
+      "category": "Audio",
+      "description": "Set Volume of an Input's sub channel 16\nValue = Volume 0-100",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "SetVolumeChannelMixer2",
+      "category": "Audio",
+      "description": "Set Volume of an Input's sub channel 2\nValue = Volume 0-100",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "SetVolumeChannelMixer3",
+      "category": "Audio",
+      "description": "Set Volume of an Input's sub channel 3\nValue = Volume 0-100",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "SetVolumeChannelMixer4",
+      "category": "Audio",
+      "description": "Set Volume of an Input's sub channel 4\nValue = Volume 0-100",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "SetVolumeChannelMixer5",
+      "category": "Audio",
+      "description": "Set Volume of an Input's sub channel 5\nValue = Volume 0-100",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "SetVolumeChannelMixer6",
+      "category": "Audio",
+      "description": "Set Volume of an Input's sub channel 6\nValue = Volume 0-100",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "SetVolumeChannelMixer7",
+      "category": "Audio",
+      "description": "Set Volume of an Input's sub channel 7\nValue = Volume 0-100",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "SetVolumeChannelMixer8",
+      "category": "Audio",
+      "description": "Set Volume of an Input's sub channel 8\nValue = Volume 0-100",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "SetVolumeChannelMixer9",
+      "category": "Audio",
+      "description": "Set Volume of an Input's sub channel 9\nValue = Volume 0-100",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "SetVolumeFade",
+      "category": "Audio",
+      "description": "Set volume gradually over x milliseconds.\nValue = Volume 0-100,Milliseconds",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "Solo",
+      "category": "Audio",
+      "description": "",
+      "parameters": "Input",
+      "paramKeys": [
+        "Input"
+      ]
+    },
+    {
+      "name": "SoloAllOff",
+      "category": "Audio",
+      "description": "Turn off Solo for all Inputs and Busses",
+      "parameters": "None",
+      "paramKeys": []
+    },
+    {
+      "name": "SoloOff",
+      "category": "Audio",
+      "description": "",
+      "parameters": "Input",
+      "paramKeys": [
+        "Input"
+      ]
+    },
+    {
+      "name": "SoloOn",
+      "category": "Audio",
+      "description": "",
+      "parameters": "Input",
+      "paramKeys": [
+        "Input"
+      ]
+    },
+    {
+      "name": "SoloPFL",
+      "category": "Audio",
+      "description": "Toggle between AFL or PFL mode for Solo",
+      "parameters": "Input",
+      "paramKeys": [
+        "Input"
+      ]
+    },
+    {
+      "name": "SoloPFLOff",
+      "category": "Audio",
+      "description": "Turn off PFL mode for Solo",
+      "parameters": "Input",
+      "paramKeys": [
+        "Input"
+      ]
+    },
+    {
+      "name": "SoloPFLOn",
+      "category": "Audio",
+      "description": "Turn on PFL mode for Solo",
+      "parameters": "Input",
+      "paramKeys": [
+        "Input"
+      ]
+    },
+    {
+      "name": "CutDirect",
+      "category": "Transition",
+      "description": "Cuts the input directly to Output without changing Preview",
+      "parameters": "Input",
+      "paramKeys": [
+        "Input"
+      ]
+    },
+    {
+      "name": "FadeToBlack",
+      "category": "Transition",
+      "description": "Toggle FTB On/Off",
+      "parameters": "None",
+      "paramKeys": []
+    },
+    {
+      "name": "QuickPlay",
+      "category": "Transition",
+      "description": "",
+      "parameters": "Input",
+      "paramKeys": [
+        "Input"
+      ]
+    },
+    {
+      "name": "SetFader",
+      "category": "Transition",
+      "description": "Set Master Fader T-Bar, 255 will cut to Preview\nValue = Fader 0-255",
+      "parameters": "Value",
+      "paramKeys": [
+        "Value"
+      ]
+    },
+    {
+      "name": "SetStingerGTInput1",
+      "category": "Transition",
+      "description": "Assign GT Input as animation source for Stinger 1",
+      "parameters": "Input",
+      "paramKeys": [
+        "Input"
+      ]
+    },
+    {
+      "name": "SetStingerGTInput2",
+      "category": "Transition",
+      "description": "Assign GT Input as animation source for Stinger 2",
+      "parameters": "Input",
+      "paramKeys": [
+        "Input"
+      ]
+    },
+    {
+      "name": "SetStingerGTInput3",
+      "category": "Transition",
+      "description": "Assign GT Input as animation source for Stinger 3",
+      "parameters": "Input",
+      "paramKeys": [
+        "Input"
+      ]
+    },
+    {
+      "name": "SetStingerGTInput4",
+      "category": "Transition",
+      "description": "Assign GT Input as animation source for Stinger 4",
+      "parameters": "Input",
+      "paramKeys": [
+        "Input"
+      ]
+    },
+    {
+      "name": "SetStingerGTInput5",
+      "category": "Transition",
+      "description": "Assign GT Input as animation source for Stinger 5",
+      "parameters": "Input",
+      "paramKeys": [
+        "Input"
+      ]
+    },
+    {
+      "name": "SetStingerGTInput6",
+      "category": "Transition",
+      "description": "Assign GT Input as animation source for Stinger 6",
+      "parameters": "Input",
+      "paramKeys": [
+        "Input"
+      ]
+    },
+    {
+      "name": "SetStingerGTInput7",
+      "category": "Transition",
+      "description": "Assign GT Input as animation source for Stinger 7",
+      "parameters": "Input",
+      "paramKeys": [
+        "Input"
+      ]
+    },
+    {
+      "name": "SetStingerGTInput8",
+      "category": "Transition",
+      "description": "Assign GT Input as animation source for Stinger 8",
+      "parameters": "Input",
+      "paramKeys": [
+        "Input"
+      ]
+    },
+    {
+      "name": "SetTransitionDuration1",
+      "category": "Transition",
+      "description": "Change Transition Duration for Button 1\nValue = Duration MS",
+      "parameters": "Value",
+      "paramKeys": [
+        "Value"
+      ]
+    },
+    {
+      "name": "SetTransitionDuration2",
+      "category": "Transition",
+      "description": "Change Transition Duration for Button 2\nValue = Duration MS",
+      "parameters": "Value",
+      "paramKeys": [
+        "Value"
+      ]
+    },
+    {
+      "name": "SetTransitionDuration3",
+      "category": "Transition",
+      "description": "Change Transition Duration for Button 3\nValue = Duration MS",
+      "parameters": "Value",
+      "paramKeys": [
+        "Value"
+      ]
+    },
+    {
+      "name": "SetTransitionDuration4",
+      "category": "Transition",
+      "description": "Change Transition Duration for Button 4\nValue = Duration MS",
+      "parameters": "Value",
+      "paramKeys": [
+        "Value"
+      ]
+    },
+    {
+      "name": "SetTransitionEffect1",
+      "category": "Transition",
+      "description": "Change Transition for Button 1\nValue = Transition",
+      "parameters": "Value",
+      "paramKeys": [
+        "Value"
+      ]
+    },
+    {
+      "name": "SetTransitionEffect2",
+      "category": "Transition",
+      "description": "Change Transition for Button 2\nValue = Transition",
+      "parameters": "Value",
+      "paramKeys": [
+        "Value"
+      ]
+    },
+    {
+      "name": "SetTransitionEffect3",
+      "category": "Transition",
+      "description": "Change Transition for Button 3\nValue = Transition",
+      "parameters": "Value",
+      "paramKeys": [
+        "Value"
+      ]
+    },
+    {
+      "name": "SetTransitionEffect4",
+      "category": "Transition",
+      "description": "Change Transition for Button 4\nValue = Transition",
+      "parameters": "Value",
+      "paramKeys": [
+        "Value"
+      ]
+    },
+    {
+      "name": "Stinger1",
+      "category": "Transition",
+      "description": "",
+      "parameters": "Input,Mix",
+      "paramKeys": [
+        "Input",
+        "Mix"
+      ]
+    },
+    {
+      "name": "Stinger2",
+      "category": "Transition",
+      "description": "",
+      "parameters": "Input,Mix",
+      "paramKeys": [
+        "Input",
+        "Mix"
+      ]
+    },
+    {
+      "name": "Stinger3",
+      "category": "Transition",
+      "description": "",
+      "parameters": "Input,Mix",
+      "paramKeys": [
+        "Input",
+        "Mix"
+      ]
+    },
+    {
+      "name": "Stinger4",
+      "category": "Transition",
+      "description": "",
+      "parameters": "Input,Mix",
+      "paramKeys": [
+        "Input",
+        "Mix"
+      ]
+    },
+    {
+      "name": "Stinger5",
+      "category": "Transition",
+      "description": "",
+      "parameters": "Input,Mix",
+      "paramKeys": [
+        "Input",
+        "Mix"
+      ]
+    },
+    {
+      "name": "Stinger6",
+      "category": "Transition",
+      "description": "",
+      "parameters": "Input,Mix",
+      "paramKeys": [
+        "Input",
+        "Mix"
+      ]
+    },
+    {
+      "name": "Stinger7",
+      "category": "Transition",
+      "description": "",
+      "parameters": "Input,Mix",
+      "paramKeys": [
+        "Input",
+        "Mix"
+      ]
+    },
+    {
+      "name": "Stinger8",
+      "category": "Transition",
+      "description": "",
+      "parameters": "Input,Mix",
+      "paramKeys": [
+        "Input",
+        "Mix"
+      ]
+    },
+    {
+      "name": "Transition1",
+      "category": "Transition",
+      "description": "Clicks one of the four Transition buttons in the main vMix window.",
+      "parameters": "None",
+      "paramKeys": []
+    },
+    {
+      "name": "Transition2",
+      "category": "Transition",
+      "description": "",
+      "parameters": "None",
+      "paramKeys": []
+    },
+    {
+      "name": "Transition3",
+      "category": "Transition",
+      "description": "",
+      "parameters": "None",
+      "paramKeys": []
+    },
+    {
+      "name": "Transition4",
+      "category": "Transition",
+      "description": "",
+      "parameters": "None",
+      "paramKeys": []
+    },
+    {
+      "name": "Fullscreen",
+      "category": "Output",
+      "description": "Toggles Fullscreen On or Off",
+      "parameters": "None",
+      "paramKeys": []
+    },
+    {
+      "name": "FullscreenOff",
+      "category": "Output",
+      "description": "",
+      "parameters": "None",
+      "paramKeys": []
+    },
+    {
+      "name": "FullscreenOn",
+      "category": "Output",
+      "description": "",
+      "parameters": "None",
+      "paramKeys": []
+    },
+    {
+      "name": "SetOutput2",
+      "category": "Output",
+      "description": "Change what is displayed on Output 2.\nOutput,Preview,MultiView,Replay,Mix,Input\nValue = Output, Preview, MultiView, Replay, Mix, Input",
+      "parameters": "Value,Input,Mix",
+      "paramKeys": [
+        "Value",
+        "Input",
+        "Mix"
+      ]
+    },
+    {
+      "name": "SetOutput3",
+      "category": "Output",
+      "description": "Change what is displayed on Output 3.\nOutput,Preview,MultiView,Replay,Mix,Input\nValue = Output, Preview, MultiView, Replay, Mix, Input",
+      "parameters": "Value,Input,Mix",
+      "paramKeys": [
+        "Value",
+        "Input",
+        "Mix"
+      ]
+    },
+    {
+      "name": "SetOutput4",
+      "category": "Output",
+      "description": "Change what is displayed on Output 4.\nOutput,Preview,MultiView,Replay,Mix,Input\nValue = Output, Preview, MultiView, Replay, Mix, Input",
+      "parameters": "Value,Input,Mix",
+      "paramKeys": [
+        "Value",
+        "Input",
+        "Mix"
+      ]
+    },
+    {
+      "name": "SetOutputExternal2",
+      "category": "Output",
+      "description": "Change what is displayed on the External2 output.\nOutput,Preview,MultiView,Replay,Mix,Input\nValue = Output, Preview, MultiView, Replay, Mix, Input",
+      "parameters": "Value,Input,Mix",
+      "paramKeys": [
+        "Value",
+        "Input",
+        "Mix"
+      ]
+    },
+    {
+      "name": "SetOutputFullscreen",
+      "category": "Output",
+      "description": "Change what is displayed on the Fullscreen output.\nOutput,Preview,MultiView,Replay,Mix,Input\nValue = Output, Preview, MultiView, Replay, Mix, Input",
+      "parameters": "Value,Input,Mix",
+      "paramKeys": [
+        "Value",
+        "Input",
+        "Mix"
+      ]
+    },
+    {
+      "name": "SetOutputFullscreen2",
+      "category": "Output",
+      "description": "Change what is displayed on the Fullscreen2 output.\nOutput,Preview,MultiView,Replay,Mix,Input\nValue = Output, Preview, MultiView, Replay, Mix, Input",
+      "parameters": "Value,Input,Mix",
+      "paramKeys": [
+        "Value",
+        "Input",
+        "Mix"
+      ]
+    },
+    {
+      "name": "Snapshot",
+      "category": "Output",
+      "description": "Create a snapshot image of the current Output. Optional Value specifies save Filename, otherwise a save file window will appear. Filename can specify date, for example mysnapshot {0:dd MMM yyyy}.jpg\nValue = Value",
+      "parameters": "Value",
+      "paramKeys": [
+        "Value"
+      ]
+    },
+    {
+      "name": "SnapshotInput",
+      "category": "Output",
+      "description": "Create a snapshot image of the selected Input. Optional Value specifies save Filename, otherwise a save file window will appear. Filename can specify date, for example mysnapshot {0:dd MMM yyyy}.jpg\nValue = Value",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "StartExternal",
+      "category": "Output",
+      "description": "",
+      "parameters": "None",
+      "paramKeys": []
+    },
+    {
+      "name": "StartMultiCorder",
+      "category": "Output",
+      "description": "",
+      "parameters": "None",
+      "paramKeys": []
+    },
+    {
+      "name": "StartRecording",
+      "category": "Output",
+      "description": "",
+      "parameters": "None",
+      "paramKeys": []
+    },
+    {
+      "name": "StartSRTOutput",
+      "category": "Output",
+      "description": "Optional output number starting from 0. Leave blank to control Output 1 only.\nValue = Output",
+      "parameters": "Value",
+      "paramKeys": [
+        "Value"
+      ]
+    },
+    {
+      "name": "StartStopExternal",
+      "category": "Output",
+      "description": "",
+      "parameters": "None",
+      "paramKeys": []
+    },
+    {
+      "name": "StartStopMultiCorder",
+      "category": "Output",
+      "description": "",
+      "parameters": "None",
+      "paramKeys": []
+    },
+    {
+      "name": "StartStopRecording",
+      "category": "Output",
+      "description": "",
+      "parameters": "None",
+      "paramKeys": []
+    },
+    {
+      "name": "StartStopSRTOutput",
+      "category": "Output",
+      "description": "Optional output number starting from 0. Leave blank to control Output 1 only.\nValue = Output",
+      "parameters": "Value",
+      "paramKeys": [
+        "Value"
+      ]
+    },
+    {
+      "name": "StartStopStreaming",
+      "category": "Output",
+      "description": "Optional stream number starting from 0. Leave blank to control all streams.\nValue = Stream",
+      "parameters": "Value",
+      "paramKeys": [
+        "Value"
+      ]
+    },
+    {
+      "name": "StartStreaming",
+      "category": "Output",
+      "description": "Optional stream number starting from 0. Leave blank to control all streams.\nValue = Stream",
+      "parameters": "Value",
+      "paramKeys": [
+        "Value"
+      ]
+    },
+    {
+      "name": "StopExternal",
+      "category": "Output",
+      "description": "",
+      "parameters": "None",
+      "paramKeys": []
+    },
+    {
+      "name": "StopMultiCorder",
+      "category": "Output",
+      "description": "",
+      "parameters": "None",
+      "paramKeys": []
+    },
+    {
+      "name": "StopRecording",
+      "category": "Output",
+      "description": "",
+      "parameters": "None",
+      "paramKeys": []
+    },
+    {
+      "name": "StopSRTOutput",
+      "category": "Output",
+      "description": "Optional output number starting from 0. Leave blank to control Output 1 only.\nValue = Output",
+      "parameters": "Value",
+      "paramKeys": [
+        "Value"
+      ]
+    },
+    {
+      "name": "StopStreaming",
+      "category": "Output",
+      "description": "Optional stream number starting from 0. Leave blank to control all streams.\nValue = Stream",
+      "parameters": "Value",
+      "paramKeys": [
+        "Value"
+      ]
+    },
+    {
+      "name": "StreamingSetKey",
+      "category": "Output",
+      "description": "Set Key on Custom RTMP Stream. Optional stream number starting from 0 at start followed by comma, e.g 0,mystreamkey\nValue = Stream",
+      "parameters": "Value",
+      "paramKeys": [
+        "Value"
+      ]
+    },
+    {
+      "name": "StreamingSetPassword",
+      "category": "Output",
+      "description": "Set Password on Custom RTMP Stream. Optional stream number starting from 0 at start followed by comma, e.g 0,password\nValue = Stream",
+      "parameters": "Value",
+      "paramKeys": [
+        "Value"
+      ]
+    },
+    {
+      "name": "StreamingSetURL",
+      "category": "Output",
+      "description": "Set URL on Custom RTMP Stream. Optional stream number starting from 0 at start followed by comma, e.g 0,rtmp://myurl/\nValue = Stream",
+      "parameters": "Value",
+      "paramKeys": [
+        "Value"
+      ]
+    },
+    {
+      "name": "StreamingSetUsername",
+      "category": "Output",
+      "description": "Set Username on Custom RTMP Stream. Optional stream number starting from 0 at start followed by comma, e.g 0,username\nValue = Stream",
+      "parameters": "Value",
+      "paramKeys": [
+        "Value"
+      ]
+    },
+    {
+      "name": "WriteDurationToRecordingLog",
+      "category": "Output",
+      "description": "Write current recording duration to log file with optional tag text Value.\nValue = Tag Text",
+      "parameters": "Value",
+      "paramKeys": [
+        "Value"
+      ]
+    },
+    {
+      "name": "AdjustCountdown",
+      "category": "Title",
+      "description": "Seconds to add or subtract from current Countdown time\nValue = Seconds",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "ChangeCountdown",
+      "category": "Title",
+      "description": "Change countdown time according to Value as hh:mm:ss (00:00:00)\nValue = Time 00:00:00",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "NextTitlePreset",
+      "category": "Title",
+      "description": "",
+      "parameters": "Input",
+      "paramKeys": [
+        "Input"
+      ]
+    },
+    {
+      "name": "PauseCountdown",
+      "category": "Title",
+      "description": "Pause or Resume Countdown or if complete, Start from beginning.",
+      "parameters": "Input",
+      "paramKeys": [
+        "Input"
+      ]
+    },
+    {
+      "name": "PauseRender",
+      "category": "Title",
+      "description": "Freeze Title Input while making multiple updates",
+      "parameters": "Input",
+      "paramKeys": [
+        "Input"
+      ]
+    },
+    {
+      "name": "PreviousTitlePreset",
+      "category": "Title",
+      "description": "",
+      "parameters": "Input",
+      "paramKeys": [
+        "Input"
+      ]
+    },
+    {
+      "name": "ResumeRender",
+      "category": "Title",
+      "description": "Resume Title Input rendering after making multiple updates",
+      "parameters": "Input",
+      "paramKeys": [
+        "Input"
+      ]
+    },
+    {
+      "name": "SelectTitlePreset",
+      "category": "Title",
+      "description": "Value = Preset Index",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "SetColor",
+      "category": "Title",
+      "description": "Change Color in Title using HTML #xxxxxxxx format.\nSelectedIndex or SelectedName can be used to select object.\nValue = Color",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "SetCountdown",
+      "category": "Title",
+      "description": "Set countdown duration according to Value as hh:mm:ss (00:00:00)\nValue = Duration 00:00:00",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "SetImage",
+      "category": "Title",
+      "description": "Change Image in Title according to Filename or empty to clear.\nSelectedIndex or SelectedName can be used to select image.\nValue = Filename",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "SetImageVisible",
+      "category": "Title",
+      "description": "Toggle Image Visibility in Title\nSelectedIndex or SelectedName can be used to select image.",
+      "parameters": "Input",
+      "paramKeys": [
+        "Input"
+      ]
+    },
+    {
+      "name": "SetImageVisibleOff",
+      "category": "Title",
+      "description": "Hide Image in Title\nSelectedIndex or SelectedName can be used to select image.",
+      "parameters": "Input",
+      "paramKeys": [
+        "Input"
+      ]
+    },
+    {
+      "name": "SetImageVisibleOn",
+      "category": "Title",
+      "description": "Show Image in Title\nSelectedIndex or SelectedName can be used to select image.",
+      "parameters": "Input",
+      "paramKeys": [
+        "Input"
+      ]
+    },
+    {
+      "name": "SetText",
+      "category": "Title",
+      "description": "Change Text in Title according to Value parameter.\nSelectedIndex or SelectedName can be used to select Text Field\nValue = Text",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "SetTextColour",
+      "category": "Title",
+      "description": "Change Colour of Text in Title in HTML format (#xxxxxx)\nValue = Colour",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "SetTextVisible",
+      "category": "Title",
+      "description": "Toggle Text Visibility in Title\nSelectedIndex or SelectedName can be used to select text field.",
+      "parameters": "Input",
+      "paramKeys": [
+        "Input"
+      ]
+    },
+    {
+      "name": "SetTextVisibleOff",
+      "category": "Title",
+      "description": "Hide Text in Title\nSelectedIndex or SelectedName can be used to select text field.",
+      "parameters": "Input",
+      "paramKeys": [
+        "Input"
+      ]
+    },
+    {
+      "name": "SetTextVisibleOn",
+      "category": "Title",
+      "description": "Show Text in Title\nSelectedIndex or SelectedName can be used to select text field.",
+      "parameters": "Input",
+      "paramKeys": [
+        "Input"
+      ]
+    },
+    {
+      "name": "SetTickerSpeed",
+      "category": "Title",
+      "description": "Change Ticker Speed.\nSelectedIndex or SelectedName can be used to select ticker field.\nValue = Speed 0-1000",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "StartCountdown",
+      "category": "Title",
+      "description": "",
+      "parameters": "Input",
+      "paramKeys": [
+        "Input"
+      ]
+    },
+    {
+      "name": "StopCountdown",
+      "category": "Title",
+      "description": "Stop and Reset Countdown",
+      "parameters": "Input",
+      "paramKeys": [
+        "Input"
+      ]
+    },
+    {
+      "name": "SuspendCountdown",
+      "category": "Title",
+      "description": "Pause Countdown Only",
+      "parameters": "Input",
+      "paramKeys": [
+        "Input"
+      ]
+    },
+    {
+      "name": "TitleBeginAnimation",
+      "category": "Title",
+      "description": "Value = Animation",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "ActiveInput",
+      "category": "Input",
+      "description": "Send to Output the selected Input",
+      "parameters": "Input,Mix",
+      "paramKeys": [
+        "Input",
+        "Mix"
+      ]
+    },
+    {
+      "name": "AddInput",
+      "category": "Input",
+      "description": "Create a new Input based on information provided in Value.\nVideo|c:\\path\\to\\video.avi\nImage|c:\\path\\to\\image.jpg\nPhotos|c:\\path\\to\\folder\nTitle|c:\\path\\to\\title.gtzip\nVideoList|c:\\path\\to\\playlist.m3u\nColour|HTMLColor\nAudioFile|c:\\path\\to\\audio.wav\nFlash|c:\\path\\to\\flash.swf\nPowerPoint|c:\\path\\to\\powerpoint.pptx\nValue = Type|Filename",
+      "parameters": "Value",
+      "paramKeys": [
+        "Value"
+      ]
+    },
+    {
+      "name": "AutoPauseOff",
+      "category": "Input",
+      "description": "",
+      "parameters": "Input",
+      "paramKeys": [
+        "Input"
+      ]
+    },
+    {
+      "name": "AutoPauseOn",
+      "category": "Input",
+      "description": "",
+      "parameters": "Input",
+      "paramKeys": [
+        "Input"
+      ]
+    },
+    {
+      "name": "AutoPlayFirst",
+      "category": "Input",
+      "description": "Toggle automatically playing first item in a List with Transition",
+      "parameters": "Input",
+      "paramKeys": [
+        "Input"
+      ]
+    },
+    {
+      "name": "AutoPlayFirstOff",
+      "category": "Input",
+      "description": "Turn Off automatically playing first item in a List with Transition",
+      "parameters": "Input",
+      "paramKeys": [
+        "Input"
+      ]
+    },
+    {
+      "name": "AutoPlayFirstOn",
+      "category": "Input",
+      "description": "Turn On automatically playing first item in a List with Transition",
+      "parameters": "Input",
+      "paramKeys": [
+        "Input"
+      ]
+    },
+    {
+      "name": "AutoPlayNext",
+      "category": "Input",
+      "description": "Toggle automatically playing next item in a List",
+      "parameters": "Input",
+      "paramKeys": [
+        "Input"
+      ]
+    },
+    {
+      "name": "AutoPlayNextOff",
+      "category": "Input",
+      "description": "Turn Off automatically playing next item in a List",
+      "parameters": "Input",
+      "paramKeys": [
+        "Input"
+      ]
+    },
+    {
+      "name": "AutoPlayNextOn",
+      "category": "Input",
+      "description": "Turn On automatically playing next item in a List",
+      "parameters": "Input",
+      "paramKeys": [
+        "Input"
+      ]
+    },
+    {
+      "name": "AutoPlayOff",
+      "category": "Input",
+      "description": "",
+      "parameters": "Input",
+      "paramKeys": [
+        "Input"
+      ]
+    },
+    {
+      "name": "AutoPlayOn",
+      "category": "Input",
+      "description": "",
+      "parameters": "Input",
+      "paramKeys": [
+        "Input"
+      ]
+    },
+    {
+      "name": "AutoRestartOff",
+      "category": "Input",
+      "description": "",
+      "parameters": "Input",
+      "paramKeys": [
+        "Input"
+      ]
+    },
+    {
+      "name": "AutoRestartOn",
+      "category": "Input",
+      "description": "",
+      "parameters": "Input",
+      "paramKeys": [
+        "Input"
+      ]
+    },
+    {
+      "name": "ColourCorrectionAuto",
+      "category": "Input",
+      "description": "Basic Auto Colour Correction.",
+      "parameters": "Input",
+      "paramKeys": [
+        "Input"
+      ]
+    },
+    {
+      "name": "ColourCorrectionReset",
+      "category": "Input",
+      "description": "Reset Colour Correction to Default Values.",
+      "parameters": "Input",
+      "paramKeys": [
+        "Input"
+      ]
+    },
+    {
+      "name": "CreateVirtualInput",
+      "category": "Input",
+      "description": "Create a new Virtual Input from the specified Input.",
+      "parameters": "Input",
+      "paramKeys": [
+        "Input"
+      ]
+    },
+    {
+      "name": "DeinterlaceOff",
+      "category": "Input",
+      "description": "",
+      "parameters": "Input",
+      "paramKeys": [
+        "Input"
+      ]
+    },
+    {
+      "name": "DeinterlaceOn",
+      "category": "Input",
+      "description": "",
+      "parameters": "Input",
+      "paramKeys": [
+        "Input"
+      ]
+    },
+    {
+      "name": "Effect1",
+      "category": "Input",
+      "description": "Toggle Effect 1 On/Off",
+      "parameters": "Input",
+      "paramKeys": [
+        "Input"
+      ]
+    },
+    {
+      "name": "Effect1Off",
+      "category": "Input",
+      "description": "Turn Effect 1 Off",
+      "parameters": "Input",
+      "paramKeys": [
+        "Input"
+      ]
+    },
+    {
+      "name": "Effect1On",
+      "category": "Input",
+      "description": "Turn Effect 1 On",
+      "parameters": "Input",
+      "paramKeys": [
+        "Input"
+      ]
+    },
+    {
+      "name": "Effect2",
+      "category": "Input",
+      "description": "Toggle Effect 2 On/Off",
+      "parameters": "Input",
+      "paramKeys": [
+        "Input"
+      ]
+    },
+    {
+      "name": "Effect2Off",
+      "category": "Input",
+      "description": "Turn Effect 2 Off",
+      "parameters": "Input",
+      "paramKeys": [
+        "Input"
+      ]
+    },
+    {
+      "name": "Effect2On",
+      "category": "Input",
+      "description": "Turn Effect 2 On",
+      "parameters": "Input",
+      "paramKeys": [
+        "Input"
+      ]
+    },
+    {
+      "name": "Effect3",
+      "category": "Input",
+      "description": "Toggle Effect 3 On/Off",
+      "parameters": "Input",
+      "paramKeys": [
+        "Input"
+      ]
+    },
+    {
+      "name": "Effect3Off",
+      "category": "Input",
+      "description": "Turn Effect 3 Off",
+      "parameters": "Input",
+      "paramKeys": [
+        "Input"
+      ]
+    },
+    {
+      "name": "Effect3On",
+      "category": "Input",
+      "description": "Turn Effect 3 On",
+      "parameters": "Input",
+      "paramKeys": [
+        "Input"
+      ]
+    },
+    {
+      "name": "Effect4",
+      "category": "Input",
+      "description": "Toggle Effect 4 On/Off",
+      "parameters": "Input",
+      "paramKeys": [
+        "Input"
+      ]
+    },
+    {
+      "name": "Effect4Off",
+      "category": "Input",
+      "description": "Turn Effect 4 Off",
+      "parameters": "Input",
+      "paramKeys": [
+        "Input"
+      ]
+    },
+    {
+      "name": "Effect4On",
+      "category": "Input",
+      "description": "Turn Effect 4 On",
+      "parameters": "Input",
+      "paramKeys": [
+        "Input"
+      ]
+    },
+    {
+      "name": "GO",
+      "category": "Input",
+      "description": "Trigger GO action on Input",
+      "parameters": "Input",
+      "paramKeys": [
+        "Input"
+      ]
+    },
+    {
+      "name": "InputPreviewHide",
+      "category": "Input",
+      "description": "Hides large preview of input",
+      "parameters": "Input",
+      "paramKeys": [
+        "Input"
+      ]
+    },
+    {
+      "name": "InputPreviewShow",
+      "category": "Input",
+      "description": "Shows large preview of input",
+      "parameters": "Input",
+      "paramKeys": [
+        "Input"
+      ]
+    },
+    {
+      "name": "InputPreviewShowHide",
+      "category": "Input",
+      "description": "Toggles large preview of input",
+      "parameters": "Input",
+      "paramKeys": [
+        "Input"
+      ]
+    },
+    {
+      "name": "LayerOff",
+      "category": "Input",
+      "description": "Turn Off Layer For Input At Index (starting from 1)\nValue = Index",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "LayerOn",
+      "category": "Input",
+      "description": "Turn On Layer For Input At Index (starting from 1)\nValue = Index",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "LayerOnOff",
+      "category": "Input",
+      "description": "Toggle On/Off Layer For Input At Index (starting from 1)\nValue = Index",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "ListAdd",
+      "category": "Input",
+      "description": "Add Filename to List\nValue = Filename",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "ListExport",
+      "category": "Input",
+      "description": "Export List as M3U to Filename\nValue = Filename",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "ListPlayOut",
+      "category": "Input",
+      "description": "",
+      "parameters": "Input",
+      "paramKeys": [
+        "Input"
+      ]
+    },
+    {
+      "name": "ListRemove",
+      "category": "Input",
+      "description": "Remove from List by Index starting from 1\nValue = Index",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "ListRemoveAll",
+      "category": "Input",
+      "description": "Remove all items from List",
+      "parameters": "Input",
+      "paramKeys": [
+        "Input"
+      ]
+    },
+    {
+      "name": "ListShowHide",
+      "category": "Input",
+      "description": "",
+      "parameters": "Input",
+      "paramKeys": [
+        "Input"
+      ]
+    },
+    {
+      "name": "ListShuffle",
+      "category": "Input",
+      "description": "Shuffle (randomize) List",
+      "parameters": "Input",
+      "paramKeys": [
+        "Input"
+      ]
+    },
+    {
+      "name": "LivePlayPause",
+      "category": "Input",
+      "description": "",
+      "parameters": "Input",
+      "paramKeys": [
+        "Input"
+      ]
+    },
+    {
+      "name": "Loop",
+      "category": "Input",
+      "description": "Toggle Loop on Input",
+      "parameters": "Input",
+      "paramKeys": [
+        "Input"
+      ]
+    },
+    {
+      "name": "LoopOff",
+      "category": "Input",
+      "description": "",
+      "parameters": "Input",
+      "paramKeys": [
+        "Input"
+      ]
+    },
+    {
+      "name": "LoopOn",
+      "category": "Input",
+      "description": "",
+      "parameters": "Input",
+      "paramKeys": [
+        "Input"
+      ]
+    },
+    {
+      "name": "MarkIn",
+      "category": "Input",
+      "description": "",
+      "parameters": "Input",
+      "paramKeys": [
+        "Input"
+      ]
+    },
+    {
+      "name": "MarkOut",
+      "category": "Input",
+      "description": "",
+      "parameters": "Input",
+      "paramKeys": [
+        "Input"
+      ]
+    },
+    {
+      "name": "MarkReset",
+      "category": "Input",
+      "description": "",
+      "parameters": "Input",
+      "paramKeys": [
+        "Input"
+      ]
+    },
+    {
+      "name": "MarkResetIn",
+      "category": "Input",
+      "description": "",
+      "parameters": "Input",
+      "paramKeys": [
+        "Input"
+      ]
+    },
+    {
+      "name": "MarkResetOut",
+      "category": "Input",
+      "description": "",
+      "parameters": "Input",
+      "paramKeys": [
+        "Input"
+      ]
+    },
+    {
+      "name": "MirrorOff",
+      "category": "Input",
+      "description": "",
+      "parameters": "Input",
+      "paramKeys": [
+        "Input"
+      ]
+    },
+    {
+      "name": "MirrorOn",
+      "category": "Input",
+      "description": "",
+      "parameters": "Input",
+      "paramKeys": [
+        "Input"
+      ]
+    },
+    {
+      "name": "MoveInput",
+      "category": "Input",
+      "description": "Value = Number",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "MoveLayer",
+      "category": "Input",
+      "description": "Move Layer in Input according to Value parameter.\nExample: 1,2 moves Layer1 to Layer2\nValue = FromIndex,ToIndex",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "NextItem",
+      "category": "Input",
+      "description": "Move to next item in List",
+      "parameters": "Input",
+      "paramKeys": [
+        "Input"
+      ]
+    },
+    {
+      "name": "NextPicture",
+      "category": "Input",
+      "description": "Move to Next Picture for Photo and PowerPoint Inputs",
+      "parameters": "Input",
+      "paramKeys": [
+        "Input"
+      ]
+    },
+    {
+      "name": "Pause",
+      "category": "Input",
+      "description": "",
+      "parameters": "Input",
+      "paramKeys": [
+        "Input"
+      ]
+    },
+    {
+      "name": "Play",
+      "category": "Input",
+      "description": "",
+      "parameters": "Input",
+      "paramKeys": [
+        "Input"
+      ]
+    },
+    {
+      "name": "PlayPause",
+      "category": "Input",
+      "description": "",
+      "parameters": "Input",
+      "paramKeys": [
+        "Input"
+      ]
+    },
+    {
+      "name": "PreviewInput",
+      "category": "Input",
+      "description": "Send to Preview the selected Input",
+      "parameters": "Input,Mix",
+      "paramKeys": [
+        "Input",
+        "Mix"
+      ]
+    },
+    {
+      "name": "PreviewInputNext",
+      "category": "Input",
+      "description": "Send to Preview the next Input",
+      "parameters": "None",
+      "paramKeys": []
+    },
+    {
+      "name": "PreviewInputPrevious",
+      "category": "Input",
+      "description": "Send to Preview the previous Input",
+      "parameters": "None",
+      "paramKeys": []
+    },
+    {
+      "name": "PreviousItem",
+      "category": "Input",
+      "description": "Move to previous item in List",
+      "parameters": "Input",
+      "paramKeys": [
+        "Input"
+      ]
+    },
+    {
+      "name": "PreviousPicture",
+      "category": "Input",
+      "description": "Move to Previous Picture for Photo and PowerPoint Inputs",
+      "parameters": "Input",
+      "paramKeys": [
+        "Input"
+      ]
+    },
+    {
+      "name": "RemoveInput",
+      "category": "Input",
+      "description": "",
+      "parameters": "Input",
+      "paramKeys": [
+        "Input"
+      ]
+    },
+    {
+      "name": "ResetInput",
+      "category": "Input",
+      "description": "",
+      "parameters": "Input",
+      "paramKeys": [
+        "Input"
+      ]
+    },
+    {
+      "name": "Restart",
+      "category": "Input",
+      "description": "Restart selected Input",
+      "parameters": "Input",
+      "paramKeys": [
+        "Input"
+      ]
+    },
+    {
+      "name": "SaveVideoDelay",
+      "category": "Input",
+      "description": "Save video clip from Video Delay according to Duration in milliseconds",
+      "parameters": "Input,Duration",
+      "paramKeys": [
+        "Input",
+        "Duration"
+      ]
+    },
+    {
+      "name": "SelectCategory",
+      "category": "Input",
+      "description": "Change to Category according to Value (All,Red,Green,Orange,Purple,Aqua,Blue,Custom1-16,Search)\nValue = Category",
+      "parameters": "Value",
+      "paramKeys": [
+        "Value"
+      ]
+    },
+    {
+      "name": "SelectIndex",
+      "category": "Input",
+      "description": "Photos,List: Selects item in List according to Value starting from number 1\nVirtual Set: Zooms to selected preset using the current speed settings\nTitle: Starts Page animation according to Value starting from number 1\nValue = Index",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "SetAlpha",
+      "category": "Input",
+      "description": "Set Input transparency according to Value. 0 is transparent, 255 is opaque\nValue = Alpha 0-255",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "SetCCGainB",
+      "category": "Input",
+      "description": "Change Gain B level of Input.\n1=Original\nValue = Value 0-2",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "SetCCGainG",
+      "category": "Input",
+      "description": "Change Gain G level of Input.\n1=Original\nValue = Value 0-2",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "SetCCGainR",
+      "category": "Input",
+      "description": "Change Gain R level of Input.\n1=Original\nValue = Value 0-2",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "SetCCGainRGB",
+      "category": "Input",
+      "description": "Change Gain RGB level of Input.\n1=Original\nValue = Value 0-2",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "SetCCGainY",
+      "category": "Input",
+      "description": "Change Gain Y level of Input.\n1=Original\nValue = Value 0-2",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "SetCCGammaB",
+      "category": "Input",
+      "description": "Change Gamma B level of Input.\n0=Original\nValue = Value -1-1",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "SetCCGammaG",
+      "category": "Input",
+      "description": "Change Gamma G level of Input.\n0=Original\nValue = Value -1-1",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "SetCCGammaR",
+      "category": "Input",
+      "description": "Change Gamma R level of Input.\n0=Original\nValue = Value -1-1",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "SetCCGammaRGB",
+      "category": "Input",
+      "description": "Change Gamma RGB level of Input.\n0=Original\nValue = Value -1-1",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "SetCCGammaY",
+      "category": "Input",
+      "description": "Change Gamma Y level of Input.\n0=Original\nValue = Value -1-1",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "SetCCHue",
+      "category": "Input",
+      "description": "Change Hue level of Input.\n0=Original\nValue = Value -1-1",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "SetCCLiftB",
+      "category": "Input",
+      "description": "Change Lift B level of Input.\n0=Original\nValue = Value -1-1",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "SetCCLiftG",
+      "category": "Input",
+      "description": "Change Lift G level of Input.\n0=Original\nValue = Value -1-1",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "SetCCLiftR",
+      "category": "Input",
+      "description": "Change Lift R level of Input.\n0=Original\nValue = Value -1-1",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "SetCCLiftRGB",
+      "category": "Input",
+      "description": "Change Lift RGB level of Input.\n0=Original\nValue = Value -1-1",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "SetCCLiftY",
+      "category": "Input",
+      "description": "Change Lift Y level of Input.\n0=Original\nValue = Value -1-1",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "SetCCSaturation",
+      "category": "Input",
+      "description": "Change Saturation level of Input.\n0=Original, -1=Greyscale\nValue = Value -1-1",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "SetCrop",
+      "category": "Input",
+      "description": "Change current Crop value of Input.\nX1,Y1,X2,Y2 (values between 0 and 1)\nValue = X1,Y1,X2,Y2",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "SetCropX1",
+      "category": "Input",
+      "description": "Change current Crop X1 value of Input.\n0=No Crop, 1=Full Crop\nValue = X1 0-1",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "SetCropX2",
+      "category": "Input",
+      "description": "Change current Crop X2 value of Input.\n1=No Crop, 0=Full Crop\nValue = X2 0-1",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "SetCropY1",
+      "category": "Input",
+      "description": "Change current Crop Y1 value of Input.\n0=No Crop, 1=Full Crop\nValue = Y1 0-1",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "SetCropY2",
+      "category": "Input",
+      "description": "Change current Crop Y2 value of Input.\n1=No Crop, 0=Full Crop\nValue = Y2 0-1",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "SetDynamicInput1",
+      "category": "Input",
+      "description": "Set Dynamic Input from Input Name or Number\nValue = Input",
+      "parameters": "Value",
+      "paramKeys": [
+        "Value"
+      ]
+    },
+    {
+      "name": "SetDynamicInput2",
+      "category": "Input",
+      "description": "Set Dynamic Input from Input Name or Number\nValue = Input",
+      "parameters": "Value",
+      "paramKeys": [
+        "Value"
+      ]
+    },
+    {
+      "name": "SetDynamicInput3",
+      "category": "Input",
+      "description": "Set Dynamic Input from Input Name or Number\nValue = Input",
+      "parameters": "Value",
+      "paramKeys": [
+        "Value"
+      ]
+    },
+    {
+      "name": "SetDynamicInput4",
+      "category": "Input",
+      "description": "Set Dynamic Input from Input Name or Number\nValue = Input",
+      "parameters": "Value",
+      "paramKeys": [
+        "Value"
+      ]
+    },
+    {
+      "name": "SetEffect1Strength",
+      "category": "Input",
+      "description": "Set Input 1 Effect Strength\nValue = Value 0-1",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "SetEffect2Strength",
+      "category": "Input",
+      "description": "Set Input 2 Effect Strength\nValue = Value 0-1",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "SetEffect3Strength",
+      "category": "Input",
+      "description": "Set Input 3 Effect Strength\nValue = Value 0-1",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "SetEffect4Strength",
+      "category": "Input",
+      "description": "Set Input 4 Effect Strength\nValue = Value 0-1",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "SetFrameDelay",
+      "category": "Input",
+      "description": "Set the delay in frames\nValue = Frames",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "SetInputName",
+      "category": "Input",
+      "description": "Set the Display Name of the Input\nValue = Name",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "SetLayer",
+      "category": "Input",
+      "description": "Change Layer in Input according to Value parameter.\nExample: 1,2 changes Layer1 to Input2\nValue = Index,Input",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "SetLayer10Crop",
+      "category": "Input",
+      "description": "Change current Crop value of Input Layer.\nX1,Y1,X2,Y2 (values between 0 and 1)\nValue = X1,Y1,X2,Y2",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "SetLayer10CropX1",
+      "category": "Input",
+      "description": "Change current Crop X1 value of Input Layer.\n0=No Crop, 1=Full Crop\nValue = X1 0-1",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "SetLayer10CropX2",
+      "category": "Input",
+      "description": "Change current Crop X2 value of Input Layer.\n1=No Crop, 0=Full Crop\nValue = X2 0-1",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "SetLayer10CropY1",
+      "category": "Input",
+      "description": "Change current Crop Y1 value of Input Layer.\n0=No Crop, 1=Full Crop\nValue = Y1 0-1",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "SetLayer10CropY2",
+      "category": "Input",
+      "description": "Change current Crop Y2 value of Input Layer.\n1=No Crop, 0=Full Crop\nValue = Y2 0-1",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "SetLayer10Height",
+      "category": "Input",
+      "description": "Change current Height value of Input Layer.\nIn pixels based on preset resolution\nValue = Pixels -4096-4096",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "SetLayer10PanX",
+      "category": "Input",
+      "description": "Change current PanX value of Input Layer.\n0=centered, -2=100% to left, 2=100% to right\nValue = Pan -2-2",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "SetLayer10PanY",
+      "category": "Input",
+      "description": "Change current PanY value of Input Layer.\n0=centered, -2=100% to bottom, 2=100% to top\nValue = Pan -2-2",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "SetLayer10Rectangle",
+      "category": "Input",
+      "description": "Change current Rectangle values of Input Layer in pixels.\nX,Y,Width,Height\nValue = X,Y,Width,Height",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "SetLayer10Width",
+      "category": "Input",
+      "description": "Change current Width value of Input Layer.\nIn pixels based on preset resolution\nValue = Pixels -4096-4096",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "SetLayer10X",
+      "category": "Input",
+      "description": "Change current X value of Input Layer.\nIn pixels based on preset resolution\nValue = Pixels -4096-4096",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "SetLayer10Y",
+      "category": "Input",
+      "description": "Change current Y value of Input Layer.\nIn pixels based on preset resolution\nValue = Pixels -4096-4096",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "SetLayer10Zoom",
+      "category": "Input",
+      "description": "Change current Zoom level of Input Layer.\n1=100%, 0.5=50%, 2=200%\nValue = Zoom 0-5",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "SetLayer1Crop",
+      "category": "Input",
+      "description": "Change current Crop value of Input Layer.\nX1,Y1,X2,Y2 (values between 0 and 1)\nValue = X1,Y1,X2,Y2",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "SetLayer1CropX1",
+      "category": "Input",
+      "description": "Change current Crop X1 value of Input Layer.\n0=No Crop, 1=Full Crop\nValue = X1 0-1",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "SetLayer1CropX2",
+      "category": "Input",
+      "description": "Change current Crop X2 value of Input Layer.\n1=No Crop, 0=Full Crop\nValue = X2 0-1",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "SetLayer1CropY1",
+      "category": "Input",
+      "description": "Change current Crop Y1 value of Input Layer.\n0=No Crop, 1=Full Crop\nValue = Y1 0-1",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "SetLayer1CropY2",
+      "category": "Input",
+      "description": "Change current Crop Y2 value of Input Layer.\n1=No Crop, 0=Full Crop\nValue = Y2 0-1",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "SetLayer1Height",
+      "category": "Input",
+      "description": "Change current Height value of Input Layer.\nIn pixels based on preset resolution\nValue = Pixels -4096-4096",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "SetLayer1PanX",
+      "category": "Input",
+      "description": "Change current PanX value of Input Layer.\n0=centered, -2=100% to left, 2=100% to right\nValue = Pan -2-2",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "SetLayer1PanY",
+      "category": "Input",
+      "description": "Change current PanY value of Input Layer.\n0=centered, -2=100% to bottom, 2=100% to top\nValue = Pan -2-2",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "SetLayer1Rectangle",
+      "category": "Input",
+      "description": "Change current Rectangle values of Input Layer in pixels.\nX,Y,Width,Height\nValue = X,Y,Width,Height",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "SetLayer1Width",
+      "category": "Input",
+      "description": "Change current Width value of Input Layer.\nIn pixels based on preset resolution\nValue = Pixels -4096-4096",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "SetLayer1X",
+      "category": "Input",
+      "description": "Change current X value of Input Layer.\nIn pixels based on preset resolution\nValue = Pixels -4096-4096",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "SetLayer1Y",
+      "category": "Input",
+      "description": "Change current Y value of Input Layer.\nIn pixels based on preset resolution\nValue = Pixels -4096-4096",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "SetLayer1Zoom",
+      "category": "Input",
+      "description": "Change current Zoom level of Input Layer.\n1=100%, 0.5=50%, 2=200%\nValue = Zoom 0-5",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "SetLayer2Crop",
+      "category": "Input",
+      "description": "Change current Crop value of Input Layer.\nX1,Y1,X2,Y2 (values between 0 and 1)\nValue = X1,Y1,X2,Y2",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "SetLayer2CropX1",
+      "category": "Input",
+      "description": "Change current Crop X1 value of Input Layer.\n0=No Crop, 1=Full Crop\nValue = X1 0-1",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "SetLayer2CropX2",
+      "category": "Input",
+      "description": "Change current Crop X2 value of Input Layer.\n1=No Crop, 0=Full Crop\nValue = X2 0-1",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "SetLayer2CropY1",
+      "category": "Input",
+      "description": "Change current Crop Y1 value of Input Layer.\n0=No Crop, 1=Full Crop\nValue = Y1 0-1",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "SetLayer2CropY2",
+      "category": "Input",
+      "description": "Change current Crop Y2 value of Input Layer.\n1=No Crop, 0=Full Crop\nValue = Y2 0-1",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "SetLayer2Height",
+      "category": "Input",
+      "description": "Change current Height value of Input Layer.\nIn pixels based on preset resolution\nValue = Pixels -4096-4096",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "SetLayer2PanX",
+      "category": "Input",
+      "description": "Change current PanX value of Input Layer.\n0=centered, -2=100% to left, 2=100% to right\nValue = Pan -2-2",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "SetLayer2PanY",
+      "category": "Input",
+      "description": "Change current PanY value of Input Layer.\n0=centered, -2=100% to bottom, 2=100% to top\nValue = Pan -2-2",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "SetLayer2Rectangle",
+      "category": "Input",
+      "description": "Change current Rectangle values of Input Layer in pixels.\nX,Y,Width,Height\nValue = X,Y,Width,Height",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "SetLayer2Width",
+      "category": "Input",
+      "description": "Change current Width value of Input Layer.\nIn pixels based on preset resolution\nValue = Pixels -4096-4096",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "SetLayer2X",
+      "category": "Input",
+      "description": "Change current X value of Input Layer.\nIn pixels based on preset resolution\nValue = Pixels -4096-4096",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "SetLayer2Y",
+      "category": "Input",
+      "description": "Change current Y value of Input Layer.\nIn pixels based on preset resolution\nValue = Pixels -4096-4096",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "SetLayer2Zoom",
+      "category": "Input",
+      "description": "Change current Zoom level of Input Layer.\n1=100%, 0.5=50%, 2=200%\nValue = Zoom 0-5",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "SetLayer3Crop",
+      "category": "Input",
+      "description": "Change current Crop value of Input Layer.\nX1,Y1,X2,Y2 (values between 0 and 1)\nValue = X1,Y1,X2,Y2",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "SetLayer3CropX1",
+      "category": "Input",
+      "description": "Change current Crop X1 value of Input Layer.\n0=No Crop, 1=Full Crop\nValue = X1 0-1",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "SetLayer3CropX2",
+      "category": "Input",
+      "description": "Change current Crop X2 value of Input Layer.\n1=No Crop, 0=Full Crop\nValue = X2 0-1",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "SetLayer3CropY1",
+      "category": "Input",
+      "description": "Change current Crop Y1 value of Input Layer.\n0=No Crop, 1=Full Crop\nValue = Y1 0-1",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "SetLayer3CropY2",
+      "category": "Input",
+      "description": "Change current Crop Y2 value of Input Layer.\n1=No Crop, 0=Full Crop\nValue = Y2 0-1",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "SetLayer3Height",
+      "category": "Input",
+      "description": "Change current Height value of Input Layer.\nIn pixels based on preset resolution\nValue = Pixels -4096-4096",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "SetLayer3PanX",
+      "category": "Input",
+      "description": "Change current PanX value of Input Layer.\n0=centered, -2=100% to left, 2=100% to right\nValue = Pan -2-2",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "SetLayer3PanY",
+      "category": "Input",
+      "description": "Change current PanY value of Input Layer.\n0=centered, -2=100% to bottom, 2=100% to top\nValue = Pan -2-2",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "SetLayer3Rectangle",
+      "category": "Input",
+      "description": "Change current Rectangle values of Input Layer in pixels.\nX,Y,Width,Height\nValue = X,Y,Width,Height",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "SetLayer3Width",
+      "category": "Input",
+      "description": "Change current Width value of Input Layer.\nIn pixels based on preset resolution\nValue = Pixels -4096-4096",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "SetLayer3X",
+      "category": "Input",
+      "description": "Change current X value of Input Layer.\nIn pixels based on preset resolution\nValue = Pixels -4096-4096",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "SetLayer3Y",
+      "category": "Input",
+      "description": "Change current Y value of Input Layer.\nIn pixels based on preset resolution\nValue = Pixels -4096-4096",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "SetLayer3Zoom",
+      "category": "Input",
+      "description": "Change current Zoom level of Input Layer.\n1=100%, 0.5=50%, 2=200%\nValue = Zoom 0-5",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "SetLayer4Crop",
+      "category": "Input",
+      "description": "Change current Crop value of Input Layer.\nX1,Y1,X2,Y2 (values between 0 and 1)\nValue = X1,Y1,X2,Y2",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "SetLayer4CropX1",
+      "category": "Input",
+      "description": "Change current Crop X1 value of Input Layer.\n0=No Crop, 1=Full Crop\nValue = X1 0-1",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "SetLayer4CropX2",
+      "category": "Input",
+      "description": "Change current Crop X2 value of Input Layer.\n1=No Crop, 0=Full Crop\nValue = X2 0-1",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "SetLayer4CropY1",
+      "category": "Input",
+      "description": "Change current Crop Y1 value of Input Layer.\n0=No Crop, 1=Full Crop\nValue = Y1 0-1",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "SetLayer4CropY2",
+      "category": "Input",
+      "description": "Change current Crop Y2 value of Input Layer.\n1=No Crop, 0=Full Crop\nValue = Y2 0-1",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "SetLayer4Height",
+      "category": "Input",
+      "description": "Change current Height value of Input Layer.\nIn pixels based on preset resolution\nValue = Pixels -4096-4096",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "SetLayer4PanX",
+      "category": "Input",
+      "description": "Change current PanX value of Input Layer.\n0=centered, -2=100% to left, 2=100% to right\nValue = Pan -2-2",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "SetLayer4PanY",
+      "category": "Input",
+      "description": "Change current PanY value of Input Layer.\n0=centered, -2=100% to bottom, 2=100% to top\nValue = Pan -2-2",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "SetLayer4Rectangle",
+      "category": "Input",
+      "description": "Change current Rectangle values of Input Layer in pixels.\nX,Y,Width,Height\nValue = X,Y,Width,Height",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "SetLayer4Width",
+      "category": "Input",
+      "description": "Change current Width value of Input Layer.\nIn pixels based on preset resolution\nValue = Pixels -4096-4096",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "SetLayer4X",
+      "category": "Input",
+      "description": "Change current X value of Input Layer.\nIn pixels based on preset resolution\nValue = Pixels -4096-4096",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "SetLayer4Y",
+      "category": "Input",
+      "description": "Change current Y value of Input Layer.\nIn pixels based on preset resolution\nValue = Pixels -4096-4096",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "SetLayer4Zoom",
+      "category": "Input",
+      "description": "Change current Zoom level of Input Layer.\n1=100%, 0.5=50%, 2=200%\nValue = Zoom 0-5",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "SetLayer5Crop",
+      "category": "Input",
+      "description": "Change current Crop value of Input Layer.\nX1,Y1,X2,Y2 (values between 0 and 1)\nValue = X1,Y1,X2,Y2",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "SetLayer5CropX1",
+      "category": "Input",
+      "description": "Change current Crop X1 value of Input Layer.\n0=No Crop, 1=Full Crop\nValue = X1 0-1",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "SetLayer5CropX2",
+      "category": "Input",
+      "description": "Change current Crop X2 value of Input Layer.\n1=No Crop, 0=Full Crop\nValue = X2 0-1",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "SetLayer5CropY1",
+      "category": "Input",
+      "description": "Change current Crop Y1 value of Input Layer.\n0=No Crop, 1=Full Crop\nValue = Y1 0-1",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "SetLayer5CropY2",
+      "category": "Input",
+      "description": "Change current Crop Y2 value of Input Layer.\n1=No Crop, 0=Full Crop\nValue = Y2 0-1",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "SetLayer5Height",
+      "category": "Input",
+      "description": "Change current Height value of Input Layer.\nIn pixels based on preset resolution\nValue = Pixels -4096-4096",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "SetLayer5PanX",
+      "category": "Input",
+      "description": "Change current PanX value of Input Layer.\n0=centered, -2=100% to left, 2=100% to right\nValue = Pan -2-2",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "SetLayer5PanY",
+      "category": "Input",
+      "description": "Change current PanY value of Input Layer.\n0=centered, -2=100% to bottom, 2=100% to top\nValue = Pan -2-2",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "SetLayer5Rectangle",
+      "category": "Input",
+      "description": "Change current Rectangle values of Input Layer in pixels.\nX,Y,Width,Height\nValue = X,Y,Width,Height",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "SetLayer5Width",
+      "category": "Input",
+      "description": "Change current Width value of Input Layer.\nIn pixels based on preset resolution\nValue = Pixels -4096-4096",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "SetLayer5X",
+      "category": "Input",
+      "description": "Change current X value of Input Layer.\nIn pixels based on preset resolution\nValue = Pixels -4096-4096",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "SetLayer5Y",
+      "category": "Input",
+      "description": "Change current Y value of Input Layer.\nIn pixels based on preset resolution\nValue = Pixels -4096-4096",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "SetLayer5Zoom",
+      "category": "Input",
+      "description": "Change current Zoom level of Input Layer.\n1=100%, 0.5=50%, 2=200%\nValue = Zoom 0-5",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "SetLayer6Crop",
+      "category": "Input",
+      "description": "Change current Crop value of Input Layer.\nX1,Y1,X2,Y2 (values between 0 and 1)\nValue = X1,Y1,X2,Y2",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "SetLayer6CropX1",
+      "category": "Input",
+      "description": "Change current Crop X1 value of Input Layer.\n0=No Crop, 1=Full Crop\nValue = X1 0-1",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "SetLayer6CropX2",
+      "category": "Input",
+      "description": "Change current Crop X2 value of Input Layer.\n1=No Crop, 0=Full Crop\nValue = X2 0-1",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "SetLayer6CropY1",
+      "category": "Input",
+      "description": "Change current Crop Y1 value of Input Layer.\n0=No Crop, 1=Full Crop\nValue = Y1 0-1",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "SetLayer6CropY2",
+      "category": "Input",
+      "description": "Change current Crop Y2 value of Input Layer.\n1=No Crop, 0=Full Crop\nValue = Y2 0-1",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "SetLayer6Height",
+      "category": "Input",
+      "description": "Change current Height value of Input Layer.\nIn pixels based on preset resolution\nValue = Pixels -4096-4096",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "SetLayer6PanX",
+      "category": "Input",
+      "description": "Change current PanX value of Input Layer.\n0=centered, -2=100% to left, 2=100% to right\nValue = Pan -2-2",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "SetLayer6PanY",
+      "category": "Input",
+      "description": "Change current PanY value of Input Layer.\n0=centered, -2=100% to bottom, 2=100% to top\nValue = Pan -2-2",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "SetLayer6Rectangle",
+      "category": "Input",
+      "description": "Change current Rectangle values of Input Layer in pixels.\nX,Y,Width,Height\nValue = X,Y,Width,Height",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "SetLayer6Width",
+      "category": "Input",
+      "description": "Change current Width value of Input Layer.\nIn pixels based on preset resolution\nValue = Pixels -4096-4096",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "SetLayer6X",
+      "category": "Input",
+      "description": "Change current X value of Input Layer.\nIn pixels based on preset resolution\nValue = Pixels -4096-4096",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "SetLayer6Y",
+      "category": "Input",
+      "description": "Change current Y value of Input Layer.\nIn pixels based on preset resolution\nValue = Pixels -4096-4096",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "SetLayer6Zoom",
+      "category": "Input",
+      "description": "Change current Zoom level of Input Layer.\n1=100%, 0.5=50%, 2=200%\nValue = Zoom 0-5",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "SetLayer7Crop",
+      "category": "Input",
+      "description": "Change current Crop value of Input Layer.\nX1,Y1,X2,Y2 (values between 0 and 1)\nValue = X1,Y1,X2,Y2",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "SetLayer7CropX1",
+      "category": "Input",
+      "description": "Change current Crop X1 value of Input Layer.\n0=No Crop, 1=Full Crop\nValue = X1 0-1",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "SetLayer7CropX2",
+      "category": "Input",
+      "description": "Change current Crop X2 value of Input Layer.\n1=No Crop, 0=Full Crop\nValue = X2 0-1",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "SetLayer7CropY1",
+      "category": "Input",
+      "description": "Change current Crop Y1 value of Input Layer.\n0=No Crop, 1=Full Crop\nValue = Y1 0-1",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "SetLayer7CropY2",
+      "category": "Input",
+      "description": "Change current Crop Y2 value of Input Layer.\n1=No Crop, 0=Full Crop\nValue = Y2 0-1",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "SetLayer7Height",
+      "category": "Input",
+      "description": "Change current Height value of Input Layer.\nIn pixels based on preset resolution\nValue = Pixels -4096-4096",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "SetLayer7PanX",
+      "category": "Input",
+      "description": "Change current PanX value of Input Layer.\n0=centered, -2=100% to left, 2=100% to right\nValue = Pan -2-2",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "SetLayer7PanY",
+      "category": "Input",
+      "description": "Change current PanY value of Input Layer.\n0=centered, -2=100% to bottom, 2=100% to top\nValue = Pan -2-2",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "SetLayer7Rectangle",
+      "category": "Input",
+      "description": "Change current Rectangle values of Input Layer in pixels.\nX,Y,Width,Height\nValue = X,Y,Width,Height",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "SetLayer7Width",
+      "category": "Input",
+      "description": "Change current Width value of Input Layer.\nIn pixels based on preset resolution\nValue = Pixels -4096-4096",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "SetLayer7X",
+      "category": "Input",
+      "description": "Change current X value of Input Layer.\nIn pixels based on preset resolution\nValue = Pixels -4096-4096",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "SetLayer7Y",
+      "category": "Input",
+      "description": "Change current Y value of Input Layer.\nIn pixels based on preset resolution\nValue = Pixels -4096-4096",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "SetLayer7Zoom",
+      "category": "Input",
+      "description": "Change current Zoom level of Input Layer.\n1=100%, 0.5=50%, 2=200%\nValue = Zoom 0-5",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "SetLayer8Crop",
+      "category": "Input",
+      "description": "Change current Crop value of Input Layer.\nX1,Y1,X2,Y2 (values between 0 and 1)\nValue = X1,Y1,X2,Y2",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "SetLayer8CropX1",
+      "category": "Input",
+      "description": "Change current Crop X1 value of Input Layer.\n0=No Crop, 1=Full Crop\nValue = X1 0-1",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "SetLayer8CropX2",
+      "category": "Input",
+      "description": "Change current Crop X2 value of Input Layer.\n1=No Crop, 0=Full Crop\nValue = X2 0-1",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "SetLayer8CropY1",
+      "category": "Input",
+      "description": "Change current Crop Y1 value of Input Layer.\n0=No Crop, 1=Full Crop\nValue = Y1 0-1",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "SetLayer8CropY2",
+      "category": "Input",
+      "description": "Change current Crop Y2 value of Input Layer.\n1=No Crop, 0=Full Crop\nValue = Y2 0-1",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "SetLayer8Height",
+      "category": "Input",
+      "description": "Change current Height value of Input Layer.\nIn pixels based on preset resolution\nValue = Pixels -4096-4096",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "SetLayer8PanX",
+      "category": "Input",
+      "description": "Change current PanX value of Input Layer.\n0=centered, -2=100% to left, 2=100% to right\nValue = Pan -2-2",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "SetLayer8PanY",
+      "category": "Input",
+      "description": "Change current PanY value of Input Layer.\n0=centered, -2=100% to bottom, 2=100% to top\nValue = Pan -2-2",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "SetLayer8Rectangle",
+      "category": "Input",
+      "description": "Change current Rectangle values of Input Layer in pixels.\nX,Y,Width,Height\nValue = X,Y,Width,Height",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "SetLayer8Width",
+      "category": "Input",
+      "description": "Change current Width value of Input Layer.\nIn pixels based on preset resolution\nValue = Pixels -4096-4096",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "SetLayer8X",
+      "category": "Input",
+      "description": "Change current X value of Input Layer.\nIn pixels based on preset resolution\nValue = Pixels -4096-4096",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "SetLayer8Y",
+      "category": "Input",
+      "description": "Change current Y value of Input Layer.\nIn pixels based on preset resolution\nValue = Pixels -4096-4096",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "SetLayer8Zoom",
+      "category": "Input",
+      "description": "Change current Zoom level of Input Layer.\n1=100%, 0.5=50%, 2=200%\nValue = Zoom 0-5",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "SetLayer9Crop",
+      "category": "Input",
+      "description": "Change current Crop value of Input Layer.\nX1,Y1,X2,Y2 (values between 0 and 1)\nValue = X1,Y1,X2,Y2",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "SetLayer9CropX1",
+      "category": "Input",
+      "description": "Change current Crop X1 value of Input Layer.\n0=No Crop, 1=Full Crop\nValue = X1 0-1",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "SetLayer9CropX2",
+      "category": "Input",
+      "description": "Change current Crop X2 value of Input Layer.\n1=No Crop, 0=Full Crop\nValue = X2 0-1",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "SetLayer9CropY1",
+      "category": "Input",
+      "description": "Change current Crop Y1 value of Input Layer.\n0=No Crop, 1=Full Crop\nValue = Y1 0-1",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "SetLayer9CropY2",
+      "category": "Input",
+      "description": "Change current Crop Y2 value of Input Layer.\n1=No Crop, 0=Full Crop\nValue = Y2 0-1",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "SetLayer9Height",
+      "category": "Input",
+      "description": "Change current Height value of Input Layer.\nIn pixels based on preset resolution\nValue = Pixels -4096-4096",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "SetLayer9PanX",
+      "category": "Input",
+      "description": "Change current PanX value of Input Layer.\n0=centered, -2=100% to left, 2=100% to right\nValue = Pan -2-2",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "SetLayer9PanY",
+      "category": "Input",
+      "description": "Change current PanY value of Input Layer.\n0=centered, -2=100% to bottom, 2=100% to top\nValue = Pan -2-2",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "SetLayer9Rectangle",
+      "category": "Input",
+      "description": "Change current Rectangle values of Input Layer in pixels.\nX,Y,Width,Height\nValue = X,Y,Width,Height",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "SetLayer9Width",
+      "category": "Input",
+      "description": "Change current Width value of Input Layer.\nIn pixels based on preset resolution\nValue = Pixels -4096-4096",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "SetLayer9X",
+      "category": "Input",
+      "description": "Change current X value of Input Layer.\nIn pixels based on preset resolution\nValue = Pixels -4096-4096",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "SetLayer9Y",
+      "category": "Input",
+      "description": "Change current Y value of Input Layer.\nIn pixels based on preset resolution\nValue = Pixels -4096-4096",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "SetLayer9Zoom",
+      "category": "Input",
+      "description": "Change current Zoom level of Input Layer.\n1=100%, 0.5=50%, 2=200%\nValue = Zoom 0-5",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "SetLayerAnimated",
+      "category": "Input",
+      "description": "Change Layer Index to Input. Animate if input exists in another layer.\nExample: 1,2,1000 changes Layer1 to Input2.\nValue = Index,Input,DurationMilliseconds",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "SetLayerDynamicCrop",
+      "category": "Input",
+      "description": "Change current Crop value of Input Layer from DynamicValue1 (1-10).\nX1,Y1,X2,Y2 (values between 0 and 1)\nValue = X1,Y1,X2,Y2",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "SetLayerDynamicCropX1",
+      "category": "Input",
+      "description": "Change current Crop X1 value of Input Layer from DynamicValue1 (1-10).\n0=No Crop, 1=Full Crop\nValue = X1 0-1",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "SetLayerDynamicCropX2",
+      "category": "Input",
+      "description": "Change current Crop X2 value of Input Layer from DynamicValue1 (1-10).\n1=No Crop, 0=Full Crop\nValue = X2 0-1",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "SetLayerDynamicCropY1",
+      "category": "Input",
+      "description": "Change current Crop Y1 value of Input Layer from DynamicValue1 (1-10).\n0=No Crop, 1=Full Crop\nValue = Y1 0-1",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "SetLayerDynamicCropY2",
+      "category": "Input",
+      "description": "Change current Crop Y2 value of Input Layer from DynamicValue1 (1-10).\n1=No Crop, 0=Full Crop\nValue = Y2 0-1",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "SetLayerDynamicHeight",
+      "category": "Input",
+      "description": "Change current Height value of Input Layer from DynamicValue1 (1-10).\nIn pixels based on preset resolution\nValue = Pixels -4096-4096",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "SetLayerDynamicPanX",
+      "category": "Input",
+      "description": "Change current PanX value of Input Layer from DynamicValue1 (1-10).\n0=centered, -2=100% to left, 2=100% to right\nValue = Pan -2-2",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "SetLayerDynamicPanY",
+      "category": "Input",
+      "description": "Change current PanY value of Input Layer from DynamicValue1 (1-10).\n0=centered, -2=100% to bottom, 2=100% to top\nValue = Pan -2-2",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "SetLayerDynamicRectangle",
+      "category": "Input",
+      "description": "Change current Rectangle values of Input Layer from DynamicValue1 (1-10) in pixels.\nX,Y,Width,Height\nValue = X,Y,Width,Height",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "SetLayerDynamicWidth",
+      "category": "Input",
+      "description": "Change current Width value of Input Layer from DynamicValue1 (1-10).\nIn pixels based on preset resolution\nValue = Pixels -4096-4096",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "SetLayerDynamicX",
+      "category": "Input",
+      "description": "Change current X value of Input Layer from DynamicValue1 (1-10).\nIn pixels based on preset resolution\nValue = Pixels -4096-4096",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "SetLayerDynamicY",
+      "category": "Input",
+      "description": "Change current Y value of Input Layer from DynamicValue1 (1-10).\nIn pixels based on preset resolution\nValue = Pixels -4096-4096",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "SetLayerDynamicZoom",
+      "category": "Input",
+      "description": "Change current Zoom level of Input Layer from DynamicValue1 (1-10).\n1=100%, 0.5=50%, 2=200%\nValue = Zoom 0-5",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "SetPanX",
+      "category": "Input",
+      "description": "Change current PanX value of Input.\n0=centered, -2=100% to left, 2=100% to right\nValue = Pan -2-2",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "SetPanY",
+      "category": "Input",
+      "description": "Change current PanY value of Input.\n0=centered, -2=100% to bottom, 2=100% to top\nValue = Pan -2-2",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "SetPictureEffect",
+      "category": "Input",
+      "description": "Set transition effect for Photos and PowerPoint Inputs (Fade, Zoom, etc)\nValue = Transition",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "SetPictureEffectDuration",
+      "category": "Input",
+      "description": "Set duration of transition effect in Milliseconds\nValue = Duration MS",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "SetPictureTransition",
+      "category": "Input",
+      "description": "Set transition time between Photos and PowerPoint slides in Seconds\nValue = Seconds",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "SetPosition",
+      "category": "Input",
+      "description": "Set Position of selected Input according to Value in Milliseconds\nValue = Milliseconds",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "SetRate",
+      "category": "Input",
+      "description": "Set Playback speed/rate for Videos and Video Delays\n0.5=50%,1=100%,2=200% etc\nValue = Speed 0.1-4",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "SetRateSlowMotion",
+      "category": "Input",
+      "description": "Set Slow Motion speed for Instant Replay\n0.5=50%,1=100% etc\nValue = Speed 0-1",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "SetZoom",
+      "category": "Input",
+      "description": "Change current Zoom level of Input.\n1=100%, 0.5=50%, 2=200%\nValue = Zoom 0-5",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "SharpenOff",
+      "category": "Input",
+      "description": "",
+      "parameters": "Input",
+      "paramKeys": [
+        "Input"
+      ]
+    },
+    {
+      "name": "SharpenOn",
+      "category": "Input",
+      "description": "",
+      "parameters": "Input",
+      "paramKeys": [
+        "Input"
+      ]
+    },
+    {
+      "name": "SwapLayerAnimated",
+      "category": "Input",
+      "description": "Animate swapping the Layers in Input according to Value parameter.\nExample: 1,2,1000 swaps Layer1 and Layer2 over 1000 milliseconds.\nValue = FromIndex,ToIndex,DurationMilliseconds",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "VideoCallAudioSource",
+      "category": "Input",
+      "description": "Master,Headphones,BusA,BusB,BusC,BusD,BusE,BusF,BusG\nValue = Source",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "VideoCallConnect",
+      "category": "Input",
+      "description": "Value = Name,Password",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "VideoCallReconnect",
+      "category": "Input",
+      "description": "",
+      "parameters": "Input",
+      "paramKeys": [
+        "Input"
+      ]
+    },
+    {
+      "name": "VideoCallVideoSource",
+      "category": "Input",
+      "description": "Output1,Output2,Output3,Output4\nValue = Source",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "VideoDelayStartRecording",
+      "category": "Input",
+      "description": "Start Video Delay Recording",
+      "parameters": "Input,Duration",
+      "paramKeys": [
+        "Input",
+        "Duration"
+      ]
+    },
+    {
+      "name": "VideoDelayStartStopRecording",
+      "category": "Input",
+      "description": "Toggle Video Delay Recording",
+      "parameters": "Input,Duration",
+      "paramKeys": [
+        "Input",
+        "Duration"
+      ]
+    },
+    {
+      "name": "VideoDelayStopRecording",
+      "category": "Input",
+      "description": "Stop Video Delay Recording",
+      "parameters": "Input,Duration",
+      "paramKeys": [
+        "Input",
+        "Duration"
+      ]
+    },
+    {
+      "name": "WaitForCompletion",
+      "category": "Input",
+      "description": "Wait for a Video Input to reach the end of playback.",
+      "parameters": "Input,Duration",
+      "paramKeys": [
+        "Input",
+        "Duration"
+      ]
+    },
+    {
+      "name": "ZoomJoinMeeting",
+      "category": "Input",
+      "description": "Value = MeetingID,Password",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "ZoomMuteSelf",
+      "category": "Input",
+      "description": "",
+      "parameters": "Input",
+      "paramKeys": [
+        "Input"
+      ]
+    },
+    {
+      "name": "ZoomSelectParticipantByName",
+      "category": "Input",
+      "description": "Value = Name",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "ZoomUnMuteSelf",
+      "category": "Input",
+      "description": "",
+      "parameters": "Input",
+      "paramKeys": [
+        "Input"
+      ]
+    },
+    {
+      "name": "MoveMultiViewOverlay",
+      "category": "Overlay",
+      "description": "Move Overlay in Input MultiView according to Value parameter.\nExample: 1,2 moves Overlay1 to Overlay2\nValue = FromIndex,ToIndex",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "MultiViewOverlay",
+      "category": "Overlay",
+      "description": "Toggle On/Off MultiView Overlay For Input At Index (starting from 1)\nValue = Index",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "MultiViewOverlayOff",
+      "category": "Overlay",
+      "description": "Turn Off MultiView Overlay For Input At Index (starting from 1)\nValue = Index",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "MultiViewOverlayOn",
+      "category": "Overlay",
+      "description": "Turn On MultiView Overlay For Input At Index (starting from 1)\nValue = Index",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "OverlayInput1",
+      "category": "Overlay",
+      "description": "Toggle Overlay1 On/Off with selected Input using configured Transition",
+      "parameters": "Input,Mix",
+      "paramKeys": [
+        "Input",
+        "Mix"
+      ]
+    },
+    {
+      "name": "OverlayInput1In",
+      "category": "Overlay",
+      "description": "Transition In to Overlay1 with selected Input",
+      "parameters": "Input,Mix",
+      "paramKeys": [
+        "Input",
+        "Mix"
+      ]
+    },
+    {
+      "name": "OverlayInput1Last",
+      "category": "Overlay",
+      "description": "Toggle Overlay1 On/Off with last used Input on this channel",
+      "parameters": "Mix",
+      "paramKeys": [
+        "Mix"
+      ]
+    },
+    {
+      "name": "OverlayInput1Off",
+      "category": "Overlay",
+      "description": "Immediately switch Overlay1 Off (Cut)",
+      "parameters": "None",
+      "paramKeys": []
+    },
+    {
+      "name": "OverlayInput1Out",
+      "category": "Overlay",
+      "description": "Transition Out Overlay1",
+      "parameters": "None",
+      "paramKeys": []
+    },
+    {
+      "name": "OverlayInput1Zoom",
+      "category": "Overlay",
+      "description": "Zooms PIP Overlay to fill Fullscreen and vice versa",
+      "parameters": "None",
+      "paramKeys": []
+    },
+    {
+      "name": "OverlayInput2",
+      "category": "Overlay",
+      "description": "",
+      "parameters": "Input,Mix",
+      "paramKeys": [
+        "Input",
+        "Mix"
+      ]
+    },
+    {
+      "name": "OverlayInput2In",
+      "category": "Overlay",
+      "description": "",
+      "parameters": "Input,Mix",
+      "paramKeys": [
+        "Input",
+        "Mix"
+      ]
+    },
+    {
+      "name": "OverlayInput2Last",
+      "category": "Overlay",
+      "description": "Toggle Overlay2 On/Off with last used Input on this channel",
+      "parameters": "Mix",
+      "paramKeys": [
+        "Mix"
+      ]
+    },
+    {
+      "name": "OverlayInput2Off",
+      "category": "Overlay",
+      "description": "",
+      "parameters": "None",
+      "paramKeys": []
+    },
+    {
+      "name": "OverlayInput2Out",
+      "category": "Overlay",
+      "description": "",
+      "parameters": "None",
+      "paramKeys": []
+    },
+    {
+      "name": "OverlayInput2Zoom",
+      "category": "Overlay",
+      "description": "",
+      "parameters": "None",
+      "paramKeys": []
+    },
+    {
+      "name": "OverlayInput3",
+      "category": "Overlay",
+      "description": "",
+      "parameters": "Input,Mix",
+      "paramKeys": [
+        "Input",
+        "Mix"
+      ]
+    },
+    {
+      "name": "OverlayInput3In",
+      "category": "Overlay",
+      "description": "",
+      "parameters": "Input,Mix",
+      "paramKeys": [
+        "Input",
+        "Mix"
+      ]
+    },
+    {
+      "name": "OverlayInput3Last",
+      "category": "Overlay",
+      "description": "Toggle Overlay3 On/Off with last used Input on this channel",
+      "parameters": "Mix",
+      "paramKeys": [
+        "Mix"
+      ]
+    },
+    {
+      "name": "OverlayInput3Off",
+      "category": "Overlay",
+      "description": "",
+      "parameters": "None",
+      "paramKeys": []
+    },
+    {
+      "name": "OverlayInput3Out",
+      "category": "Overlay",
+      "description": "",
+      "parameters": "None",
+      "paramKeys": []
+    },
+    {
+      "name": "OverlayInput3Zoom",
+      "category": "Overlay",
+      "description": "",
+      "parameters": "None",
+      "paramKeys": []
+    },
+    {
+      "name": "OverlayInput4",
+      "category": "Overlay",
+      "description": "",
+      "parameters": "Input,Mix",
+      "paramKeys": [
+        "Input",
+        "Mix"
+      ]
+    },
+    {
+      "name": "OverlayInput4In",
+      "category": "Overlay",
+      "description": "",
+      "parameters": "Input,Mix",
+      "paramKeys": [
+        "Input",
+        "Mix"
+      ]
+    },
+    {
+      "name": "OverlayInput4Last",
+      "category": "Overlay",
+      "description": "Toggle Overlay4 On/Off with last used Input on this channel",
+      "parameters": "Mix",
+      "paramKeys": [
+        "Mix"
+      ]
+    },
+    {
+      "name": "OverlayInput4Off",
+      "category": "Overlay",
+      "description": "",
+      "parameters": "None",
+      "paramKeys": []
+    },
+    {
+      "name": "OverlayInput4Out",
+      "category": "Overlay",
+      "description": "",
+      "parameters": "None",
+      "paramKeys": []
+    },
+    {
+      "name": "OverlayInput4Zoom",
+      "category": "Overlay",
+      "description": "",
+      "parameters": "None",
+      "paramKeys": []
+    },
+    {
+      "name": "OverlayInput5",
+      "category": "Overlay",
+      "description": "",
+      "parameters": "Input,Mix",
+      "paramKeys": [
+        "Input",
+        "Mix"
+      ]
+    },
+    {
+      "name": "OverlayInput5In",
+      "category": "Overlay",
+      "description": "",
+      "parameters": "Input,Mix",
+      "paramKeys": [
+        "Input",
+        "Mix"
+      ]
+    },
+    {
+      "name": "OverlayInput5Last",
+      "category": "Overlay",
+      "description": "Toggle Overlay5 On/Off with last used Input on this channel",
+      "parameters": "Mix",
+      "paramKeys": [
+        "Mix"
+      ]
+    },
+    {
+      "name": "OverlayInput5Off",
+      "category": "Overlay",
+      "description": "",
+      "parameters": "None",
+      "paramKeys": []
+    },
+    {
+      "name": "OverlayInput5Out",
+      "category": "Overlay",
+      "description": "",
+      "parameters": "None",
+      "paramKeys": []
+    },
+    {
+      "name": "OverlayInput5Zoom",
+      "category": "Overlay",
+      "description": "",
+      "parameters": "None",
+      "paramKeys": []
+    },
+    {
+      "name": "OverlayInput6",
+      "category": "Overlay",
+      "description": "",
+      "parameters": "Input,Mix",
+      "paramKeys": [
+        "Input",
+        "Mix"
+      ]
+    },
+    {
+      "name": "OverlayInput6In",
+      "category": "Overlay",
+      "description": "",
+      "parameters": "Input,Mix",
+      "paramKeys": [
+        "Input",
+        "Mix"
+      ]
+    },
+    {
+      "name": "OverlayInput6Last",
+      "category": "Overlay",
+      "description": "Toggle Overlay6 On/Off with last used Input on this channel",
+      "parameters": "Mix",
+      "paramKeys": [
+        "Mix"
+      ]
+    },
+    {
+      "name": "OverlayInput6Off",
+      "category": "Overlay",
+      "description": "",
+      "parameters": "None",
+      "paramKeys": []
+    },
+    {
+      "name": "OverlayInput6Out",
+      "category": "Overlay",
+      "description": "",
+      "parameters": "None",
+      "paramKeys": []
+    },
+    {
+      "name": "OverlayInput6Zoom",
+      "category": "Overlay",
+      "description": "",
+      "parameters": "None",
+      "paramKeys": []
+    },
+    {
+      "name": "OverlayInput7",
+      "category": "Overlay",
+      "description": "",
+      "parameters": "Input,Mix",
+      "paramKeys": [
+        "Input",
+        "Mix"
+      ]
+    },
+    {
+      "name": "OverlayInput7In",
+      "category": "Overlay",
+      "description": "",
+      "parameters": "Input,Mix",
+      "paramKeys": [
+        "Input",
+        "Mix"
+      ]
+    },
+    {
+      "name": "OverlayInput7Last",
+      "category": "Overlay",
+      "description": "Toggle Overlay7 On/Off with last used Input on this channel",
+      "parameters": "Mix",
+      "paramKeys": [
+        "Mix"
+      ]
+    },
+    {
+      "name": "OverlayInput7Off",
+      "category": "Overlay",
+      "description": "",
+      "parameters": "None",
+      "paramKeys": []
+    },
+    {
+      "name": "OverlayInput7Out",
+      "category": "Overlay",
+      "description": "",
+      "parameters": "None",
+      "paramKeys": []
+    },
+    {
+      "name": "OverlayInput7Zoom",
+      "category": "Overlay",
+      "description": "",
+      "parameters": "None",
+      "paramKeys": []
+    },
+    {
+      "name": "OverlayInput8",
+      "category": "Overlay",
+      "description": "",
+      "parameters": "Input,Mix",
+      "paramKeys": [
+        "Input",
+        "Mix"
+      ]
+    },
+    {
+      "name": "OverlayInput8In",
+      "category": "Overlay",
+      "description": "",
+      "parameters": "Input,Mix",
+      "paramKeys": [
+        "Input",
+        "Mix"
+      ]
+    },
+    {
+      "name": "OverlayInput8Last",
+      "category": "Overlay",
+      "description": "Toggle Overlay8 On/Off with last used Input on this channel",
+      "parameters": "Mix",
+      "paramKeys": [
+        "Mix"
+      ]
+    },
+    {
+      "name": "OverlayInput8Off",
+      "category": "Overlay",
+      "description": "",
+      "parameters": "None",
+      "paramKeys": []
+    },
+    {
+      "name": "OverlayInput8Out",
+      "category": "Overlay",
+      "description": "",
+      "parameters": "None",
+      "paramKeys": []
+    },
+    {
+      "name": "OverlayInput8Zoom",
+      "category": "Overlay",
+      "description": "",
+      "parameters": "None",
+      "paramKeys": []
+    },
+    {
+      "name": "OverlayInputAllOff",
+      "category": "Overlay",
+      "description": "Immediately switch all Overlays Off",
+      "parameters": "None",
+      "paramKeys": []
+    },
+    {
+      "name": "PreviewOverlayInput1",
+      "category": "Overlay",
+      "description": "Preview Overlay1 using the selected Input",
+      "parameters": "Input",
+      "paramKeys": [
+        "Input"
+      ]
+    },
+    {
+      "name": "PreviewOverlayInput2",
+      "category": "Overlay",
+      "description": "",
+      "parameters": "Input",
+      "paramKeys": [
+        "Input"
+      ]
+    },
+    {
+      "name": "PreviewOverlayInput3",
+      "category": "Overlay",
+      "description": "",
+      "parameters": "Input",
+      "paramKeys": [
+        "Input"
+      ]
+    },
+    {
+      "name": "PreviewOverlayInput4",
+      "category": "Overlay",
+      "description": "",
+      "parameters": "Input",
+      "paramKeys": [
+        "Input"
+      ]
+    },
+    {
+      "name": "PreviewOverlayInput5",
+      "category": "Overlay",
+      "description": "Preview Overlay5 using the selected Input",
+      "parameters": "Input",
+      "paramKeys": [
+        "Input"
+      ]
+    },
+    {
+      "name": "PreviewOverlayInput6",
+      "category": "Overlay",
+      "description": "",
+      "parameters": "Input",
+      "paramKeys": [
+        "Input"
+      ]
+    },
+    {
+      "name": "PreviewOverlayInput7",
+      "category": "Overlay",
+      "description": "",
+      "parameters": "Input",
+      "paramKeys": [
+        "Input"
+      ]
+    },
+    {
+      "name": "PreviewOverlayInput8",
+      "category": "Overlay",
+      "description": "",
+      "parameters": "Input",
+      "paramKeys": [
+        "Input"
+      ]
+    },
+    {
+      "name": "SetMultiViewOverlay",
+      "category": "Overlay",
+      "description": "Change Layer in Input MultiView according to Value parameter.\nExample: 1,2 changes Layer 1 to Input2\nValue = Index,Input",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "NextPlayListEntry",
+      "category": "PlayList",
+      "description": "Move to Next Item in a running PlayList",
+      "parameters": "None",
+      "paramKeys": []
+    },
+    {
+      "name": "PreviousPlayListEntry",
+      "category": "PlayList",
+      "description": "Move to Previous Item in a running PlayList",
+      "parameters": "None",
+      "paramKeys": []
+    },
+    {
+      "name": "SelectPlayList",
+      "category": "PlayList",
+      "description": "Open PlayList with Name matching Value\nValue = PlayList",
+      "parameters": "Value",
+      "paramKeys": [
+        "Value"
+      ]
+    },
+    {
+      "name": "StartPlayList",
+      "category": "PlayList",
+      "description": "",
+      "parameters": "None",
+      "paramKeys": []
+    },
+    {
+      "name": "StopPlayList",
+      "category": "PlayList",
+      "description": "",
+      "parameters": "None",
+      "paramKeys": []
+    },
+    {
+      "name": "ScriptStart",
+      "category": "Scripting",
+      "description": "Value = Script Name",
+      "parameters": "Value",
+      "paramKeys": [
+        "Value"
+      ]
+    },
+    {
+      "name": "ScriptStartDynamic",
+      "category": "Scripting",
+      "description": "Start a dynamic script using code specified as the Value.\nValue = Code",
+      "parameters": "Value",
+      "paramKeys": [
+        "Value"
+      ]
+    },
+    {
+      "name": "ScriptStop",
+      "category": "Scripting",
+      "description": "Value = Script Name",
+      "parameters": "Value",
+      "paramKeys": [
+        "Value"
+      ]
+    },
+    {
+      "name": "ScriptStopAll",
+      "category": "Scripting",
+      "description": "",
+      "parameters": "None",
+      "paramKeys": []
+    },
+    {
+      "name": "ScriptStopDynamic",
+      "category": "Scripting",
+      "description": "",
+      "parameters": "None",
+      "paramKeys": []
+    },
+    {
+      "name": "ReplayACamera1",
+      "category": "Replay",
+      "description": "",
+      "parameters": "None",
+      "paramKeys": []
+    },
+    {
+      "name": "ReplayACamera2",
+      "category": "Replay",
+      "description": "",
+      "parameters": "None",
+      "paramKeys": []
+    },
+    {
+      "name": "ReplayACamera3",
+      "category": "Replay",
+      "description": "",
+      "parameters": "None",
+      "paramKeys": []
+    },
+    {
+      "name": "ReplayACamera4",
+      "category": "Replay",
+      "description": "",
+      "parameters": "None",
+      "paramKeys": []
+    },
+    {
+      "name": "ReplayACamera5",
+      "category": "Replay",
+      "description": "",
+      "parameters": "None",
+      "paramKeys": []
+    },
+    {
+      "name": "ReplayACamera6",
+      "category": "Replay",
+      "description": "",
+      "parameters": "None",
+      "paramKeys": []
+    },
+    {
+      "name": "ReplayACamera7",
+      "category": "Replay",
+      "description": "",
+      "parameters": "None",
+      "paramKeys": []
+    },
+    {
+      "name": "ReplayACamera8",
+      "category": "Replay",
+      "description": "",
+      "parameters": "None",
+      "paramKeys": []
+    },
+    {
+      "name": "ReplayAppendLastEventText",
+      "category": "Replay",
+      "description": "Value = Text",
+      "parameters": "Value",
+      "paramKeys": [
+        "Value"
+      ]
+    },
+    {
+      "name": "ReplayAppendLastEventTextCamera",
+      "category": "Replay",
+      "description": "Adds the text to the specified angle (1-4), example: 3,angle3text\nValue = Camera,Text",
+      "parameters": "Value",
+      "paramKeys": [
+        "Value"
+      ]
+    },
+    {
+      "name": "ReplayAppendSelectedEventText",
+      "category": "Replay",
+      "description": "Value = Text",
+      "parameters": "Value",
+      "paramKeys": [
+        "Value"
+      ]
+    },
+    {
+      "name": "ReplayAppendSelectedEventTextCamera",
+      "category": "Replay",
+      "description": "Adds the text to the specified angle (1-4), example: 3,angle3text\nValue = Camera,Text",
+      "parameters": "Value",
+      "paramKeys": [
+        "Value"
+      ]
+    },
+    {
+      "name": "ReplayBCamera1",
+      "category": "Replay",
+      "description": "",
+      "parameters": "None",
+      "paramKeys": []
+    },
+    {
+      "name": "ReplayBCamera2",
+      "category": "Replay",
+      "description": "",
+      "parameters": "None",
+      "paramKeys": []
+    },
+    {
+      "name": "ReplayBCamera3",
+      "category": "Replay",
+      "description": "",
+      "parameters": "None",
+      "paramKeys": []
+    },
+    {
+      "name": "ReplayBCamera4",
+      "category": "Replay",
+      "description": "",
+      "parameters": "None",
+      "paramKeys": []
+    },
+    {
+      "name": "ReplayBCamera5",
+      "category": "Replay",
+      "description": "",
+      "parameters": "None",
+      "paramKeys": []
+    },
+    {
+      "name": "ReplayBCamera6",
+      "category": "Replay",
+      "description": "",
+      "parameters": "None",
+      "paramKeys": []
+    },
+    {
+      "name": "ReplayBCamera7",
+      "category": "Replay",
+      "description": "",
+      "parameters": "None",
+      "paramKeys": []
+    },
+    {
+      "name": "ReplayBCamera8",
+      "category": "Replay",
+      "description": "",
+      "parameters": "None",
+      "paramKeys": []
+    },
+    {
+      "name": "ReplayCamera1",
+      "category": "Replay",
+      "description": "",
+      "parameters": "None",
+      "paramKeys": []
+    },
+    {
+      "name": "ReplayCamera2",
+      "category": "Replay",
+      "description": "",
+      "parameters": "None",
+      "paramKeys": []
+    },
+    {
+      "name": "ReplayCamera3",
+      "category": "Replay",
+      "description": "",
+      "parameters": "None",
+      "paramKeys": []
+    },
+    {
+      "name": "ReplayCamera4",
+      "category": "Replay",
+      "description": "",
+      "parameters": "None",
+      "paramKeys": []
+    },
+    {
+      "name": "ReplayCamera5",
+      "category": "Replay",
+      "description": "",
+      "parameters": "None",
+      "paramKeys": []
+    },
+    {
+      "name": "ReplayCamera6",
+      "category": "Replay",
+      "description": "",
+      "parameters": "None",
+      "paramKeys": []
+    },
+    {
+      "name": "ReplayCamera7",
+      "category": "Replay",
+      "description": "",
+      "parameters": "None",
+      "paramKeys": []
+    },
+    {
+      "name": "ReplayCamera8",
+      "category": "Replay",
+      "description": "",
+      "parameters": "None",
+      "paramKeys": []
+    },
+    {
+      "name": "ReplayCCamera1",
+      "category": "Replay",
+      "description": "",
+      "parameters": "None",
+      "paramKeys": []
+    },
+    {
+      "name": "ReplayCCamera2",
+      "category": "Replay",
+      "description": "",
+      "parameters": "None",
+      "paramKeys": []
+    },
+    {
+      "name": "ReplayCCamera3",
+      "category": "Replay",
+      "description": "",
+      "parameters": "None",
+      "paramKeys": []
+    },
+    {
+      "name": "ReplayCCamera4",
+      "category": "Replay",
+      "description": "",
+      "parameters": "None",
+      "paramKeys": []
+    },
+    {
+      "name": "ReplayCCamera5",
+      "category": "Replay",
+      "description": "",
+      "parameters": "None",
+      "paramKeys": []
+    },
+    {
+      "name": "ReplayCCamera6",
+      "category": "Replay",
+      "description": "",
+      "parameters": "None",
+      "paramKeys": []
+    },
+    {
+      "name": "ReplayCCamera7",
+      "category": "Replay",
+      "description": "",
+      "parameters": "None",
+      "paramKeys": []
+    },
+    {
+      "name": "ReplayCCamera8",
+      "category": "Replay",
+      "description": "",
+      "parameters": "None",
+      "paramKeys": []
+    },
+    {
+      "name": "ReplayChangeDirection",
+      "category": "Replay",
+      "description": "",
+      "parameters": "Channel",
+      "paramKeys": [
+        "Channel"
+      ]
+    },
+    {
+      "name": "ReplayChangeSpeed",
+      "category": "Replay",
+      "description": "Value = Speed",
+      "parameters": "Value,Channel",
+      "paramKeys": [
+        "Value",
+        "Channel"
+      ]
+    },
+    {
+      "name": "ReplayCopyLastEvent",
+      "category": "Replay",
+      "description": "Value = Event List 0-19",
+      "parameters": "Value",
+      "paramKeys": [
+        "Value"
+      ]
+    },
+    {
+      "name": "ReplayCopySelectedEvent",
+      "category": "Replay",
+      "description": "Value = Event List 0-19",
+      "parameters": "Value",
+      "paramKeys": [
+        "Value"
+      ]
+    },
+    {
+      "name": "ReplayDCamera1",
+      "category": "Replay",
+      "description": "",
+      "parameters": "None",
+      "paramKeys": []
+    },
+    {
+      "name": "ReplayDCamera2",
+      "category": "Replay",
+      "description": "",
+      "parameters": "None",
+      "paramKeys": []
+    },
+    {
+      "name": "ReplayDCamera3",
+      "category": "Replay",
+      "description": "",
+      "parameters": "None",
+      "paramKeys": []
+    },
+    {
+      "name": "ReplayDCamera4",
+      "category": "Replay",
+      "description": "",
+      "parameters": "None",
+      "paramKeys": []
+    },
+    {
+      "name": "ReplayDCamera5",
+      "category": "Replay",
+      "description": "",
+      "parameters": "None",
+      "paramKeys": []
+    },
+    {
+      "name": "ReplayDCamera6",
+      "category": "Replay",
+      "description": "",
+      "parameters": "None",
+      "paramKeys": []
+    },
+    {
+      "name": "ReplayDCamera7",
+      "category": "Replay",
+      "description": "",
+      "parameters": "None",
+      "paramKeys": []
+    },
+    {
+      "name": "ReplayDCamera8",
+      "category": "Replay",
+      "description": "",
+      "parameters": "None",
+      "paramKeys": []
+    },
+    {
+      "name": "ReplayDeleteLastEvent",
+      "category": "Replay",
+      "description": "",
+      "parameters": "Channel",
+      "paramKeys": [
+        "Channel"
+      ]
+    },
+    {
+      "name": "ReplayDeleteSelectedEvent",
+      "category": "Replay",
+      "description": "",
+      "parameters": "Channel",
+      "paramKeys": [
+        "Channel"
+      ]
+    },
+    {
+      "name": "ReplayDuplicateLastEvent",
+      "category": "Replay",
+      "description": "",
+      "parameters": "Channel",
+      "paramKeys": [
+        "Channel"
+      ]
+    },
+    {
+      "name": "ReplayDuplicateSelectedEvent",
+      "category": "Replay",
+      "description": "",
+      "parameters": "Channel",
+      "paramKeys": [
+        "Channel"
+      ]
+    },
+    {
+      "name": "ReplayExportLastEvent",
+      "category": "Replay",
+      "description": "Value = Folder",
+      "parameters": "Value,Channel",
+      "paramKeys": [
+        "Value",
+        "Channel"
+      ]
+    },
+    {
+      "name": "ReplayFastBackward",
+      "category": "Replay",
+      "description": "1-30x\nValue = Speed",
+      "parameters": "Value,Channel",
+      "paramKeys": [
+        "Value",
+        "Channel"
+      ]
+    },
+    {
+      "name": "ReplayFastForward",
+      "category": "Replay",
+      "description": "1-30x\nValue = Speed",
+      "parameters": "Value,Channel",
+      "paramKeys": [
+        "Value",
+        "Channel"
+      ]
+    },
+    {
+      "name": "ReplayJumpFrames",
+      "category": "Replay",
+      "description": "Value = Frames",
+      "parameters": "Value,Channel",
+      "paramKeys": [
+        "Value",
+        "Channel"
+      ]
+    },
+    {
+      "name": "ReplayJumpFramesFastOff",
+      "category": "Replay",
+      "description": "ReplayJumpFrames jumps 1 frame for each value instead of 1 second.",
+      "parameters": "Channel",
+      "paramKeys": [
+        "Channel"
+      ]
+    },
+    {
+      "name": "ReplayJumpFramesFastOn",
+      "category": "Replay",
+      "description": "ReplayJumpFrames jumps 1 second for each value instead of 1 frame.",
+      "parameters": "Channel",
+      "paramKeys": [
+        "Channel"
+      ]
+    },
+    {
+      "name": "ReplayJumpToNow",
+      "category": "Replay",
+      "description": "",
+      "parameters": "Channel",
+      "paramKeys": [
+        "Channel"
+      ]
+    },
+    {
+      "name": "ReplayJumpToSelectedInPoint",
+      "category": "Replay",
+      "description": "Set Position to In point of Selected Event.",
+      "parameters": "Channel",
+      "paramKeys": [
+        "Channel"
+      ]
+    },
+    {
+      "name": "ReplayJumpToSelectedOutPoint",
+      "category": "Replay",
+      "description": "Set Position to Out point of Selected Event.",
+      "parameters": "Channel",
+      "paramKeys": [
+        "Channel"
+      ]
+    },
+    {
+      "name": "ReplayLastEventCameraOff",
+      "category": "Replay",
+      "description": "Turns off the specified camera angle (1-8)\nValue = Camera",
+      "parameters": "Value",
+      "paramKeys": [
+        "Value"
+      ]
+    },
+    {
+      "name": "ReplayLastEventCameraOn",
+      "category": "Replay",
+      "description": "Turns on the specified camera angle (1-8)\nValue = Camera",
+      "parameters": "Value",
+      "paramKeys": [
+        "Value"
+      ]
+    },
+    {
+      "name": "ReplayLastEventSingleCameraOn",
+      "category": "Replay",
+      "description": "Turns on only the specified camera angle (1-8)\nValue = Camera",
+      "parameters": "Value",
+      "paramKeys": [
+        "Value"
+      ]
+    },
+    {
+      "name": "ReplayLive",
+      "category": "Replay",
+      "description": "",
+      "parameters": "None",
+      "paramKeys": []
+    },
+    {
+      "name": "ReplayLiveToggle",
+      "category": "Replay",
+      "description": "",
+      "parameters": "None",
+      "paramKeys": []
+    },
+    {
+      "name": "ReplayMarkCancel",
+      "category": "Replay",
+      "description": "",
+      "parameters": "None",
+      "paramKeys": []
+    },
+    {
+      "name": "ReplayMarkIn",
+      "category": "Replay",
+      "description": "",
+      "parameters": "None",
+      "paramKeys": []
+    },
+    {
+      "name": "ReplayMarkInLive",
+      "category": "Replay",
+      "description": "",
+      "parameters": "None",
+      "paramKeys": []
+    },
+    {
+      "name": "ReplayMarkInOut",
+      "category": "Replay",
+      "description": "Number of previous seconds to use when creating a new event.\nValue = Seconds",
+      "parameters": "Value",
+      "paramKeys": [
+        "Value"
+      ]
+    },
+    {
+      "name": "ReplayMarkInOutLive",
+      "category": "Replay",
+      "description": "Number of previous seconds to use when creating a new event.\nValue = Seconds",
+      "parameters": "Value",
+      "paramKeys": [
+        "Value"
+      ]
+    },
+    {
+      "name": "ReplayMarkInOutLiveFuture",
+      "category": "Replay",
+      "description": "Number of seconds into the future to use when creating a new event.\nValue = Seconds",
+      "parameters": "Value",
+      "paramKeys": [
+        "Value"
+      ]
+    },
+    {
+      "name": "ReplayMarkInOutRecorded",
+      "category": "Replay",
+      "description": "Number of previous seconds to use when creating a new event.\nValue = Seconds",
+      "parameters": "Value",
+      "paramKeys": [
+        "Value"
+      ]
+    },
+    {
+      "name": "ReplayMarkInRecorded",
+      "category": "Replay",
+      "description": "",
+      "parameters": "None",
+      "paramKeys": []
+    },
+    {
+      "name": "ReplayMarkInRecordedNow",
+      "category": "Replay",
+      "description": "",
+      "parameters": "None",
+      "paramKeys": []
+    },
+    {
+      "name": "ReplayMarkOut",
+      "category": "Replay",
+      "description": "",
+      "parameters": "None",
+      "paramKeys": []
+    },
+    {
+      "name": "ReplayMoveLastEvent",
+      "category": "Replay",
+      "description": "Value = Event List 0-19",
+      "parameters": "Value",
+      "paramKeys": [
+        "Value"
+      ]
+    },
+    {
+      "name": "ReplayMoveSelectedEvent",
+      "category": "Replay",
+      "description": "Value = Event List 0-19",
+      "parameters": "Value",
+      "paramKeys": [
+        "Value"
+      ]
+    },
+    {
+      "name": "ReplayMoveSelectedEventDown",
+      "category": "Replay",
+      "description": "",
+      "parameters": "None",
+      "paramKeys": []
+    },
+    {
+      "name": "ReplayMoveSelectedEventUp",
+      "category": "Replay",
+      "description": "",
+      "parameters": "None",
+      "paramKeys": []
+    },
+    {
+      "name": "ReplayMoveSelectedInPoint",
+      "category": "Replay",
+      "description": "Value = Frames",
+      "parameters": "Value,Channel",
+      "paramKeys": [
+        "Value",
+        "Channel"
+      ]
+    },
+    {
+      "name": "ReplayMoveSelectedOutPoint",
+      "category": "Replay",
+      "description": "Value = Frames",
+      "parameters": "Value,Channel",
+      "paramKeys": [
+        "Value",
+        "Channel"
+      ]
+    },
+    {
+      "name": "ReplayPause",
+      "category": "Replay",
+      "description": "",
+      "parameters": "Channel",
+      "paramKeys": [
+        "Channel"
+      ]
+    },
+    {
+      "name": "ReplayPlay",
+      "category": "Replay",
+      "description": "",
+      "parameters": "Channel",
+      "paramKeys": [
+        "Channel"
+      ]
+    },
+    {
+      "name": "ReplayPlayAllEvents",
+      "category": "Replay",
+      "description": "Play all Events in active list",
+      "parameters": "Channel",
+      "paramKeys": [
+        "Channel"
+      ]
+    },
+    {
+      "name": "ReplayPlayAllEventsToOutput",
+      "category": "Replay",
+      "description": "Play all Events in active list",
+      "parameters": "Channel",
+      "paramKeys": [
+        "Channel"
+      ]
+    },
+    {
+      "name": "ReplayPlayBackward",
+      "category": "Replay",
+      "description": "",
+      "parameters": "Channel",
+      "paramKeys": [
+        "Channel"
+      ]
+    },
+    {
+      "name": "ReplayPlayEvent",
+      "category": "Replay",
+      "description": "Value = Event Number where 0 is bottom of list 0-1000",
+      "parameters": "Value,Channel",
+      "paramKeys": [
+        "Value",
+        "Channel"
+      ]
+    },
+    {
+      "name": "ReplayPlayEventsByID",
+      "category": "Replay",
+      "description": "Value = List of IDs",
+      "parameters": "Value,Channel",
+      "paramKeys": [
+        "Value",
+        "Channel"
+      ]
+    },
+    {
+      "name": "ReplayPlayEventsByIDToOutput",
+      "category": "Replay",
+      "description": "Value = List of IDs",
+      "parameters": "Value,Channel",
+      "paramKeys": [
+        "Value",
+        "Channel"
+      ]
+    },
+    {
+      "name": "ReplayPlayEventToOutput",
+      "category": "Replay",
+      "description": "Value = Event Number where 0 is bottom of list 0-1000",
+      "parameters": "Value,Channel",
+      "paramKeys": [
+        "Value",
+        "Channel"
+      ]
+    },
+    {
+      "name": "ReplayPlayForward",
+      "category": "Replay",
+      "description": "",
+      "parameters": "Channel",
+      "paramKeys": [
+        "Channel"
+      ]
+    },
+    {
+      "name": "ReplayPlayLastEvent",
+      "category": "Replay",
+      "description": "",
+      "parameters": "Channel",
+      "paramKeys": [
+        "Channel"
+      ]
+    },
+    {
+      "name": "ReplayPlayLastEventToOutput",
+      "category": "Replay",
+      "description": "",
+      "parameters": "Channel",
+      "paramKeys": [
+        "Channel"
+      ]
+    },
+    {
+      "name": "ReplayPlayNext",
+      "category": "Replay",
+      "description": "",
+      "parameters": "Channel",
+      "paramKeys": [
+        "Channel"
+      ]
+    },
+    {
+      "name": "ReplayPlayPause",
+      "category": "Replay",
+      "description": "",
+      "parameters": "Channel",
+      "paramKeys": [
+        "Channel"
+      ]
+    },
+    {
+      "name": "ReplayPlayPrevious",
+      "category": "Replay",
+      "description": "",
+      "parameters": "Channel",
+      "paramKeys": [
+        "Channel"
+      ]
+    },
+    {
+      "name": "ReplayPlaySelectedEvent",
+      "category": "Replay",
+      "description": "",
+      "parameters": "Channel",
+      "paramKeys": [
+        "Channel"
+      ]
+    },
+    {
+      "name": "ReplayPlaySelectedEventToOutput",
+      "category": "Replay",
+      "description": "",
+      "parameters": "Channel",
+      "paramKeys": [
+        "Channel"
+      ]
+    },
+    {
+      "name": "ReplayQuadModeOff",
+      "category": "Replay",
+      "description": "",
+      "parameters": "None",
+      "paramKeys": []
+    },
+    {
+      "name": "ReplayQuadModeOn",
+      "category": "Replay",
+      "description": "",
+      "parameters": "None",
+      "paramKeys": []
+    },
+    {
+      "name": "ReplayRecorded",
+      "category": "Replay",
+      "description": "",
+      "parameters": "None",
+      "paramKeys": []
+    },
+    {
+      "name": "ReplayScrollSelectedEvent",
+      "category": "Replay",
+      "description": "Move back or forward through events list\nValue = Count -10-10",
+      "parameters": "Value",
+      "paramKeys": [
+        "Value"
+      ]
+    },
+    {
+      "name": "ReplaySelectAllEvents",
+      "category": "Replay",
+      "description": "Select all events in active channel.",
+      "parameters": "None",
+      "paramKeys": []
+    },
+    {
+      "name": "ReplaySelectChannelA",
+      "category": "Replay",
+      "description": "",
+      "parameters": "None",
+      "paramKeys": []
+    },
+    {
+      "name": "ReplaySelectChannelAB",
+      "category": "Replay",
+      "description": "",
+      "parameters": "None",
+      "paramKeys": []
+    },
+    {
+      "name": "ReplaySelectChannelB",
+      "category": "Replay",
+      "description": "",
+      "parameters": "None",
+      "paramKeys": []
+    },
+    {
+      "name": "ReplaySelectedEventCameraOff",
+      "category": "Replay",
+      "description": "Turns off the specified camera angle (1-8)\nValue = Camera",
+      "parameters": "Value",
+      "paramKeys": [
+        "Value"
+      ]
+    },
+    {
+      "name": "ReplaySelectedEventCameraOn",
+      "category": "Replay",
+      "description": "Turns on the specified camera angle (1-8)\nValue = Camera",
+      "parameters": "Value",
+      "paramKeys": [
+        "Value"
+      ]
+    },
+    {
+      "name": "ReplaySelectedEventSingleCameraOn",
+      "category": "Replay",
+      "description": "Turns on only the specified camera angle (1-8)\nValue = Camera",
+      "parameters": "Value",
+      "paramKeys": [
+        "Value"
+      ]
+    },
+    {
+      "name": "ReplaySelectEvents1",
+      "category": "Replay",
+      "description": "",
+      "parameters": "Channel",
+      "paramKeys": [
+        "Channel"
+      ]
+    },
+    {
+      "name": "ReplaySelectEvents10",
+      "category": "Replay",
+      "description": "",
+      "parameters": "Channel",
+      "paramKeys": [
+        "Channel"
+      ]
+    },
+    {
+      "name": "ReplaySelectEvents11",
+      "category": "Replay",
+      "description": "",
+      "parameters": "Channel",
+      "paramKeys": [
+        "Channel"
+      ]
+    },
+    {
+      "name": "ReplaySelectEvents12",
+      "category": "Replay",
+      "description": "",
+      "parameters": "Channel",
+      "paramKeys": [
+        "Channel"
+      ]
+    },
+    {
+      "name": "ReplaySelectEvents13",
+      "category": "Replay",
+      "description": "",
+      "parameters": "Channel",
+      "paramKeys": [
+        "Channel"
+      ]
+    },
+    {
+      "name": "ReplaySelectEvents14",
+      "category": "Replay",
+      "description": "",
+      "parameters": "Channel",
+      "paramKeys": [
+        "Channel"
+      ]
+    },
+    {
+      "name": "ReplaySelectEvents15",
+      "category": "Replay",
+      "description": "",
+      "parameters": "Channel",
+      "paramKeys": [
+        "Channel"
+      ]
+    },
+    {
+      "name": "ReplaySelectEvents16",
+      "category": "Replay",
+      "description": "",
+      "parameters": "Channel",
+      "paramKeys": [
+        "Channel"
+      ]
+    },
+    {
+      "name": "ReplaySelectEvents17",
+      "category": "Replay",
+      "description": "",
+      "parameters": "Channel",
+      "paramKeys": [
+        "Channel"
+      ]
+    },
+    {
+      "name": "ReplaySelectEvents18",
+      "category": "Replay",
+      "description": "",
+      "parameters": "Channel",
+      "paramKeys": [
+        "Channel"
+      ]
+    },
+    {
+      "name": "ReplaySelectEvents19",
+      "category": "Replay",
+      "description": "",
+      "parameters": "Channel",
+      "paramKeys": [
+        "Channel"
+      ]
+    },
+    {
+      "name": "ReplaySelectEvents2",
+      "category": "Replay",
+      "description": "",
+      "parameters": "Channel",
+      "paramKeys": [
+        "Channel"
+      ]
+    },
+    {
+      "name": "ReplaySelectEvents20",
+      "category": "Replay",
+      "description": "",
+      "parameters": "Channel",
+      "paramKeys": [
+        "Channel"
+      ]
+    },
+    {
+      "name": "ReplaySelectEvents3",
+      "category": "Replay",
+      "description": "",
+      "parameters": "Channel",
+      "paramKeys": [
+        "Channel"
+      ]
+    },
+    {
+      "name": "ReplaySelectEvents4",
+      "category": "Replay",
+      "description": "",
+      "parameters": "Channel",
+      "paramKeys": [
+        "Channel"
+      ]
+    },
+    {
+      "name": "ReplaySelectEvents5",
+      "category": "Replay",
+      "description": "",
+      "parameters": "Channel",
+      "paramKeys": [
+        "Channel"
+      ]
+    },
+    {
+      "name": "ReplaySelectEvents6",
+      "category": "Replay",
+      "description": "",
+      "parameters": "Channel",
+      "paramKeys": [
+        "Channel"
+      ]
+    },
+    {
+      "name": "ReplaySelectEvents7",
+      "category": "Replay",
+      "description": "",
+      "parameters": "Channel",
+      "paramKeys": [
+        "Channel"
+      ]
+    },
+    {
+      "name": "ReplaySelectEvents8",
+      "category": "Replay",
+      "description": "",
+      "parameters": "Channel",
+      "paramKeys": [
+        "Channel"
+      ]
+    },
+    {
+      "name": "ReplaySelectEvents9",
+      "category": "Replay",
+      "description": "",
+      "parameters": "Channel",
+      "paramKeys": [
+        "Channel"
+      ]
+    },
+    {
+      "name": "ReplaySelectFirstEvent",
+      "category": "Replay",
+      "description": "",
+      "parameters": "Channel",
+      "paramKeys": [
+        "Channel"
+      ]
+    },
+    {
+      "name": "ReplaySelectLastEvent",
+      "category": "Replay",
+      "description": "",
+      "parameters": "Channel",
+      "paramKeys": [
+        "Channel"
+      ]
+    },
+    {
+      "name": "ReplaySelectNextEvent",
+      "category": "Replay",
+      "description": "",
+      "parameters": "Channel",
+      "paramKeys": [
+        "Channel"
+      ]
+    },
+    {
+      "name": "ReplaySelectPreviousEvent",
+      "category": "Replay",
+      "description": "",
+      "parameters": "Channel",
+      "paramKeys": [
+        "Channel"
+      ]
+    },
+    {
+      "name": "ReplaySetAudioSource",
+      "category": "Replay",
+      "description": "Name as per dropdown box. e.g 'Camera1'\nValue = AudioSource",
+      "parameters": "Value",
+      "paramKeys": [
+        "Value"
+      ]
+    },
+    {
+      "name": "ReplaySetChannelAToBTimecode",
+      "category": "Replay",
+      "description": "Set A Timecode to B Timecode",
+      "parameters": "None",
+      "paramKeys": []
+    },
+    {
+      "name": "ReplaySetChannelAToBTimecodeAndCamera",
+      "category": "Replay",
+      "description": "Set A Timecode and Camera to B",
+      "parameters": "None",
+      "paramKeys": []
+    },
+    {
+      "name": "ReplaySetChannelBToATimecode",
+      "category": "Replay",
+      "description": "Set B Timecode to A Timecode",
+      "parameters": "None",
+      "paramKeys": []
+    },
+    {
+      "name": "ReplaySetChannelBToATimecodeAndCamera",
+      "category": "Replay",
+      "description": "Set B Timecode and Camera to A",
+      "parameters": "None",
+      "paramKeys": []
+    },
+    {
+      "name": "ReplaySetDirectionBackward",
+      "category": "Replay",
+      "description": "",
+      "parameters": "Channel",
+      "paramKeys": [
+        "Channel"
+      ]
+    },
+    {
+      "name": "ReplaySetDirectionForward",
+      "category": "Replay",
+      "description": "",
+      "parameters": "Channel",
+      "paramKeys": [
+        "Channel"
+      ]
+    },
+    {
+      "name": "ReplaySetLastEventText",
+      "category": "Replay",
+      "description": "Value = Text",
+      "parameters": "Value",
+      "paramKeys": [
+        "Value"
+      ]
+    },
+    {
+      "name": "ReplaySetLastEventTextCamera",
+      "category": "Replay",
+      "description": "Changes the text of the specified angle (1-4), example: 3,angle3text\nValue = Camera,Text",
+      "parameters": "Value",
+      "paramKeys": [
+        "Value"
+      ]
+    },
+    {
+      "name": "ReplaySetSelectedEventText",
+      "category": "Replay",
+      "description": "Value = Text",
+      "parameters": "Value",
+      "paramKeys": [
+        "Value"
+      ]
+    },
+    {
+      "name": "ReplaySetSelectedEventTextCamera",
+      "category": "Replay",
+      "description": "Changes the text of the specified angle (1-4), example: 3,angle3text\nValue = Camera,Text",
+      "parameters": "Value",
+      "paramKeys": [
+        "Value"
+      ]
+    },
+    {
+      "name": "ReplaySetSpeed",
+      "category": "Replay",
+      "description": "See SetRateSlowMotion\nValue = Speed 0-1",
+      "parameters": "Value,Channel",
+      "paramKeys": [
+        "Value",
+        "Channel"
+      ]
+    },
+    {
+      "name": "ReplaySetTimecode",
+      "category": "Replay",
+      "description": "Set position to Timecode in format yyyy-MM-ddTHH:mm:ss.fff\nValue = Timecode",
+      "parameters": "Value,Channel",
+      "paramKeys": [
+        "Value",
+        "Channel"
+      ]
+    },
+    {
+      "name": "ReplayShowHide",
+      "category": "Replay",
+      "description": "",
+      "parameters": "None",
+      "paramKeys": []
+    },
+    {
+      "name": "ReplayStartRecording",
+      "category": "Replay",
+      "description": "",
+      "parameters": "None",
+      "paramKeys": []
+    },
+    {
+      "name": "ReplayStartStopRecording",
+      "category": "Replay",
+      "description": "",
+      "parameters": "None",
+      "paramKeys": []
+    },
+    {
+      "name": "ReplayStopEvents",
+      "category": "Replay",
+      "description": "",
+      "parameters": "Channel",
+      "paramKeys": [
+        "Channel"
+      ]
+    },
+    {
+      "name": "ReplayStopRecording",
+      "category": "Replay",
+      "description": "",
+      "parameters": "None",
+      "paramKeys": []
+    },
+    {
+      "name": "ReplaySwapChannels",
+      "category": "Replay",
+      "description": "Swap A to B and vice versa, includes angles and playback status.",
+      "parameters": "None",
+      "paramKeys": []
+    },
+    {
+      "name": "ReplayToggleLastEventCamera1",
+      "category": "Replay",
+      "description": "",
+      "parameters": "None",
+      "paramKeys": []
+    },
+    {
+      "name": "ReplayToggleLastEventCamera2",
+      "category": "Replay",
+      "description": "",
+      "parameters": "None",
+      "paramKeys": []
+    },
+    {
+      "name": "ReplayToggleLastEventCamera3",
+      "category": "Replay",
+      "description": "",
+      "parameters": "None",
+      "paramKeys": []
+    },
+    {
+      "name": "ReplayToggleLastEventCamera4",
+      "category": "Replay",
+      "description": "",
+      "parameters": "None",
+      "paramKeys": []
+    },
+    {
+      "name": "ReplayToggleLastEventCamera5",
+      "category": "Replay",
+      "description": "",
+      "parameters": "None",
+      "paramKeys": []
+    },
+    {
+      "name": "ReplayToggleLastEventCamera6",
+      "category": "Replay",
+      "description": "",
+      "parameters": "None",
+      "paramKeys": []
+    },
+    {
+      "name": "ReplayToggleLastEventCamera7",
+      "category": "Replay",
+      "description": "",
+      "parameters": "None",
+      "paramKeys": []
+    },
+    {
+      "name": "ReplayToggleLastEventCamera8",
+      "category": "Replay",
+      "description": "",
+      "parameters": "None",
+      "paramKeys": []
+    },
+    {
+      "name": "ReplayToggleQuadMode",
+      "category": "Replay",
+      "description": "",
+      "parameters": "None",
+      "paramKeys": []
+    },
+    {
+      "name": "ReplayToggleSelectedEventCamera1",
+      "category": "Replay",
+      "description": "",
+      "parameters": "None",
+      "paramKeys": []
+    },
+    {
+      "name": "ReplayToggleSelectedEventCamera2",
+      "category": "Replay",
+      "description": "",
+      "parameters": "None",
+      "paramKeys": []
+    },
+    {
+      "name": "ReplayToggleSelectedEventCamera3",
+      "category": "Replay",
+      "description": "",
+      "parameters": "None",
+      "paramKeys": []
+    },
+    {
+      "name": "ReplayToggleSelectedEventCamera4",
+      "category": "Replay",
+      "description": "",
+      "parameters": "None",
+      "paramKeys": []
+    },
+    {
+      "name": "ReplayToggleSelectedEventCamera5",
+      "category": "Replay",
+      "description": "",
+      "parameters": "None",
+      "paramKeys": []
+    },
+    {
+      "name": "ReplayToggleSelectedEventCamera6",
+      "category": "Replay",
+      "description": "",
+      "parameters": "None",
+      "paramKeys": []
+    },
+    {
+      "name": "ReplayToggleSelectedEventCamera7",
+      "category": "Replay",
+      "description": "",
+      "parameters": "None",
+      "paramKeys": []
+    },
+    {
+      "name": "ReplayToggleSelectedEventCamera8",
+      "category": "Replay",
+      "description": "",
+      "parameters": "None",
+      "paramKeys": []
+    },
+    {
+      "name": "ReplayUpdateSelectedInPoint",
+      "category": "Replay",
+      "description": "Update In point of Selected Event to current Position.",
+      "parameters": "Channel",
+      "paramKeys": [
+        "Channel"
+      ]
+    },
+    {
+      "name": "ReplayUpdateSelectedOutPoint",
+      "category": "Replay",
+      "description": "Update Mark Out point of Selected Event to current Position.",
+      "parameters": "Channel",
+      "paramKeys": [
+        "Channel"
+      ]
+    },
+    {
+      "name": "ReplayUpdateSelectedSpeed",
+      "category": "Replay",
+      "description": "Update Selected Event to use Current Speed.",
+      "parameters": "Channel",
+      "paramKeys": [
+        "Channel"
+      ]
+    },
+    {
+      "name": "ReplayUpdateSelectedSpeedDefault",
+      "category": "Replay",
+      "description": "Update Selected Event to use Default Speed.",
+      "parameters": "Channel",
+      "paramKeys": [
+        "Channel"
+      ]
+    },
+    {
+      "name": "ReplayUpdateSelectedSpeedFromValue",
+      "category": "Replay",
+      "description": "See SetRateSlowMotion\nValue = Speed 0-1",
+      "parameters": "Value,Channel",
+      "paramKeys": [
+        "Value",
+        "Channel"
+      ]
+    },
+    {
+      "name": "NDICommand",
+      "category": "NDI",
+      "description": "Send specified command to NDI source\nValue = Command",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "NDISelectSourceByIndex",
+      "category": "NDI",
+      "description": "Value = Index 0-100",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "NDISelectSourceByName",
+      "category": "NDI",
+      "description": "Value = Name",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "NDIStartRecording",
+      "category": "NDI",
+      "description": "",
+      "parameters": "Input",
+      "paramKeys": [
+        "Input"
+      ]
+    },
+    {
+      "name": "NDIStopRecording",
+      "category": "NDI",
+      "description": "",
+      "parameters": "Input",
+      "paramKeys": [
+        "Input"
+      ]
+    },
+    {
+      "name": "OMTSelectSourceByIndex",
+      "category": "OMT",
+      "description": "Value = Index 0-100",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "OMTSelectSourceByName",
+      "category": "OMT",
+      "description": "Value = Name",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "PTZCreateVirtualInput",
+      "category": "PTZ",
+      "description": "Creates a PTZ Virtual Input with the current Position",
+      "parameters": "Input",
+      "paramKeys": [
+        "Input"
+      ]
+    },
+    {
+      "name": "PTZFocusAuto",
+      "category": "PTZ",
+      "description": "",
+      "parameters": "Input",
+      "paramKeys": [
+        "Input"
+      ]
+    },
+    {
+      "name": "PTZFocusFar",
+      "category": "PTZ",
+      "description": "Value = Speed 0-1",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "PTZFocusManual",
+      "category": "PTZ",
+      "description": "",
+      "parameters": "Input",
+      "paramKeys": [
+        "Input"
+      ]
+    },
+    {
+      "name": "PTZFocusNear",
+      "category": "PTZ",
+      "description": "Value = Speed 0-1",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "PTZFocusStop",
+      "category": "PTZ",
+      "description": "",
+      "parameters": "Input",
+      "paramKeys": [
+        "Input"
+      ]
+    },
+    {
+      "name": "PTZHome",
+      "category": "PTZ",
+      "description": "",
+      "parameters": "Input",
+      "paramKeys": [
+        "Input"
+      ]
+    },
+    {
+      "name": "PTZMoveDown",
+      "category": "PTZ",
+      "description": "Value = Speed 0-1",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "PTZMoveDownLeft",
+      "category": "PTZ",
+      "description": "Value = Speed 0-1",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "PTZMoveDownRight",
+      "category": "PTZ",
+      "description": "Value = Speed 0-1",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "PTZMoveLeft",
+      "category": "PTZ",
+      "description": "Value = Speed 0-1",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "PTZMoveRight",
+      "category": "PTZ",
+      "description": "Value = Speed 0-1",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "PTZMoveStop",
+      "category": "PTZ",
+      "description": "Stop all PTZ movement",
+      "parameters": "Input",
+      "paramKeys": [
+        "Input"
+      ]
+    },
+    {
+      "name": "PTZMoveToVirtualInputPosition",
+      "category": "PTZ",
+      "description": "Moves to the Position of the PTZ Virtual Input without selecting it into Preview",
+      "parameters": "Input",
+      "paramKeys": [
+        "Input"
+      ]
+    },
+    {
+      "name": "PTZMoveToVirtualInputPositionByIndex",
+      "category": "PTZ",
+      "description": "Moves to the Position of the PTZ Virtual Input associated with this Input. Index is first Input found starting from 0\nValue = Index 0-100",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "PTZMoveUp",
+      "category": "PTZ",
+      "description": "Value = Speed 0-1",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "PTZMoveUpLeft",
+      "category": "PTZ",
+      "description": "Value = Speed 0-1",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "PTZMoveUpRight",
+      "category": "PTZ",
+      "description": "Value = Speed 0-1",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "PTZUpdateVirtualInput",
+      "category": "PTZ",
+      "description": "Updates selected PTZ Virtual Input with current Position",
+      "parameters": "Input",
+      "paramKeys": [
+        "Input"
+      ]
+    },
+    {
+      "name": "PTZZoomIn",
+      "category": "PTZ",
+      "description": "Value = Speed 0-1",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "PTZZoomOut",
+      "category": "PTZ",
+      "description": "Value = Speed 0-1",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "PTZZoomStop",
+      "category": "PTZ",
+      "description": "",
+      "parameters": "Input",
+      "paramKeys": [
+        "Input"
+      ]
+    },
+    {
+      "name": "LastPreset",
+      "category": "Preset",
+      "description": "Load the last preset.",
+      "parameters": "None",
+      "paramKeys": []
+    },
+    {
+      "name": "OpenPreset",
+      "category": "Preset",
+      "description": "Load preset from the specified Filename.\nValue = Filename",
+      "parameters": "Value",
+      "paramKeys": [
+        "Value"
+      ]
+    },
+    {
+      "name": "SavePreset",
+      "category": "Preset",
+      "description": "Save preset to the specified Filename.\nValue = Filename",
+      "parameters": "Value",
+      "paramKeys": [
+        "Value"
+      ]
+    },
+    {
+      "name": "DataSourceAutoNextOff",
+      "category": "DataSources",
+      "description": "Name of the Data Source, Table Name (optional) eg 'Excel/CSV,Sheet1'\nValue = Name,Table",
+      "parameters": "Value",
+      "paramKeys": [
+        "Value"
+      ]
+    },
+    {
+      "name": "DataSourceAutoNextOn",
+      "category": "DataSources",
+      "description": "Name of the Data Source, Table Name (optional) eg 'Excel/CSV,Sheet1'\nValue = Name,Table",
+      "parameters": "Value",
+      "paramKeys": [
+        "Value"
+      ]
+    },
+    {
+      "name": "DataSourceAutoNextOnOff",
+      "category": "DataSources",
+      "description": "Name of the Data Source, Table Name (optional) eg 'Excel/CSV,Sheet1'\nValue = Name,Table",
+      "parameters": "Value",
+      "paramKeys": [
+        "Value"
+      ]
+    },
+    {
+      "name": "DataSourceNextRow",
+      "category": "DataSources",
+      "description": "Name of the Data Source and Table Name (optional) eg 'Excel/CSV,Sheet1'\nValue = Name,Table",
+      "parameters": "Value",
+      "paramKeys": [
+        "Value"
+      ]
+    },
+    {
+      "name": "DataSourcePause",
+      "category": "DataSources",
+      "description": "Name of Data Source eg 'Excel/CSV'\nValue = Name",
+      "parameters": "Value",
+      "paramKeys": [
+        "Value"
+      ]
+    },
+    {
+      "name": "DataSourcePlay",
+      "category": "DataSources",
+      "description": "Name of Data Source eg 'Excel/CSV'\nValue = Name",
+      "parameters": "Value",
+      "paramKeys": [
+        "Value"
+      ]
+    },
+    {
+      "name": "DataSourcePlayPause",
+      "category": "DataSources",
+      "description": "Name of Data Source eg 'Excel/CSV'\nValue = Name",
+      "parameters": "Value",
+      "paramKeys": [
+        "Value"
+      ]
+    },
+    {
+      "name": "DataSourcePreviousRow",
+      "category": "DataSources",
+      "description": "Name of the Data Source and Table Name (optional) eg 'Excel/CSV,Sheet1'\nValue = Name,Table",
+      "parameters": "Value",
+      "paramKeys": [
+        "Value"
+      ]
+    },
+    {
+      "name": "DataSourceSelectRow",
+      "category": "DataSources",
+      "description": "Name of the Data Source, Table Name (optional) and Row Index starting from 0 eg 'Excel/CSV,Sheet1,5'\nValue = Name,Table,Index",
+      "parameters": "Value",
+      "paramKeys": [
+        "Value"
+      ]
+    },
+    {
+      "name": "BrowserBack",
+      "category": "Browser",
+      "description": "",
+      "parameters": "Input",
+      "paramKeys": [
+        "Input"
+      ]
+    },
+    {
+      "name": "BrowserForward",
+      "category": "Browser",
+      "description": "",
+      "parameters": "Input",
+      "paramKeys": [
+        "Input"
+      ]
+    },
+    {
+      "name": "BrowserKeyboardDisabled",
+      "category": "Browser",
+      "description": "",
+      "parameters": "Input",
+      "paramKeys": [
+        "Input"
+      ]
+    },
+    {
+      "name": "BrowserKeyboardEnabled",
+      "category": "Browser",
+      "description": "",
+      "parameters": "Input",
+      "paramKeys": [
+        "Input"
+      ]
+    },
+    {
+      "name": "BrowserMouseDisabled",
+      "category": "Browser",
+      "description": "",
+      "parameters": "Input",
+      "paramKeys": [
+        "Input"
+      ]
+    },
+    {
+      "name": "BrowserMouseEnabled",
+      "category": "Browser",
+      "description": "",
+      "parameters": "Input",
+      "paramKeys": [
+        "Input"
+      ]
+    },
+    {
+      "name": "BrowserNavigate",
+      "category": "Browser",
+      "description": "URL\nValue = URL",
+      "parameters": "Value,Input",
+      "paramKeys": [
+        "Value",
+        "Input"
+      ]
+    },
+    {
+      "name": "BrowserReload",
+      "category": "Browser",
+      "description": "",
+      "parameters": "Input",
+      "paramKeys": [
+        "Input"
+      ]
+    }
+  ]
+}

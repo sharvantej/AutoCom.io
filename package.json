@@ -1,9 +1,14 @@
 {
-  "name": "auto-osc-controller",
-  "version": "1.0.0",
+  "name": "bunny",
+  "version": "1.1.0",
+  "description": "Desktop control dashboard for live show cues and device triggers.",
+  "author": "Sharvan Tej",
+  "license": "UNLICENSED",
+  "private": true,
   "main": "electron-main.js",
   "scripts": {
     "start": "nodemon --watch server.js --watch engine/ --ignore show/ --exec \"electron .\"",
+    "sync:vmix-shortcuts": "node scripts/update-vmix-shortcuts.js",
     "dist": "npm run dist:installer",
     "dist:win": "electron-builder --win nsis",
     "dist:clean": "powershell -NoProfile -Command \"if (Test-Path dist) { Remove-Item dist -Recurse -Force }\"",
@@ -11,12 +16,11 @@
     "dist:installer": "npm run dist:clean && npm run dist:win && npm run dist:prune"
   },
   "build": {
-    "appId": "com.autoosc.controller",
-    "productName": "Automation Companion",
-    "artifactName": "Automation Companion Setup.${ext}",
+    "appId": "com.bunny.app",
+    "productName": "Bunny",
+    "artifactName": "Bunny Setup.${ext}",
     "files": [
       "*.js",
-      "devices/**/*",
       "engine/**/*",
       "public/**/*",
       "show/**/*",
@@ -36,10 +40,10 @@
       "uninstallerIcon": "logo.ico"
     },
     "mac": {
-      "icon": "logo.svg"
+      "icon": "logo.ico"
     },
     "linux": {
-      "icon": "logo.svg"
+      "icon": "logo.ico"
     }
   },
   "dependencies": {

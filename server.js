@@ -1,6 +1,7 @@
 ﻿const express = require("express");
 const http = require("http");
 const fs = require("fs");
+const os = require("os");
 const path = require("path");
 const { Server } = require("socket.io");
 
@@ -12,11 +13,29 @@ try {
 } catch {}
 
 const app = express();
-const server = http.createServer(app);
-const io = new Server(server, { cors: { origin: "*" } });
-global.io = io;
+const PORT = Number(process.env.PORT) || 3000;
+const HOST = process.env.AUTO_OSC_BIND_HOST || "127.0.0.1";
+const allowedSocketOrigins = new Set([
+  `http://localhost:${PORT}`,
+  `http://127.0.0.1:${PORT}`,
+]);
+if (HOST !== "127.0.0.1" && HOST !== "localhost") {
+  allowedSocketOrigins.add(`http://${HOST}:${PORT}`);
+}
 
-const PORT = process.env.PORT || 3000;
+const server = http.createServer(app);
+const io = new Server(server, {
+  cors: {
+    origin(origin, callback) {
+      if (!origin || allowedSocketOrigins.has(origin)) {
+        callback(null, true);
+        return;
+      }
+      callback(new Error(`CORS origin not allowed: ${origin}`));
+    },
+  },
+});
+global.io = io;
 const bundledShowDir = path.join(__dirname, "show");
 const showDir = process.env.AUTO_OSC_SHOW_DIR
   ? path.resolve(process.env.AUTO_OSC_SHOW_DIR)
@@ -32,12 +51,30 @@ let statusCheckInFlight = false;
 app.use(express.json({ limit: "2mb" }));
 app.use(express.static(path.join(__dirname, "public")));
 
+function isPlainObject(value) {
+  return Boolean(value) && typeof value === "object" && !Array.isArray(value);
+}
+
+function writeJsonFile(filePath, data) {
+  const tmpPath = `${filePath}.tmp-${process.pid}-${Date.now()}`;
+  fs.writeFileSync(tmpPath, JSON.stringify(data, null, 2), "utf-8");
+  fs.renameSync(tmpPath, filePath);
+}
+
+function normalizePort(value) {
+  const port = Number(value);
+  if (!Number.isInteger(port) || port < 1 || port > 65535) {
+    return null;
+  }
+  return port;
+}
+
 function ensureLayout() {
   if (!fs.existsSync(showDir)) {
     fs.mkdirSync(showDir, { recursive: true });
   }
   if (!fs.existsSync(layoutPath)) {
-    fs.writeFileSync(layoutPath, JSON.stringify({ buttons: [] }, null, 2));
+    writeJsonFile(layoutPath, { buttons: [] });
   }
 }
 
@@ -59,6 +96,7 @@ function defaultConnections() {
       port: 8000,
       type: "grandma3",
       protocol: "osc",
+      oscPrefix: "/cmd",
       enabled: true,
     },
     vMix: {
@@ -67,6 +105,21 @@ function defaultConnections() {
       type: "vmix",
       protocol: "tcp",
       enabled: true,
+    },
+    "ATEM Switcher": {
+      host: "127.0.0.1",
+      port: 9993,
+      type: "atem",
+      protocol: "udp",
+      enabled: true,
+    },
+    OBS: {
+      host: "127.0.0.1",
+      port: 4455,
+      type: "obs",
+      protocol: "ws",
+      enabled: true,
+      password: "",
     },
     "HTTP API": {
       host: "127.0.0.1",
@@ -83,10 +136,10 @@ function defaultConnections() {
       protocol: "osc",
       enabled: true,
     },
-    "Ross Carbonite": {
+    "Ross Switcher (RossTalk)": {
       host: "127.0.0.1",
       port: 7788,
-      type: "ross_carbonite",
+      type: "ross_talk",
       protocol: "tcp",
       enabled: true,
     },
@@ -105,10 +158,7 @@ function ensureConnections() {
     fs.mkdirSync(showDir, { recursive: true });
   }
   if (!fs.existsSync(connectionsPath)) {
-    fs.writeFileSync(
-      connectionsPath,
-      JSON.stringify(defaultConnections(), null, 2),
-    );
+    writeJsonFile(connectionsPath, defaultConnections());
   }
 }
 
@@ -121,7 +171,7 @@ function ensureShowFile() {
     if (fs.existsSync(bundledShowPath)) {
       fs.copyFileSync(bundledShowPath, showPath);
     } else {
-      fs.writeFileSync(showPath, JSON.stringify({ cues: {} }, null, 2), "utf-8");
+      writeJsonFile(showPath, { cues: {} });
     }
   }
 }
@@ -215,18 +265,31 @@ async function checkAllDeviceStatuses() {
 }
 
 function normalizeConnectionPayload(input) {
-  const out = {};
-  for (const [name, raw] of Object.entries(input || {})) {
-    if (!raw || typeof raw !== "object") continue;
+  if (!isPlainObject(input)) {
+    throw new Error("Connections payload must be an object.");
+  }
 
-    const host = String(raw.host || "").trim();
-    const port = Number(raw.port);
+  const out = {};
+  const seenNames = new Set();
+  for (const [name, raw] of Object.entries(input || {})) {
+    if (!isPlainObject(raw)) continue;
+
+    const normalizedName = String(name || "").trim();
+    if (!normalizedName) continue;
+    const canonicalName = normalizedName.toLowerCase();
+    if (seenNames.has(canonicalName)) {
+      throw new Error(`Duplicate connection name "${normalizedName}".`);
+    }
+    seenNames.add(canonicalName);
+
+    const host = String(raw.host || raw.ip || "").trim();
+    const port = normalizePort(raw.port);
     const type = String(raw.type || "generic_tcp")
       .trim()
       .toLowerCase();
     const protocol = inferProtocol({ ...raw, type, protocol: raw.protocol });
 
-    out[name] = {
+    out[normalizedName] = {
       ...raw,
       host,
       port,
@@ -236,6 +299,19 @@ function normalizeConnectionPayload(input) {
     };
   }
   return out;
+}
+
+function normalizeLayoutPayload(input) {
+  if (!isPlainObject(input)) {
+    throw new Error("Layout payload must be an object.");
+  }
+
+  const next = { ...input };
+  next.buttons = Array.isArray(input.buttons) ? input.buttons : [];
+  if (typeof next.backgroundColor !== "string") {
+    delete next.backgroundColor;
+  }
+  return next;
 }
 
 ensureLayout();
@@ -354,11 +430,14 @@ app.post("/api/layout", (req, res) => {
         .status(403)
         .json({ error: "Show is locked. Cannot save layout." });
     }
+    const normalizedLayout = normalizeLayoutPayload(req.body);
     ensureLayout();
-    fs.writeFileSync(layoutPath, JSON.stringify(req.body, null, 2), "utf-8");
+    writeJsonFile(layoutPath, normalizedLayout);
     res.json({ success: true });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    const message = String(err?.message || "Failed to save layout.");
+    const status = /payload/i.test(message) ? 400 : 500;
+    res.status(status).json({ error: message });
   }
 });
 
@@ -379,15 +458,13 @@ app.post("/api/connections", (req, res) => {
       }
     }
 
-    fs.writeFileSync(
-      connectionsPath,
-      JSON.stringify(normalized, null, 2),
-      "utf-8",
-    );
+    writeJsonFile(connectionsPath, normalized);
     setTimeout(checkAllDeviceStatuses, 200);
     res.json({ success: true });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    const message = String(err?.message || "Failed to save connections.");
+    const status = /payload|duplicate|invalid/i.test(message) ? 400 : 500;
+    res.status(status).json({ error: message });
   }
 });
 
@@ -395,8 +472,27 @@ io.on("connection", (socket) => {
   socket.emit("deviceStatusUpdate", deviceStatus);
 });
 
-server.listen(PORT, () => {
+function lanIPv4List() {
+  const interfaces = os.networkInterfaces();
+  const ips = [];
+  for (const netIf of Object.values(interfaces)) {
+    for (const addr of netIf || []) {
+      if (addr.family === "IPv4" && !addr.internal) {
+        ips.push(addr.address);
+      }
+    }
+  }
+  return ips;
+}
+
+server.listen(PORT, HOST, () => {
   console.log("AUTO OSC SERVER RUNNING");
-  console.log(`http://localhost:${PORT}`);
+  console.log(`Bind:   ${HOST}`);
+  console.log(`Local:  http://localhost:${PORT}`);
+  if (HOST === "0.0.0.0" || HOST === "::") {
+    for (const ip of lanIPv4List()) {
+      console.log(`LAN:    http://${ip}:${PORT}`);
+    }
+  }
 });
 

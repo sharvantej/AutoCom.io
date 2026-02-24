@@ -13,7 +13,14 @@ let editToolMode = "move";
 let snapToGrid = false;
 let showBorders = true;
 let borderColor = "#576172";
+let sidebarCollapsed = false;
+let lastCanvasClick = null;
+let statusPollInFlight = false;
+const deletedButtonsUndoStack = [];
 const GRID_SIZE = 20;
+const MAX_DELETE_UNDO = 30;
+const DEFAULT_BUTTON_COLOR = "#12151b";
+const STATUS_POLL_INTERVAL_MS = 700;
 const sequenceEditor = window.SequenceEditor ? new window.SequenceEditor() : null;
 const WORKSPACE_MIN_W = 2400;
 const WORKSPACE_MIN_H = 1400;
@@ -44,9 +51,13 @@ function normalizeButton(btn) {
   btn.w = clampInt(btn.w, 60, 160);
   btn.h = clampInt(btn.h, 40, 80);
   btn.fontSize = clampInt(btn.fontSize, 8, 20);
-  btn.label = String(btn.label || "Button");
+  btn.label = btn.label == null ? "Button" : String(btn.label);
   btn.textColor = String(btn.textColor || "#e5e7eb");
   btn.src = String(btn.src || "");
+}
+
+function buttonHasAction(btn) {
+  return Boolean((btn?.tasks && btn.tasks.length) || btn?.cue);
 }
 
 function normalizeLayout() {
@@ -101,7 +112,7 @@ function syncInspector() {
     wInput.value = "";
     hInput.value = "";
     fsInput.value = "";
-    bgInput.value = "#2ecc71";
+    bgInput.value = DEFAULT_BUTTON_COLOR;
     textColorInput.value = "#e5e7eb";
     return;
   }
@@ -114,7 +125,7 @@ function syncInspector() {
   wInput.value = String(btn.w);
   hInput.value = String(btn.h);
   fsInput.value = String(btn.fontSize || 20);
-  bgInput.value = normalizeColorValue(btn.color, "#2ecc71");
+  bgInput.value = normalizeColorValue(btn.color, DEFAULT_BUTTON_COLOR);
   textColorInput.value = normalizeColorValue(btn.textColor, "#e5e7eb");
 
   labelInput.disabled = disabled || isImage;
@@ -208,6 +219,49 @@ function ensureCanvasBounds() {
 
   canvas.style.width = `${maxX}px`;
   canvas.style.height = `${maxY}px`;
+}
+
+function resolveNewButtonPosition(width, height) {
+  const viewport = document.getElementById("dashboardViewport");
+  if (lastCanvasClick) {
+    let x = Math.round(lastCanvasClick.x - width / 2);
+    let y = Math.round(lastCanvasClick.y - height / 2);
+    if (snapToGrid) {
+      x = Math.max(0, snapValue(x));
+      y = Math.max(0, snapValue(y));
+    }
+    return { x: Math.max(0, x), y: Math.max(0, y) };
+  }
+
+  if (viewport) {
+    let x = Math.round(viewport.scrollLeft + viewport.clientWidth / 2 - width / 2);
+    let y = Math.round(viewport.scrollTop + viewport.clientHeight / 2 - height / 2);
+    if (snapToGrid) {
+      x = Math.max(0, snapValue(x));
+      y = Math.max(0, snapValue(y));
+    }
+    return { x: Math.max(0, x), y: Math.max(0, y) };
+  }
+
+  return { x: 140, y: 140 };
+}
+
+function initCanvasClickTracking() {
+  const viewport = document.getElementById("dashboardViewport");
+  const canvas = document.getElementById("canvas");
+  if (!viewport || !canvas) return;
+
+  viewport.addEventListener("pointerdown", (event) => {
+    if (event.button !== 0) return;
+    const rect = canvas.getBoundingClientRect();
+    const x = event.clientX - rect.left;
+    const y = event.clientY - rect.top;
+    if (!Number.isFinite(x) || !Number.isFinite(y)) return;
+    lastCanvasClick = {
+      x: Math.max(0, Math.round(x)),
+      y: Math.max(0, Math.round(y)),
+    };
+  });
 }
 
 function restoreDockPosition() {
@@ -316,6 +370,9 @@ function setEditToolMode(mode) {
   buttons.forEach((btn) => {
     btn.classList.toggle("is-active", btn.dataset.toolMode === editToolMode);
   });
+  document.querySelectorAll(".tile").forEach((tile) => {
+    tile.style.cursor = editMode && editToolMode === "move" ? "move" : "pointer";
+  });
 }
 
 function normalizeScrollMode(mode) {
@@ -376,6 +433,16 @@ document.addEventListener("keydown", (event) => {
   const sequenceModalOpen = !document
     .getElementById("sequenceEditorModal")
     ?.classList.contains("hidden");
+  const isUndo =
+    (event.ctrlKey || event.metaKey) &&
+    !event.shiftKey &&
+    event.key.toLowerCase() === "z";
+
+  if (isUndo && !isTypingTarget && !sequenceModalOpen) {
+    event.preventDefault();
+    undoDeleteButton();
+    return;
+  }
 
   if (event.key.toLowerCase() === "g") {
     toggleEdit(!editMode);
@@ -391,7 +458,7 @@ document.addEventListener("keydown", (event) => {
   if (event.key.toLowerCase() === "c") {
     activeButtonId = null;
     localStorage.removeItem("activeButtonId");
-    render();
+    refreshActiveButtonVisual();
   }
 
   if (!editMode || isTypingTarget || sequenceModalOpen) return;
@@ -461,11 +528,35 @@ function toggleEdit(state) {
   render();
 }
 
+function refreshActiveButtonVisual() {
+  const tiles = document.querySelectorAll(".tile");
+  if (!tiles.length) return;
+
+  const byId = new Map(layout.buttons.map((btn) => [String(btn.id), btn]));
+  const activeColor = "#e74c3c";
+
+  for (const tile of tiles) {
+    const btn = byId.get(String(tile.dataset.btnId));
+    if (!btn) continue;
+
+    const kind = String(btn.kind || "button").toLowerCase();
+    if (kind === "label" || kind === "image") continue;
+
+    const isActive = buttonHasAction(btn) && String(btn.id) === String(activeButtonId);
+    tile.classList.toggle("active", isActive);
+    tile.classList.toggle("active-running", isActive && systemRunning);
+    tile.style.background = isActive
+      ? activeColor
+      : btn.color || DEFAULT_BUTTON_COLOR;
+  }
+}
+
 async function loadLayout() {
   const res = await fetch("/api/layout");
   layout = await res.json();
   normalizeLayout();
   layoutBaseline = JSON.stringify(layout);
+  deletedButtonsUndoStack.length = 0;
   refreshDirtyState();
   applyCanvasAppearance();
   syncCanvasSettings();
@@ -474,7 +565,7 @@ async function loadLayout() {
 
 function render() {
   const canvas = document.getElementById("canvas");
-  canvas.innerHTML = "";
+  const fragment = document.createDocumentFragment();
 
   for (const btn of layout.buttons) {
     normalizeButton(btn);
@@ -491,10 +582,16 @@ function render() {
     el.style.fontSize = `${btn.fontSize || 20}px`;
     el.style.color = btn.textColor || "#e5e7eb";
 
-    const defaultColor = "#2ecc71";
+    const defaultColor = DEFAULT_BUTTON_COLOR;
     const activeColor = "#e74c3c";
+    const hasAction = buttonHasAction(btn);
 
-    if (!isLabel && !isImage && String(btn.id) === String(activeButtonId)) {
+    if (
+      !isLabel &&
+      !isImage &&
+      hasAction &&
+      String(btn.id) === String(activeButtonId)
+    ) {
       el.style.background = activeColor;
       el.classList.add("active");
       if (systemRunning) el.classList.add("active-running");
@@ -523,6 +620,7 @@ function render() {
       }
       if (isLabel || isImage) return;
       if (clickLock) return;
+      if (!hasAction) return;
 
       clickLock = true;
       setTimeout(() => {
@@ -532,22 +630,34 @@ function render() {
       activeButtonId = String(btn.id);
       localStorage.setItem("activeButtonId", String(btn.id));
       addLog(`Button pressed: ${btn.label}`);
-      render();
+      refreshActiveButtonVisual();
 
       try {
+        const triggerCalls = [];
         if (btn.tasks?.length) {
-          const response = await fetch(`/api/button/${btn.id}`, { method: "POST" });
-          if (!response.ok) {
-            const data = await response.json().catch(() => ({}));
-            addLog(`Button sequence failed: ${data.error || response.statusText}`);
-          }
+          triggerCalls.push(
+            (async () => {
+              const response = await fetch(`/api/button/${btn.id}`, { method: "POST" });
+              if (!response.ok) {
+                const data = await response.json().catch(() => ({}));
+                addLog(`Button sequence failed: ${data.error || response.statusText}`);
+              }
+            })(),
+          );
         }
         if (btn.cue) {
-          const cueResponse = await fetch(`/api/cue/${btn.cue}`, { method: "POST" });
-          if (!cueResponse.ok) {
-            const cueData = await cueResponse.json().catch(() => ({}));
-            addLog(`Cue failed: ${cueData.error || cueResponse.statusText}`);
-          }
+          triggerCalls.push(
+            (async () => {
+              const cueResponse = await fetch(`/api/cue/${btn.cue}`, { method: "POST" });
+              if (!cueResponse.ok) {
+                const cueData = await cueResponse.json().catch(() => ({}));
+                addLog(`Cue failed: ${cueData.error || cueResponse.statusText}`);
+              }
+            })(),
+          );
+        }
+        if (triggerCalls.length) {
+          await Promise.all(triggerCalls);
         }
       } catch (err) {
         addLog(`Trigger error: ${err.message}`);
@@ -570,19 +680,20 @@ function render() {
     };
 
     el.onmousemove = (event) => {
+      const moveCursorActive = editMode && editToolMode === "move";
       if (
         !editMode ||
         editToolMode !== "resize" ||
         String(btn.id) !== String(selectedEditButtonId)
       ) {
-        el.style.cursor = editMode ? "pointer" : "pointer";
+        el.style.cursor = moveCursorActive ? "move" : "pointer";
         return;
       }
       const dir = getResizeDirection(el, event);
       el.style.cursor = dir ? `${dir}-resize` : "default";
     };
     el.onmouseleave = () => {
-      el.style.cursor = editMode ? "pointer" : "pointer";
+      el.style.cursor = editMode && editToolMode === "move" ? "move" : "pointer";
     };
 
     el.ondblclick = () => {
@@ -600,8 +711,9 @@ function render() {
       editButton(btn);
     };
 
-    canvas.appendChild(el);
+    fragment.appendChild(el);
   }
+  canvas.replaceChildren(fragment);
   ensureCanvasBounds();
   syncInspector();
 }
@@ -617,6 +729,9 @@ function applyEditSelectionVisual() {
 
 function addButton() {
   const defaultLabel = `Button ${layout.buttons.length + 1}`;
+  const defaultW = 160;
+  const defaultH = 60;
+  const pos = resolveNewButtonPosition(defaultW, defaultH);
   let label = defaultLabel;
   try {
     const entered = window.prompt("Button Label?", defaultLabel);
@@ -629,12 +744,12 @@ function addButton() {
     id: Date.now(),
     kind: "button",
     label,
-    x: 140,
-    y: 140,
-    w: 160,
-    h: 80,
+    x: pos.x,
+    y: pos.y,
+    w: defaultW,
+    h: defaultH,
     fontSize: 20,
-    color: "#2ecc71",
+    color: DEFAULT_BUTTON_COLOR,
     textColor: "#f5f5f5",
     tasks: [],
   });
@@ -924,24 +1039,49 @@ async function saveLayout() {
 
 function deleteSelectedButton() {
   if (!editMode || !selectedEditButtonId) return;
-  const selected = layout.buttons.find(
+  const idx = layout.buttons.findIndex(
     (btn) => String(btn.id) === String(selectedEditButtonId),
   );
-  if (!selected) return;
+  if (idx < 0) return;
 
-  const ok = window.confirm(`Delete "${selected.label}"?`);
-  if (!ok) return;
+  const removed = layout.buttons[idx];
+  const snapshot = JSON.parse(JSON.stringify(removed));
+  const wasActive = String(activeButtonId) === String(selectedEditButtonId);
+  deletedButtonsUndoStack.push({ button: snapshot, index: idx, wasActive });
+  if (deletedButtonsUndoStack.length > MAX_DELETE_UNDO) {
+    deletedButtonsUndoStack.shift();
+  }
 
-  layout.buttons = layout.buttons.filter(
-    (btn) => String(btn.id) !== String(selectedEditButtonId),
-  );
-  if (String(activeButtonId) === String(selectedEditButtonId)) {
+  layout.buttons.splice(idx, 1);
+  if (wasActive) {
     activeButtonId = null;
     localStorage.removeItem("activeButtonId");
   }
   selectedEditButtonId = null;
   refreshDirtyState();
   render();
+  showSaveToast('Button deleted (Ctrl+Z to undo)');
+}
+
+function undoDeleteButton() {
+  const entry = deletedButtonsUndoStack.pop();
+  if (!entry?.button) return;
+
+  const insertAt = Math.max(
+    0,
+    Math.min(layout.buttons.length, Number(entry.index) || layout.buttons.length),
+  );
+  layout.buttons.splice(insertAt, 0, entry.button);
+
+  selectedEditButtonId = String(entry.button.id);
+  if (entry.wasActive) {
+    activeButtonId = String(entry.button.id);
+    localStorage.setItem("activeButtonId", activeButtonId);
+  }
+
+  refreshDirtyState();
+  render();
+  showSaveToast("Undo delete");
 }
 
 function initDockActions() {
@@ -958,20 +1098,8 @@ function initDockActions() {
     if (action === "add-image") document.getElementById("imagePicker")?.click();
     if (action === "set-mode-move") setEditToolMode("move");
     if (action === "set-mode-resize") setEditToolMode("resize");
-    if (action === "save") saveLayout();
     if (action === "delete") deleteSelectedButton();
     if (action === "toggle-edit") toggleEdit(!editMode);
-    if (action === "clear-active") {
-      activeButtonId = null;
-      localStorage.removeItem("activeButtonId");
-      render();
-    }
-    if (action === "toggle-connections") {
-      setSidebarTab("connections");
-    }
-    if (action === "toggle-logs") {
-      setSidebarTab("logs");
-    }
     if (action === "shortcuts") {
       alert("Shortcuts:\nG = Toggle Edit\nC = Clear Active\nCtrl+N = New Button\nCtrl+S = Save Layout");
     }
@@ -1000,38 +1128,76 @@ function initSidebarTabs() {
   const tabConnections = document.getElementById("tabConnections");
   const tabLogs = document.getElementById("tabLogs");
   const addDeviceBtn = document.getElementById("addDeviceBtn");
-  const deleteDeviceBtn = document.getElementById("deleteDeviceBtn");
+  const manageDeviceBtn = document.getElementById("manageDeviceBtn");
 
   tabConnections?.addEventListener("click", () => setSidebarTab("connections"));
   tabLogs?.addEventListener("click", () => setSidebarTab("logs"));
 
   addDeviceBtn?.addEventListener("click", () => {
     setSidebarTab("connections");
-    window.connectionsUi?.openEditor?.(true);
+    window.connectionsUi?.openAddEditor?.();
   });
 
-  deleteDeviceBtn?.addEventListener("click", () => {
+  manageDeviceBtn?.addEventListener("click", () => {
     setSidebarTab("connections");
-    window.connectionsUi?.promptDelete?.();
+    window.connectionsUi?.promptManage?.();
   });
 
   // Default first load state per requirement: logs tab visible.
   setSidebarTab("logs");
 }
 
+function syncSidebarDockButton() {
+  const toggle = document.getElementById("sidebarDockToggle");
+  if (!toggle) return;
+  toggle.classList.toggle("is-collapsed", sidebarCollapsed);
+  toggle.setAttribute("aria-expanded", sidebarCollapsed ? "false" : "true");
+  toggle.title = sidebarCollapsed ? "Open sidebar" : "Close sidebar";
+}
+
+function applySidebarDockState() {
+  const sidebar = document.getElementById("rightSidebar");
+  if (!sidebar) return;
+  sidebar.classList.toggle("is-collapsed", sidebarCollapsed);
+  syncSidebarDockButton();
+}
+
+function setSidebarCollapsed(next) {
+  sidebarCollapsed = !!next;
+  localStorage.setItem("sidebarCollapsed", sidebarCollapsed ? "true" : "false");
+  applySidebarDockState();
+}
+
+function initSidebarDock() {
+  const toggle = document.getElementById("sidebarDockToggle");
+  if (!toggle) return;
+
+  toggle.addEventListener("click", () => {
+    setSidebarCollapsed(!sidebarCollapsed);
+  });
+
+  sidebarCollapsed = localStorage.getItem("sidebarCollapsed") === "true";
+  applySidebarDockState();
+}
+
 setInterval(async () => {
+  if (statusPollInFlight) return;
+  statusPollInFlight = true;
   try {
     const res = await fetch("/api/status");
     const status = await res.json();
     const nextRunning = !!status.running;
-    if (!manipulatingLayout && nextRunning !== systemRunning) {
+    if (nextRunning !== systemRunning) {
       systemRunning = nextRunning;
-      render();
-    } else {
-      systemRunning = nextRunning;
+      if (!manipulatingLayout) {
+        refreshActiveButtonVisual();
+      }
     }
-  } catch {}
-}, 700);
+  } catch {
+  } finally {
+    statusPollInFlight = false;
+  }
+}, STATUS_POLL_INTERVAL_MS);
 
 if (window.socket) {
   window.socket.on("cueTriggered", (data) => {
@@ -1052,10 +1218,12 @@ restoreDockPosition();
 initDockDrag();
 initDockOptions();
 initDockActions();
+initSidebarDock();
 initSidebarTabs();
 initScrollControl();
 initCanvasSettings();
 initImagePicker();
+initCanvasClickTracking();
 setEditToolMode("move");
 toggleEdit(false);
 loadLayout();

@@ -1,6 +1,24 @@
 (function () {
   let rowCounter = 0;
   const HTTP_METHODS = ["GET", "POST", "PUT", "PATCH", "DELETE"];
+  const LINE_END_OPTIONS = [
+    { value: "crlf", label: "CRLF (\\r\\n)" },
+    { value: "lf", label: "LF (\\n)" },
+    { value: "cr", label: "CR (\\r)" },
+    { value: "none", label: "None" },
+  ];
+  const DEFAULT_BUTTON_COLOR = "#12151b";
+  const HTML_ESCAPE_MAP = {
+    "&": "&amp;",
+    "<": "&lt;",
+    ">": "&gt;",
+    "\"": "&quot;",
+    "'": "&#39;",
+  };
+
+  function escapeHtml(value) {
+    return String(value ?? "").replace(/[&<>"']/g, (ch) => HTML_ESCAPE_MAP[ch]);
+  }
 
   function nextId(prefix) {
     rowCounter += 1;
@@ -30,24 +48,269 @@
     return true;
   }
 
-  const PRESETS = [
+  function defaultResolumeCommand(target = "clip") {
+    return target === "column"
+      ? "/composition/columns/1/connect"
+      : "composition/layers/1/clips/1/connect";
+  }
+
+  function parseVmixCommand(commandText) {
+    const raw = String(commandText || "").trim();
+    if (!raw) return null;
+    const match = raw.match(/^FUNCTION\s+([^\s]+)(?:\s+(.+))?$/i);
+    if (!match) return null;
+
+    const functionName = String(match[1] || "").trim();
+    const query = String(match[2] || "").trim();
+    const args = {};
+    if (query) {
+      for (const pair of query.split("&")) {
+        if (!pair) continue;
+        const [rawKey, ...rest] = pair.split("=");
+        const key = decodeURIComponent(String(rawKey || "").trim());
+        if (!key) continue;
+        const value = decodeURIComponent(rest.join("="));
+        args[key] = value;
+      }
+    }
+    return {
+      functionName,
+      args,
+      query,
+    };
+  }
+
+  function buildVmixCommand(functionName, args = {}) {
+    const fn = String(functionName || "").trim();
+    if (!fn) return "";
+
+    const query = Object.entries(args || {})
+      .map(([key, value]) => [String(key || "").trim(), String(value ?? "").trim()])
+      .filter(([key, value]) => key && value)
+      .map(([key, value]) => `${encodeURIComponent(key)}=${encodeURIComponent(value)}`)
+      .join("&");
+
+    return query ? `FUNCTION ${fn} ${query}` : `FUNCTION ${fn}`;
+  }
+
+  const ROSSTALK_PRESETS = [
+    { id: "none", label: "None", command: "", fields: [] },
+    {
+      id: "seq_take_layer",
+      label: "SEQ [take ID]:[layer ID]",
+      command: "SEQ {takeId}:{layerId}",
+      fields: [
+        { key: "takeId", label: "take ID", placeholder: "1" },
+        { key: "layerId", label: "layer ID", placeholder: "1" },
+      ],
+    },
+    {
+      id: "take_take_buffer_layer",
+      label: "TAKE [take ID]:[buffer ID]:[layer ID]",
+      command: "TAKE {takeId}:{bufferId}:{layerId}",
+      fields: [
+        { key: "takeId", label: "take ID", placeholder: "1" },
+        { key: "bufferId", label: "buffer ID", placeholder: "1" },
+        { key: "layerId", label: "layer ID", placeholder: "1" },
+      ],
+    },
+    {
+      id: "seqo_take",
+      label: "SEQO [take ID]",
+      command: "SEQO {takeId}",
+      fields: [{ key: "takeId", label: "take ID", placeholder: "1" }],
+    },
+    {
+      id: "clfb_buffer",
+      label: "CLFB [buffer ID]",
+      command: "CLFB {bufferId}",
+      fields: [{ key: "bufferId", label: "buffer ID", placeholder: "1" }],
+    },
+    {
+      id: "clfb_buffer_layer",
+      label: "CLFB [buffer ID]:[layer ID]",
+      command: "CLFB {bufferId}:{layerId}",
+      fields: [
+        { key: "bufferId", label: "buffer ID", placeholder: "1" },
+        { key: "layerId", label: "layer ID", placeholder: "1" },
+      ],
+    },
+    {
+      id: "resume_buffer",
+      label: "RESUME [buffer ID]",
+      command: "RESUME {bufferId}",
+      fields: [{ key: "bufferId", label: "buffer ID", placeholder: "1" }],
+    },
+    {
+      id: "resume_buffer_layer",
+      label: "RESUME [buffer ID]:[layer ID]",
+      command: "RESUME {bufferId}:{layerId}",
+      fields: [
+        { key: "bufferId", label: "buffer ID", placeholder: "1" },
+        { key: "layerId", label: "layer ID", placeholder: "1" },
+      ],
+    },
+    { id: "clra", label: "CLRA", command: "CLRA", fields: [] },
+    { id: "read", label: "READ", command: "READ", fields: [] },
+    { id: "next", label: "NEXT", command: "NEXT", fields: [] },
+    { id: "up", label: "UP", command: "UP", fields: [] },
+    { id: "down", label: "DOWN", command: "DOWN", fields: [] },
+    {
+      id: "focus_take",
+      label: "FOCUS [take ID]",
+      command: "FOCUS {takeId}",
+      fields: [{ key: "takeId", label: "take ID", placeholder: "1" }],
+    },
+    {
+      id: "cc_bcc",
+      label: "CC [bcc]",
+      command: "CC {bcc}",
+      fields: [{ key: "bcc", label: "bcc", placeholder: "1:1" }],
+    },
+    {
+      id: "mem_bm",
+      label: "MEM [bm]",
+      command: "MEM {bm}",
+      fields: [{ key: "bm", label: "bm", placeholder: "1" }],
+    },
+    {
+      id: "keycut",
+      label: "KEYCUT [MLE]:[keyer]",
+      command: "KEYCUT {mle}:{keyer}",
+      fields: [
+        { key: "mle", label: "MLE", placeholder: "1" },
+        { key: "keyer", label: "keyer", placeholder: "1" },
+      ],
+    },
+    {
+      id: "keyauto",
+      label: "KEYAUTO [MLE]:[keyer]",
+      command: "KEYAUTO {mle}:{keyer}",
+      fields: [
+        { key: "mle", label: "MLE", placeholder: "1" },
+        { key: "keyer", label: "keyer", placeholder: "1" },
+      ],
+    },
+    {
+      id: "mlecut",
+      label: "MLECUT [MLE]",
+      command: "MLECUT {mle}",
+      fields: [{ key: "mle", label: "MLE", placeholder: "1" }],
+    },
+    {
+      id: "mleauto",
+      label: "MLEAUTO [MLE]",
+      command: "MLEAUTO {mle}",
+      fields: [{ key: "mle", label: "MLE", placeholder: "1" }],
+    },
+    {
+      id: "xpt",
+      label: "XPT [bus]:[source]",
+      command: "XPT {bus}:{source}",
+      fields: [
+        { key: "bus", label: "bus", placeholder: "PGM" },
+        { key: "source", label: "source", placeholder: "1" },
+      ],
+    },
+    {
+      id: "mvbox",
+      label: "MVBOX [MultiViewer]:[box]:[source]",
+      command: "MVBOX {multiViewer}:{box}:{source}",
+      fields: [
+        { key: "multiViewer", label: "MultiViewer", placeholder: "1" },
+        { key: "box", label: "box", placeholder: "1" },
+        { key: "source", label: "source", placeholder: "1" },
+      ],
+    },
+    {
+      id: "ms",
+      label: "MS [channel]:[location]:[mediaID]",
+      command: "MS {channel}:{location}:{mediaId}",
+      fields: [
+        { key: "channel", label: "channel", placeholder: "1" },
+        { key: "location", label: "location", placeholder: "1" },
+        { key: "mediaId", label: "mediaID", placeholder: "1" },
+      ],
+    },
+    { id: "ftb", label: "FTB", command: "FTB", fields: [] },
+    {
+      id: "saveset",
+      label: "SAVESET [name]",
+      command: "SAVESET {name}",
+      fields: [{ key: "name", label: "name", placeholder: "Preset1" }],
+    },
+    {
+      id: "loadset",
+      label: "LOADSET [name]",
+      command: "LOADSET {name}",
+      fields: [{ key: "name", label: "name", placeholder: "Preset1" }],
+    },
+    {
+      id: "transincl",
+      label: "TRANSINCL [MLE]:[incl]:[incl]:[incl]",
+      command: "TRANSINCL {mle}:{incl1}:{incl2}:{incl3}",
+      fields: [
+        { key: "mle", label: "MLE", placeholder: "1" },
+        { key: "incl1", label: "incl 1", placeholder: "1" },
+        { key: "incl2", label: "incl 2", placeholder: "1" },
+        { key: "incl3", label: "incl 3", placeholder: "1" },
+      ],
+    },
+    {
+      id: "transrate",
+      label: "TRANSRATE [MLE]:[rate]",
+      command: "TRANSRATE {mle}:{rate}",
+      fields: [
+        { key: "mle", label: "MLE", placeholder: "1" },
+        { key: "rate", label: "rate", placeholder: "30" },
+      ],
+    },
+    {
+      id: "transtype",
+      label: "TRANSTYPE [MLE]:[type]",
+      command: "TRANSTYPE {mle}:{type}",
+      fields: [
+        { key: "mle", label: "MLE", placeholder: "1" },
+        { key: "type", label: "type", placeholder: "CUT" },
+      ],
+    },
+    { id: "custom", label: "Custom", command: "", fields: [] },
+  ];
+
+  const ROSSTALK_PRESET_BY_ID = new Map(
+    ROSSTALK_PRESETS.map((preset) => [preset.id, preset]),
+  );
+
+  function buildRossTalkPresetCommand(presetId, values = {}, customCommand = "") {
+    const preset = ROSSTALK_PRESET_BY_ID.get(String(presetId || ""));
+    if (!preset) return "";
+    if (preset.id === "none") return "";
+    if (preset.id === "custom") {
+      return String(customCommand || "").trim();
+    }
+    return preset.command.replace(/\{([^}]+)\}/g, (_, key) =>
+      String(values?.[key] ?? "").trim(),
+    );
+  }
+
+  const BUILTIN_PRESETS = [
     {
       id: "resolume_clip_1",
-      label: "Resolume: Clip L1 C1",
+      label: "Resolume: Clip Trigger",
       build(editor) {
         return editor.createTaskRowByType("resolume", "clip", {
-          layer: 1,
-          clip: 1,
+          target: "clip",
+          command: defaultResolumeCommand("clip"),
         });
       },
     },
     {
       id: "resolume_clip_2",
-      label: "Resolume: Clip L1 C2",
+      label: "Resolume: Column Trigger",
       build(editor) {
         return editor.createTaskRowByType("resolume", "clip", {
-          layer: 1,
-          clip: 2,
+          target: "column",
+          command: defaultResolumeCommand("column"),
         });
       },
     },
@@ -88,6 +351,18 @@
       },
     },
     {
+      id: "vmix_browser",
+      label: "vMix: Function Browser Row",
+      build(editor) {
+        return editor.createTaskRowByType("vmix", "command", {
+          vmixMode: "builder",
+          vmixCategory: "General",
+          vmixFunction: "ActivatorRefresh",
+          vmixArgs: {},
+        });
+      },
+    },
+    {
       id: "http_get",
       label: "HTTP: GET /",
       build(editor) {
@@ -106,6 +381,48 @@
           method: "POST",
           path: "/api/trigger",
           bodyText: "{\"value\":1}",
+        });
+      },
+    },
+    {
+      id: "companion_tcp_press",
+      label: "Companion TCP: PRESS 1 1",
+      build(editor) {
+        return editor.createTaskRowByProtocol("tcp", "command", {
+          command: "PRESS 1 1",
+          lineEnd: "lf",
+        });
+      },
+    },
+    {
+      id: "companion_udp_press",
+      label: "Companion UDP: PRESS 1 1",
+      build(editor) {
+        return editor.createTaskRowByProtocol("udp", "command", {
+          command: "PRESS 1 1",
+          lineEnd: "none",
+        });
+      },
+    },
+    {
+      id: "companion_osc_press",
+      label: "Companion OSC: /press/bank/1/1",
+      build(editor) {
+        return editor.createTaskRowByProtocol("osc", "osc", {
+          address: "/press/bank/1/1",
+          argsText: "",
+        });
+      },
+    },
+    {
+      id: "rosstalk_cc",
+      label: "RossTalk: CC 1:1",
+      build(editor) {
+        return editor.createTaskRowByType("ross_talk", "rosstalk", {
+          rosstalkMode: "cc_index",
+          page: 1,
+          button: 1,
+          lineEnd: "crlf",
         });
       },
     },
@@ -156,15 +473,21 @@
       this.onApply = null;
       this.onDelete = null;
       this.label = "";
-      this.color = "#2ecc71";
+      this.color = DEFAULT_BUTTON_COLOR;
       this.x = 0;
       this.y = 0;
       this.w = 160;
       this.h = 80;
       this.fontSize = 20;
+      this.vmixCatalog = null;
+      this.vmixCatalogByName = new Map();
+      this.catalogPresets = [];
+      this.presetMap = new Map();
 
       this.bind();
       this.loadPresetOptions();
+      this.loadVmixCatalog();
+      this.loadCompanionShortcutCatalog();
     }
 
     bind() {
@@ -197,7 +520,7 @@
 
       this.elements.insertPreset.addEventListener("click", () => {
         const presetId = this.elements.preset.value;
-        const preset = PRESETS.find((item) => item.id === presetId);
+        const preset = this.presetMap.get(presetId);
         if (!preset) return;
         this.insertRow([], preset.build(this));
       });
@@ -226,9 +549,127 @@
     }
 
     loadPresetOptions() {
-      this.elements.preset.innerHTML = PRESETS.map(
-        (preset) => `<option value="${preset.id}">${preset.label}</option>`,
+      const presetOptions = [...BUILTIN_PRESETS, ...(this.catalogPresets || [])];
+      this.presetMap = new Map(
+        presetOptions.map((preset) => [String(preset.id), preset]),
+      );
+      this.elements.preset.innerHTML = presetOptions.map(
+        (preset) =>
+          `<option value="${escapeHtml(preset.id)}">${escapeHtml(preset.label)}</option>`,
       ).join("");
+    }
+
+    createTaskRowFromCatalogShortcut(shortcut, moduleMeta = {}) {
+      const item = shortcut && typeof shortcut === "object" ? shortcut : {};
+      const params = clone(item.params || {});
+      const connectionType = String(
+        item.connectionType || moduleMeta.connectionType || "",
+      ).trim();
+      const protocol = String(item.protocol || moduleMeta.protocol || "")
+        .trim()
+        .toLowerCase();
+      const action = String(
+        item.action ||
+          this.defaultActionFor(connectionType, protocol) ||
+          "command",
+      )
+        .trim()
+        .toLowerCase();
+
+      if (connectionType) {
+        return this.createTaskRowByType(connectionType, action, params);
+      }
+      if (protocol) {
+        return this.createTaskRowByProtocol(protocol, action, params);
+      }
+      return this.createTaskRowByType("generic_tcp", action, params);
+    }
+
+    async loadCompanionShortcutCatalog() {
+      try {
+        let data = null;
+        for (const url of ["/shortuts.json", "/shortcuts.json"]) {
+          const res = await fetch(url, { cache: "no-cache" });
+          if (!res.ok) continue;
+          data = await res.json();
+          break;
+        }
+        if (!data) return;
+        const modules = Array.isArray(data?.modules) ? data.modules : [];
+        const catalogPresets = [];
+
+        for (const moduleEntry of modules) {
+          const moduleId = String(moduleEntry?.id || "").trim();
+          const moduleName = String(moduleEntry?.name || moduleId || "Module").trim();
+          if (!moduleId) continue;
+
+          const moduleMeta = {
+            connectionType: String(moduleEntry?.connectionType || "").trim(),
+            protocol: String(moduleEntry?.protocol || "").trim().toLowerCase(),
+          };
+          const shortcuts = Array.isArray(moduleEntry?.shortcuts)
+            ? moduleEntry.shortcuts
+            : [];
+
+          for (const shortcut of shortcuts) {
+            const shortcutId = String(shortcut?.id || "").trim();
+            const shortcutLabel = String(shortcut?.label || shortcutId).trim();
+            if (!shortcutId || !shortcutLabel) continue;
+
+            const shortcutClone = clone(shortcut);
+            catalogPresets.push({
+              id: `catalog_${moduleId}_${shortcutId}`,
+              label: `${moduleName}: ${shortcutLabel}`,
+              build: (editor) =>
+                editor.createTaskRowFromCatalogShortcut(shortcutClone, moduleMeta),
+            });
+          }
+        }
+
+        this.catalogPresets = catalogPresets;
+        this.loadPresetOptions();
+      } catch {
+        // Keep editor usable even if companion catalog fetch fails.
+      }
+    }
+
+    async loadVmixCatalog() {
+      try {
+        const res = await fetch("/vmix-shortcuts.json", { cache: "no-cache" });
+        if (!res.ok) return;
+        const data = await res.json();
+        const functions = Array.isArray(data?.functions) ? data.functions : [];
+        const categories = Array.isArray(data?.categories) ? data.categories : [];
+        if (!functions.length || !categories.length) return;
+
+        this.vmixCatalog = {
+          source: String(data.source || ""),
+          categories: categories.map((c) => ({
+            name: String(c?.name || ""),
+            count: Number(c?.count || 0),
+          })),
+          functions: functions.map((fn) => ({
+            name: String(fn?.name || ""),
+            category: String(fn?.category || "General"),
+            description: String(fn?.description || ""),
+            parameters: String(fn?.parameters || ""),
+            paramKeys: Array.isArray(fn?.paramKeys)
+              ? fn.paramKeys.map((k) => String(k))
+              : [],
+          })),
+        };
+
+        this.vmixCatalogByName = new Map();
+        for (const fn of this.vmixCatalog.functions) {
+          this.vmixCatalogByName.set(fn.name.toLowerCase(), fn);
+        }
+
+        if (!this.modal.classList.contains("hidden")) {
+          this.refresh();
+        }
+      } catch {
+        // Keep editor usable even if catalog fetch fails.
+      }
     }
 
     open({ button, connections, onApply, onDelete }) {
@@ -239,8 +680,8 @@
       this.errors = {};
       this.drag = null;
 
-      this.label = button.label || "Button";
-      this.color = button.color || "#2ecc71";
+      this.label = button.label == null ? "Button" : String(button.label);
+      this.color = button.color || DEFAULT_BUTTON_COLOR;
       this.x = Math.max(0, Number(button.x || 0));
       this.y = Math.max(0, Number(button.y || 0));
       this.w = Math.max(60, Number(button.w || 160));
@@ -285,6 +726,10 @@
       return this.connectionByName(name)?.type || "";
     }
 
+    connectionProtocol(name) {
+      return String(this.connectionByName(name)?.protocol || "").toLowerCase();
+    }
+
     findConnectionByType(type) {
       return (
         Object.keys(this.connections).find(
@@ -305,14 +750,102 @@
       );
     }
 
+    actionLabel(action) {
+      const map = {
+        command: "Command / Payload",
+        http: "HTTP Request",
+        osc: "OSC Message",
+        rosstalk: "RossTalk",
+        clip: "Resolume Clip/Column",
+        cue: "Cue",
+        track: "Track",
+      };
+      return map[action] || action;
+    }
+
+    isVmixCommandRow(row) {
+      if (!row || row.kind !== "task") return false;
+      const connection = this.connectionByName(row.device);
+      const type = String(row.deviceType || connection?.type || "").toLowerCase();
+      return type === "vmix" && row.action === "command";
+    }
+
+    vmixMetaByName(functionName) {
+      const key = String(functionName || "").trim().toLowerCase();
+      if (!key) return null;
+      return this.vmixCatalogByName.get(key) || null;
+    }
+
+    vmixCategories() {
+      const fromCatalog = this.vmixCatalog?.categories || [];
+      const names = fromCatalog
+        .map((entry) => String(entry?.name || "").trim())
+        .filter(Boolean);
+      if (names.length) return names;
+      return ["General"];
+    }
+
+    vmixFunctionsInCategory(categoryName) {
+      const target = String(categoryName || "").trim().toLowerCase();
+      const list = (this.vmixCatalog?.functions || []).filter(
+        (fn) => String(fn?.category || "").trim().toLowerCase() === target,
+      );
+      return list.sort((a, b) => a.name.localeCompare(b.name));
+    }
+
+    syncVmixCategoryForFunction(row) {
+      if (!this.isVmixCommandRow(row)) return;
+      const meta = this.vmixMetaByName(row.params.vmixFunction);
+      if (meta?.category) {
+        row.params.vmixCategory = meta.category;
+      }
+    }
+
+    refreshVmixCommand(row) {
+      if (!this.isVmixCommandRow(row)) return;
+      const mode = String(row.params.vmixMode || "builder").toLowerCase();
+      if (mode !== "builder") return;
+      row.params.command = buildVmixCommand(
+        row.params.vmixFunction,
+        row.params.vmixArgs || {},
+      );
+    }
+
+    isRossTalkRow(row) {
+      if (!row || row.kind !== "task" || row.action !== "rosstalk") return false;
+      const connection = this.connectionByName(row.device);
+      const type = String(row.deviceType || connection?.type || "").toLowerCase();
+      return ["ross_talk", "ross_carbonite", "ross_xpression"].includes(type);
+    }
+
+    rosstalkPresetById(presetId) {
+      return ROSSTALK_PRESET_BY_ID.get(String(presetId || "")) || null;
+    }
+
+    refreshRossTalkPresetCommand(row) {
+      if (!this.isRossTalkRow(row)) return;
+      const mode = String(row.params.rosstalkMode || "raw").toLowerCase();
+      if (mode !== "preset") return;
+      row.params.command = buildRossTalkPresetCommand(
+        row.params.rosstalkPreset,
+        row.params.rosstalkValues || {},
+        row.params.customCommand || "",
+      );
+    }
+
     defaultActionFor(connectionType, protocol) {
       const type = String(connectionType || "").toLowerCase();
       const proto = String(protocol || "").toLowerCase();
 
       if (type === "resolume") return "clip";
-      if (["grandma3", "lighting", "vmix"].includes(type)) return "command";
+      if (type === "obs") return "command";
+      if (["grandma3", "lighting", "vmix", "atem"].includes(type))
+        return "command";
+      if (["ross_talk", "ross_carbonite", "ross_xpression"].includes(type))
+        return "rosstalk";
       if (["audio", "audio_mixer"].includes(type)) return "track";
       if (["http", "https"].includes(proto) || type === "http_api") return "http";
+      if (proto === "osc") return "osc";
       return "command";
     }
 
@@ -326,13 +859,84 @@
         row.action = this.defaultActionFor(row.deviceType, connection?.protocol);
       }
 
+      const protocol = this.connectionProtocol(row.device);
+
+      if (
+        row.action === "command" &&
+        protocol === "osc" &&
+        !String(row.params.address || "").trim() &&
+        String(row.params.command || "").trim().startsWith("/")
+      ) {
+        row.action = "osc";
+        row.params.address = String(row.params.command || "").trim();
+      }
+
       if (row.action === "clip") {
-        row.params.layer = Number.isFinite(Number(row.params.layer))
-          ? Number(row.params.layer)
-          : 1;
-        row.params.clip = Number.isFinite(Number(row.params.clip))
-          ? Number(row.params.clip)
-          : 1;
+        const hasLegacyLayerClip =
+          Number.isFinite(Number(row.params.layer)) &&
+          Number.isFinite(Number(row.params.clip));
+        const target =
+          row.params.target === "column" || row.params.target === "clip"
+            ? row.params.target
+            : "clip";
+        row.params.target = target;
+
+        if (!String(row.params.command || "").trim() && hasLegacyLayerClip) {
+          row.params.command = `composition/layers/${Number(row.params.layer)}/clips/${Number(row.params.clip)}/connect`;
+        }
+        row.params.command = String(row.params.command || "").trim();
+        if (!row.params.command) {
+          row.params.command = defaultResolumeCommand(target);
+        }
+        return;
+      }
+
+      if (this.isVmixCommandRow(row)) {
+        row.params.command = String(row.params.command || "");
+        const parsed = parseVmixCommand(row.params.command);
+
+        if (!row.params.vmixMode) {
+          row.params.vmixMode = parsed || !row.params.command ? "builder" : "raw";
+        }
+        row.params.vmixMode =
+          String(row.params.vmixMode || "").toLowerCase() === "raw"
+            ? "raw"
+            : "builder";
+
+        if (!row.params.vmixFunction && parsed?.functionName) {
+          row.params.vmixFunction = parsed.functionName;
+        }
+
+        if (
+          !row.params.vmixArgs ||
+          typeof row.params.vmixArgs !== "object" ||
+          Array.isArray(row.params.vmixArgs)
+        ) {
+          row.params.vmixArgs = {};
+        }
+        if (parsed && !Object.keys(row.params.vmixArgs).length) {
+          row.params.vmixArgs = { ...parsed.args };
+        }
+
+        const categories = this.vmixCategories();
+        if (!String(row.params.vmixCategory || "").trim()) {
+          const fnMeta = this.vmixMetaByName(row.params.vmixFunction);
+          row.params.vmixCategory = fnMeta?.category || categories[0] || "General";
+        }
+
+        const choices = this.vmixFunctionsInCategory(row.params.vmixCategory);
+        if (!String(row.params.vmixFunction || "").trim()) {
+          row.params.vmixFunction = choices[0]?.name || "Cut";
+        } else {
+          this.syncVmixCategoryForFunction(row);
+        }
+
+        if (row.params.lineEnd == null) {
+          row.params.lineEnd = "crlf";
+        }
+        row.params.lineEnd = String(row.params.lineEnd || "crlf").toLowerCase();
+
+        this.refreshVmixCommand(row);
         return;
       }
 
@@ -350,10 +954,94 @@
         row.params.method = String(row.params.method || "GET").toUpperCase();
         row.params.path = String(row.params.path || "/");
         row.params.bodyText = String(row.params.bodyText || "");
+        if (
+          row.params.headersText == null &&
+          row.params.headers &&
+          typeof row.params.headers === "object"
+        ) {
+          row.params.headersText = JSON.stringify(row.params.headers, null, 2);
+        }
+        row.params.headersText = String(row.params.headersText || "");
+        row.params.timeoutMs = row.params.timeoutMs ?? "";
+        delete row.params.headers;
+        return;
+      }
+
+      if (row.action === "osc") {
+        row.params.address = String(
+          row.params.address || row.params.oscAddress || row.params.path || "/",
+        );
+        if (
+          row.params.argsText == null &&
+          Array.isArray(row.params.args)
+        ) {
+          row.params.argsText = JSON.stringify(row.params.args, null, 2);
+        }
+        row.params.argsText = String(row.params.argsText || "");
+        delete row.params.args;
+        delete row.params.oscAddress;
+        return;
+      }
+
+      if (row.action === "rosstalk") {
+        let mode = String(row.params.rosstalkMode || row.params.mode || "").toLowerCase();
+        if (!mode) {
+          mode = String(row.params.command || "").trim() ? "raw" : "preset";
+        }
+        row.params.rosstalkMode = ["raw", "cc_index", "cc_grid", "preset"].includes(mode)
+          ? mode
+          : "raw";
+
+        row.params.page = Number(row.params.page || 1);
+        row.params.button = Number(row.params.button || 1);
+        row.params.row = Number(row.params.row || 1);
+        row.params.column = Number(row.params.column || 1);
+        row.params.rosstalkPreset = String(row.params.rosstalkPreset || "none");
+        if (!this.rosstalkPresetById(row.params.rosstalkPreset)) {
+          row.params.rosstalkPreset = "custom";
+        }
+        if (
+          !row.params.rosstalkValues ||
+          typeof row.params.rosstalkValues !== "object" ||
+          Array.isArray(row.params.rosstalkValues)
+        ) {
+          row.params.rosstalkValues = {};
+        }
+        row.params.customCommand = String(row.params.customCommand || "");
+
+        if (row.params.rosstalkMode === "preset") {
+          const existingCommand = String(row.params.command || "").trim();
+          if (
+            row.params.rosstalkPreset === "none" &&
+            existingCommand
+          ) {
+            row.params.rosstalkPreset = "custom";
+            row.params.customCommand = existingCommand;
+          }
+          if (
+            row.params.rosstalkPreset === "custom" &&
+            !String(row.params.customCommand || "").trim() &&
+            existingCommand
+          ) {
+            row.params.customCommand = existingCommand;
+          }
+          this.refreshRossTalkPresetCommand(row);
+        } else if (row.params.rosstalkMode === "raw") {
+          row.params.command = String(row.params.command || row.params.customCommand || "");
+        } else {
+          row.params.command = String(row.params.command || "");
+        }
+
+        row.params.lineEnd = String(row.params.lineEnd || "crlf").toLowerCase();
+        delete row.params.mode;
         return;
       }
 
       row.params.command = row.params.command ?? "";
+      if (row.params.lineEnd == null) {
+        row.params.lineEnd = protocol === "udp" ? "none" : "crlf";
+      }
+      row.params.lineEnd = String(row.params.lineEnd || "").toLowerCase();
     }
 
     createTaskRowByType(type, action, params) {
@@ -472,8 +1160,8 @@
 
       if (row.type === "resolume_clip") {
         return this.createTaskRowByType("resolume", "clip", {
-          layer: Number(row.layer ?? 1),
-          clip: Number(row.clip ?? 1),
+          target: "clip",
+          command: `composition/layers/${Number(row.layer ?? 1)}/clips/${Number(row.clip ?? 1)}/connect`,
         });
       }
 
@@ -626,7 +1314,9 @@
       }
       const device = row.device || "No Device";
       if (row.action === "clip") {
-        return `${device} -> Clip L${row.params.layer ?? "?"} C${row.params.clip ?? "?"}`;
+        const mode = String(row.params.target || "clip");
+        const command = String(row.params.command || "").trim();
+        return `${device} -> Resolume ${mode}: ${command || "command"}`;
       }
       if (row.action === "cue") {
         return `${device} -> Cue ${row.params.cue || "?"}`;
@@ -636,6 +1326,27 @@
       }
       if (row.action === "http") {
         return `${device} -> ${row.params.method || "GET"} ${row.params.path || "/"}`;
+      }
+      if (row.action === "osc") {
+        return `${device} -> OSC ${row.params.address || "/"}`;
+      }
+      if (row.action === "rosstalk") {
+        const mode = String(row.params.rosstalkMode || "raw").toLowerCase();
+        if (mode === "preset") {
+          const preset = this.rosstalkPresetById(row.params.rosstalkPreset);
+          const command = String(row.params.command || "").trim();
+          if (preset?.id === "none") {
+            return `${device} -> RossTalk preset: None`;
+          }
+          return `${device} -> RossTalk ${command || (preset?.label || "preset")}`;
+        }
+        if (mode === "cc_grid") {
+          return `${device} -> CC ${row.params.page || 1}/${row.params.row || 1}/${row.params.column || 1}`;
+        }
+        if (mode === "cc_index") {
+          return `${device} -> CC ${row.params.page || 1}:${row.params.button || 1}`;
+        }
+        return `${device} -> RossTalk ${row.params.command || "command"}`;
       }
       return `${device} -> ${row.params.command || row.action || "task"}`;
     }
@@ -753,10 +1464,15 @@
       const protocol = String(connection?.protocol || "").toLowerCase();
 
       if (type === "resolume") return ["clip"];
+      if (type === "obs") return ["command"];
       if (["grandma3", "lighting"].includes(type)) return ["command", "cue"];
-      if (type === "vmix") return ["command"];
+      if (["vmix", "atem"].includes(type)) return ["command"];
+      if (["ross_talk", "ross_carbonite", "ross_xpression"].includes(type))
+        return ["rosstalk", "command"];
       if (["audio", "audio_mixer"].includes(type)) return ["track"];
       if (["http", "https"].includes(protocol) || type === "http_api") return ["http"];
+      if (protocol === "osc") return ["osc"];
+      if (protocol === "udp") return ["command", "osc"];
       return ["command", "http"];
     }
 
@@ -850,7 +1566,7 @@
       deviceSelect.innerHTML = `<option value="">Select device</option>${names
         .map(
           (name) =>
-            `<option value="${name}" ${name === row.device ? "selected" : ""}>${name}</option>`,
+            `<option value="${escapeHtml(name)}" ${name === row.device ? "selected" : ""}>${escapeHtml(name)}</option>`,
         )
         .join("")}`;
       deviceSelect.onchange = () => {
@@ -871,11 +1587,11 @@
       actionField.className = "seq-form-row";
       actionField.innerHTML = "<label>Action</label>";
       const actionSelect = document.createElement("select");
-      const options = this.allowedActions(row);
-      actionSelect.innerHTML = options
+      const actions = this.allowedActions(row);
+      actionSelect.innerHTML = actions
         .map(
           (action) =>
-            `<option value="${action}" ${action === row.action ? "selected" : ""}>${action}</option>`,
+            `<option value="${action}" ${action === row.action ? "selected" : ""}>${this.actionLabel(action)}</option>`,
         )
         .join("");
       actionSelect.onchange = () => {
@@ -888,29 +1604,41 @@
       wrapper.appendChild(actionField);
 
       if (row.action === "clip") {
-        const fields = document.createElement("div");
-        fields.className = "seq-form-row two";
-        fields.innerHTML = "<label>Layer</label><label>Clip</label>";
+        const targetField = document.createElement("div");
+        targetField.className = "seq-form-row";
+        targetField.innerHTML = "<label>Resolume Trigger Type</label>";
+        const targetSelect = document.createElement("select");
+        const selectedTarget =
+          row.params.target === "column" ? "column" : "clip";
+        targetSelect.innerHTML = `
+          <option value="clip" ${selectedTarget === "clip" ? "selected" : ""}>Clip</option>
+          <option value="column" ${selectedTarget === "column" ? "selected" : ""}>Column</option>
+        `;
+        targetSelect.onchange = () => {
+          row.params.target = targetSelect.value;
+          row.params.command = defaultResolumeCommand(targetSelect.value);
+          this.refresh();
+        };
+        targetField.appendChild(targetSelect);
+        wrapper.appendChild(targetField);
 
-        const layerInput = document.createElement("input");
-        layerInput.type = "number";
-        layerInput.value = Number(row.params.layer || 1);
-        layerInput.oninput = () => {
-          row.params.layer = Number(layerInput.value);
+        const commandField = document.createElement("div");
+        commandField.className = "seq-form-row";
+        commandField.innerHTML = "<label>Custom Command</label>";
+        const commandInput = document.createElement("input");
+        commandInput.value = String(
+          row.params.command || defaultResolumeCommand(selectedTarget),
+        );
+        commandInput.placeholder =
+          selectedTarget === "column"
+            ? "/composition/columns/1/connect"
+            : "composition/layers/1/clips/1/connect";
+        commandInput.oninput = () => {
+          row.params.command = commandInput.value;
           this.renderRows();
         };
-
-        const clipInput = document.createElement("input");
-        clipInput.type = "number";
-        clipInput.value = Number(row.params.clip || 1);
-        clipInput.oninput = () => {
-          row.params.clip = Number(clipInput.value);
-          this.renderRows();
-        };
-
-        fields.appendChild(layerInput);
-        fields.appendChild(clipInput);
-        wrapper.appendChild(fields);
+        commandField.appendChild(commandInput);
+        wrapper.appendChild(commandField);
       } else if (row.action === "cue") {
         const field = document.createElement("div");
         field.className = "seq-form-row";
@@ -971,6 +1699,373 @@
         };
         body.appendChild(bodyText);
         wrapper.appendChild(body);
+
+        const headers = document.createElement("div");
+        headers.className = "seq-form-row";
+        headers.innerHTML = "<label>Headers JSON (optional)</label>";
+        const headersText = document.createElement("textarea");
+        headersText.value = row.params.headersText || "";
+        headersText.oninput = () => {
+          row.params.headersText = headersText.value;
+        };
+        headers.appendChild(headersText);
+        wrapper.appendChild(headers);
+
+        const timeoutField = document.createElement("div");
+        timeoutField.className = "seq-form-row";
+        timeoutField.innerHTML = "<label>Timeout (ms, optional)</label>";
+        const timeoutInput = document.createElement("input");
+        timeoutInput.type = "number";
+        timeoutInput.min = "1";
+        timeoutInput.value = row.params.timeoutMs || "";
+        timeoutInput.oninput = () => {
+          row.params.timeoutMs = timeoutInput.value;
+        };
+        timeoutField.appendChild(timeoutInput);
+        wrapper.appendChild(timeoutField);
+      } else if (row.action === "osc") {
+        const addressField = document.createElement("div");
+        addressField.className = "seq-form-row";
+        addressField.innerHTML = "<label>OSC Address</label>";
+        const addressInput = document.createElement("input");
+        addressInput.value = row.params.address || "/";
+        addressInput.placeholder = "/press/bank/1/1";
+        addressInput.oninput = () => {
+          row.params.address = addressInput.value;
+          this.renderRows();
+        };
+        addressField.appendChild(addressInput);
+        wrapper.appendChild(addressField);
+
+        const argsField = document.createElement("div");
+        argsField.className = "seq-form-row";
+        argsField.innerHTML = "<label>Args JSON Array (optional)</label>";
+        const argsInput = document.createElement("textarea");
+        argsInput.value = row.params.argsText || "";
+        argsInput.placeholder = "[1, \"text\", true]";
+        argsInput.oninput = () => {
+          row.params.argsText = argsInput.value;
+        };
+        argsField.appendChild(argsInput);
+        wrapper.appendChild(argsField);
+      } else if (row.action === "rosstalk") {
+        const modeField = document.createElement("div");
+        modeField.className = "seq-form-row";
+        modeField.innerHTML = "<label>RossTalk Mode</label>";
+        const modeSelect = document.createElement("select");
+        modeSelect.innerHTML = `
+          <option value="preset" ${row.params.rosstalkMode === "preset" ? "selected" : ""}>Preset Commands</option>
+          <option value="cc_index" ${row.params.rosstalkMode === "cc_index" ? "selected" : ""}>CC page:button</option>
+          <option value="cc_grid" ${row.params.rosstalkMode === "cc_grid" ? "selected" : ""}>CC page/row/column</option>
+          <option value="raw" ${row.params.rosstalkMode === "raw" ? "selected" : ""}>Raw Command</option>
+        `;
+        modeSelect.onchange = () => {
+          row.params.rosstalkMode = modeSelect.value;
+          this.refresh();
+        };
+        modeField.appendChild(modeSelect);
+        wrapper.appendChild(modeField);
+
+        if (row.params.rosstalkMode === "preset") {
+          const presetField = document.createElement("div");
+          presetField.className = "seq-form-row";
+          presetField.innerHTML = "<label>Command Preset</label>";
+          const presetSelect = document.createElement("select");
+          presetSelect.innerHTML = ROSSTALK_PRESETS.map(
+            (preset) =>
+              `<option value="${preset.id}" ${preset.id === row.params.rosstalkPreset ? "selected" : ""}>${preset.label}</option>`,
+          ).join("");
+          presetSelect.onchange = () => {
+            row.params.rosstalkPreset = presetSelect.value;
+            if (presetSelect.value !== "custom") {
+              row.params.customCommand = "";
+            }
+            this.refreshRossTalkPresetCommand(row);
+            this.refresh();
+          };
+          presetField.appendChild(presetSelect);
+          wrapper.appendChild(presetField);
+
+          const preset = this.rosstalkPresetById(row.params.rosstalkPreset);
+          const presetFields = preset?.fields || [];
+          row.params.rosstalkValues =
+            row.params.rosstalkValues && typeof row.params.rosstalkValues === "object"
+              ? row.params.rosstalkValues
+              : {};
+
+          if (preset?.id === "custom") {
+            const field = document.createElement("div");
+            field.className = "seq-form-row";
+            field.innerHTML = "<label>Custom RossTalk Command</label>";
+            const input = document.createElement("input");
+            input.value = row.params.customCommand || row.params.command || "";
+            input.placeholder = "CC 1:1";
+            input.oninput = () => {
+              row.params.customCommand = input.value;
+              this.refreshRossTalkPresetCommand(row);
+              this.renderRows();
+            };
+            field.appendChild(input);
+            wrapper.appendChild(field);
+          } else if (presetFields.length) {
+            for (const fieldDef of presetFields) {
+              const field = document.createElement("div");
+              field.className = "seq-form-row";
+              field.innerHTML = `<label>${fieldDef.label}</label>`;
+              const input = document.createElement("input");
+              input.value = String(row.params.rosstalkValues[fieldDef.key] || "");
+              input.placeholder = fieldDef.placeholder || fieldDef.key;
+              input.oninput = () => {
+                row.params.rosstalkValues[fieldDef.key] = input.value;
+                this.refreshRossTalkPresetCommand(row);
+                this.renderRows();
+              };
+              field.appendChild(input);
+              wrapper.appendChild(field);
+            }
+          }
+
+          const previewField = document.createElement("div");
+          previewField.className = "seq-form-row";
+          previewField.innerHTML = "<label>Generated Command</label>";
+          const preview = document.createElement("input");
+          preview.readOnly = true;
+          preview.value = row.params.command || "";
+          preview.placeholder = "Select a preset and fill values";
+          previewField.appendChild(preview);
+          wrapper.appendChild(previewField);
+        } else if (row.params.rosstalkMode === "cc_index") {
+          const ccField = document.createElement("div");
+          ccField.className = "seq-form-row two";
+          ccField.innerHTML = "<label>Page</label><label>Button</label>";
+
+          const pageInput = document.createElement("input");
+          pageInput.type = "number";
+          pageInput.min = "1";
+          pageInput.value = String(row.params.page || 1);
+          pageInput.oninput = () => {
+            row.params.page = Number(pageInput.value || 1);
+            this.renderRows();
+          };
+
+          const buttonInput = document.createElement("input");
+          buttonInput.type = "number";
+          buttonInput.min = "1";
+          buttonInput.value = String(row.params.button || 1);
+          buttonInput.oninput = () => {
+            row.params.button = Number(buttonInput.value || 1);
+            this.renderRows();
+          };
+
+          ccField.appendChild(pageInput);
+          ccField.appendChild(buttonInput);
+          wrapper.appendChild(ccField);
+        } else if (row.params.rosstalkMode === "cc_grid") {
+          const ccField = document.createElement("div");
+          ccField.className = "seq-form-row three";
+          ccField.innerHTML = "<label>Page</label><label>Row</label><label>Column</label>";
+
+          const pageInput = document.createElement("input");
+          pageInput.type = "number";
+          pageInput.min = "1";
+          pageInput.value = String(row.params.page || 1);
+          pageInput.oninput = () => {
+            row.params.page = Number(pageInput.value || 1);
+            this.renderRows();
+          };
+
+          const rowInput = document.createElement("input");
+          rowInput.type = "number";
+          rowInput.min = "1";
+          rowInput.value = String(row.params.row || 1);
+          rowInput.oninput = () => {
+            row.params.row = Number(rowInput.value || 1);
+            this.renderRows();
+          };
+
+          const columnInput = document.createElement("input");
+          columnInput.type = "number";
+          columnInput.min = "1";
+          columnInput.value = String(row.params.column || 1);
+          columnInput.oninput = () => {
+            row.params.column = Number(columnInput.value || 1);
+            this.renderRows();
+          };
+
+          ccField.appendChild(pageInput);
+          ccField.appendChild(rowInput);
+          ccField.appendChild(columnInput);
+          wrapper.appendChild(ccField);
+        } else {
+          const field = document.createElement("div");
+          field.className = "seq-form-row";
+          field.innerHTML = "<label>Raw RossTalk Command</label>";
+          const input = document.createElement("input");
+          input.value = row.params.command || "";
+          input.placeholder = "CC 1:1";
+          input.oninput = () => {
+            row.params.command = input.value;
+            this.renderRows();
+          };
+          field.appendChild(input);
+          wrapper.appendChild(field);
+        }
+
+        const lineEndField = document.createElement("div");
+        lineEndField.className = "seq-form-row";
+        lineEndField.innerHTML = "<label>Line Ending</label>";
+        const lineEndSelect = document.createElement("select");
+        lineEndSelect.innerHTML = LINE_END_OPTIONS.map(
+          (opt) =>
+            `<option value="${opt.value}" ${opt.value === row.params.lineEnd ? "selected" : ""}>${opt.label}</option>`,
+        ).join("");
+        lineEndSelect.onchange = () => {
+          row.params.lineEnd = lineEndSelect.value;
+        };
+        lineEndField.appendChild(lineEndSelect);
+        wrapper.appendChild(lineEndField);
+      } else if (this.isVmixCommandRow(row)) {
+        const modeField = document.createElement("div");
+        modeField.className = "seq-form-row";
+        modeField.innerHTML = "<label>vMix Command Mode</label>";
+        const modeSelect = document.createElement("select");
+        modeSelect.innerHTML = `
+          <option value="builder" ${row.params.vmixMode !== "raw" ? "selected" : ""}>Function Browser</option>
+          <option value="raw" ${row.params.vmixMode === "raw" ? "selected" : ""}>Raw Command</option>
+        `;
+        modeSelect.onchange = () => {
+          row.params.vmixMode = modeSelect.value;
+          this.ensureTaskDefaults(row);
+          this.refresh();
+        };
+        modeField.appendChild(modeSelect);
+        wrapper.appendChild(modeField);
+
+        if (row.params.vmixMode !== "raw") {
+          if (this.vmixCatalog) {
+            const categoryField = document.createElement("div");
+            categoryField.className = "seq-form-row";
+            categoryField.innerHTML = "<label>vMix Category</label>";
+            const categorySelect = document.createElement("select");
+            const categories = this.vmixCategories();
+            categorySelect.innerHTML = categories
+              .map(
+                (name) =>
+                  `<option value=\"${name}\" ${name === row.params.vmixCategory ? "selected" : ""}>${name}</option>`,
+              )
+              .join("");
+            categorySelect.onchange = () => {
+              row.params.vmixCategory = categorySelect.value;
+              const list = this.vmixFunctionsInCategory(row.params.vmixCategory);
+              row.params.vmixFunction = list[0]?.name || "";
+              row.params.vmixArgs = {};
+              this.refreshVmixCommand(row);
+              this.refresh();
+            };
+            categoryField.appendChild(categorySelect);
+            wrapper.appendChild(categoryField);
+
+            const functionField = document.createElement("div");
+            functionField.className = "seq-form-row";
+            functionField.innerHTML = "<label>vMix Function</label>";
+            const functionInput = document.createElement("input");
+            const listId = `vmix-fn-list-${row.id}`;
+            const functions = this.vmixFunctionsInCategory(row.params.vmixCategory);
+            functionInput.setAttribute("list", listId);
+            functionInput.value = row.params.vmixFunction || "";
+            functionInput.placeholder = "vMix function name";
+            functionInput.oninput = () => {
+              row.params.vmixFunction = functionInput.value.trim();
+              this.syncVmixCategoryForFunction(row);
+              row.params.vmixArgs = row.params.vmixArgs || {};
+              this.refreshVmixCommand(row);
+              this.renderRows();
+            };
+            const functionList = document.createElement("datalist");
+            functionList.id = listId;
+            functionList.innerHTML = functions
+              .map((fn) => `<option value=\"${fn.name}\"></option>`)
+              .join("");
+
+            functionField.appendChild(functionInput);
+            functionField.appendChild(functionList);
+            wrapper.appendChild(functionField);
+
+            const selectedMeta = this.vmixMetaByName(row.params.vmixFunction);
+            if (selectedMeta?.description) {
+              const description = document.createElement("p");
+              description.className = "typography-muted";
+              description.textContent = selectedMeta.description;
+              wrapper.appendChild(description);
+            }
+
+            const paramKeys = selectedMeta?.paramKeys || [];
+            if (paramKeys.length) {
+              row.params.vmixArgs =
+                row.params.vmixArgs && typeof row.params.vmixArgs === "object"
+                  ? row.params.vmixArgs
+                  : {};
+
+              const paramsWrap = document.createElement("div");
+              paramsWrap.className = "seq-form-row";
+              paramsWrap.innerHTML = "<label>Function Parameters</label>";
+              wrapper.appendChild(paramsWrap);
+
+              for (const key of paramKeys) {
+                const field = document.createElement("div");
+                field.className = "seq-form-row";
+                field.innerHTML = `<label>${key}</label>`;
+                const input = document.createElement("input");
+                input.value = String(row.params.vmixArgs[key] || "");
+                input.placeholder = key;
+                input.oninput = () => {
+                  row.params.vmixArgs[key] = input.value;
+                  this.refreshVmixCommand(row);
+                  this.renderRows();
+                };
+                field.appendChild(input);
+                wrapper.appendChild(field);
+              }
+            } else {
+              const noParams = document.createElement("p");
+              noParams.className = "typography-muted";
+              noParams.textContent = "This function does not require parameters.";
+              wrapper.appendChild(noParams);
+            }
+          } else {
+            const loading = document.createElement("p");
+            loading.className = "typography-muted";
+            loading.textContent = "Loading vMix function catalog...";
+            wrapper.appendChild(loading);
+          }
+        }
+
+        const field = document.createElement("div");
+        field.className = "seq-form-row";
+        field.innerHTML = `<label>${row.params.vmixMode === "raw" ? "Raw Command / Payload" : "Generated Command"}</label>`;
+        const input = document.createElement("input");
+        input.value = row.params.command || "";
+        input.readOnly = row.params.vmixMode !== "raw";
+        input.oninput = () => {
+          row.params.command = input.value;
+          this.renderRows();
+        };
+        field.appendChild(input);
+        wrapper.appendChild(field);
+
+        const lineEndField = document.createElement("div");
+        lineEndField.className = "seq-form-row";
+        lineEndField.innerHTML = "<label>Line Ending</label>";
+        const lineEndSelect = document.createElement("select");
+        lineEndSelect.innerHTML = LINE_END_OPTIONS.map(
+          (opt) =>
+            `<option value="${opt.value}" ${opt.value === row.params.lineEnd ? "selected" : ""}>${opt.label}</option>`,
+        ).join("");
+        lineEndSelect.onchange = () => {
+          row.params.lineEnd = lineEndSelect.value;
+        };
+        lineEndField.appendChild(lineEndSelect);
+        wrapper.appendChild(lineEndField);
       } else {
         const field = document.createElement("div");
         field.className = "seq-form-row";
@@ -983,6 +2078,20 @@
         };
         field.appendChild(input);
         wrapper.appendChild(field);
+
+        const lineEndField = document.createElement("div");
+        lineEndField.className = "seq-form-row";
+        lineEndField.innerHTML = "<label>Line Ending</label>";
+        const lineEndSelect = document.createElement("select");
+        lineEndSelect.innerHTML = LINE_END_OPTIONS.map(
+          (opt) =>
+            `<option value="${opt.value}" ${opt.value === row.params.lineEnd ? "selected" : ""}>${opt.label}</option>`,
+        ).join("");
+        lineEndSelect.onchange = () => {
+          row.params.lineEnd = lineEndSelect.value;
+        };
+        lineEndField.appendChild(lineEndSelect);
+        wrapper.appendChild(lineEndField);
       }
 
       this.elements.form.appendChild(wrapper);
@@ -1036,11 +2145,13 @@
         const params = row.params || {};
 
         if (type === "resolume" || action === "clip") {
-          if (
-            !Number.isFinite(Number(params.layer)) ||
-            !Number.isFinite(Number(params.clip))
-          ) {
-            this.errors[key] = "Resolume task requires numeric layer and clip";
+          const target = String(params.target || "").toLowerCase();
+          if (!["clip", "column"].includes(target)) {
+            this.errors[key] = "Resolume trigger type must be clip or column";
+            return;
+          }
+          if (!String(params.command || "").trim()) {
+            this.errors[key] = "Resolume custom command is required";
           }
           return;
         }
@@ -1055,6 +2166,12 @@
         }
 
         if (type === "vmix") {
+          if (String(params.vmixMode || "").toLowerCase() !== "raw") {
+            if (!String(params.vmixFunction || "").trim()) {
+              this.errors[key] = "Select a vMix function";
+              return;
+            }
+          }
           if (!String(params.command || "").trim()) {
             this.errors[key] = "vMix command is required";
           }
@@ -1064,6 +2181,87 @@
         if (["audio", "audio_mixer"].includes(type)) {
           if (!String(params.track || "").trim()) {
             this.errors[key] = "Audio track is required";
+          }
+          return;
+        }
+
+        if (action === "rosstalk") {
+          const mode = String(params.rosstalkMode || "raw").toLowerCase();
+          if (mode === "preset") {
+            const presetId = String(params.rosstalkPreset || "none");
+            const preset = this.rosstalkPresetById(presetId);
+            if (!preset || preset.id === "none") {
+              this.errors[key] = "Select a RossTalk preset command";
+              return;
+            }
+            if (preset.id === "custom") {
+              const custom = String(params.customCommand || params.command || "").trim();
+              if (!custom) {
+                this.errors[key] = "Custom RossTalk command is required";
+                return;
+              }
+            } else {
+              const values =
+                params.rosstalkValues && typeof params.rosstalkValues === "object"
+                  ? params.rosstalkValues
+                  : {};
+              for (const field of preset.fields || []) {
+                if (!String(values[field.key] || "").trim()) {
+                  this.errors[key] = `${field.label} is required`;
+                  return;
+                }
+              }
+            }
+            if (!String(params.command || "").trim()) {
+              this.errors[key] = "RossTalk command is required";
+            }
+            return;
+          }
+          if (mode === "cc_index") {
+            if (!Number.isInteger(Number(params.page)) || Number(params.page) < 1) {
+              this.errors[key] = "RossTalk page must be >= 1";
+              return;
+            }
+            if (!Number.isInteger(Number(params.button)) || Number(params.button) < 1) {
+              this.errors[key] = "RossTalk button must be >= 1";
+            }
+            return;
+          }
+          if (mode === "cc_grid") {
+            if (!Number.isInteger(Number(params.page)) || Number(params.page) < 1) {
+              this.errors[key] = "RossTalk page must be >= 1";
+              return;
+            }
+            if (!Number.isInteger(Number(params.row)) || Number(params.row) < 1) {
+              this.errors[key] = "RossTalk row must be >= 1";
+              return;
+            }
+            if (!Number.isInteger(Number(params.column)) || Number(params.column) < 1) {
+              this.errors[key] = "RossTalk column must be >= 1";
+              return;
+            }
+            return;
+          }
+          if (!String(params.command || "").trim()) {
+            this.errors[key] = "RossTalk command is required";
+          }
+          return;
+        }
+
+        if (action === "osc" || protocol === "osc") {
+          if (!String(params.address || "").trim()) {
+            this.errors[key] = "OSC address is required";
+            return;
+          }
+          if (String(params.argsText || "").trim()) {
+            try {
+              const parsed = JSON.parse(params.argsText);
+              if (!Array.isArray(parsed)) {
+                this.errors[key] = "OSC args must be a JSON array";
+              }
+            } catch {
+              this.errors[key] = "OSC args must be valid JSON";
+            }
           }
           return;
         }
@@ -1088,6 +2286,16 @@
               JSON.parse(params.bodyText);
             } catch {
               this.errors[key] = "HTTP body must be valid JSON";
+            }
+          }
+          if (String(params.headersText || "").trim()) {
+            try {
+              const headers = JSON.parse(params.headersText);
+              if (!headers || typeof headers !== "object" || Array.isArray(headers)) {
+                this.errors[key] = "HTTP headers must be a JSON object";
+              }
+            } catch {
+              this.errors[key] = "HTTP headers must be valid JSON";
             }
           }
           return;
@@ -1131,9 +2339,102 @@
         params.method = String(params.method || "GET").toUpperCase();
         params.path = String(params.path || "/");
         const bodyText = String(params.bodyText || "").trim();
+        const headersText = String(params.headersText || "").trim();
+        const timeoutText = String(params.timeoutMs || "").trim();
         delete params.bodyText;
+        delete params.headersText;
         if (bodyText) {
           params.body = JSON.parse(bodyText);
+        }
+        if (headersText) {
+          params.headers = JSON.parse(headersText);
+        }
+        if (timeoutText) {
+          params.timeoutMs = Number(timeoutText);
+        } else {
+          delete params.timeoutMs;
+        }
+      }
+
+      if (row.action === "osc") {
+        params.address = String(params.address || "/");
+        const argsText = String(params.argsText || "").trim();
+        delete params.argsText;
+        if (argsText) {
+          params.args = JSON.parse(argsText);
+        } else {
+          params.args = [];
+        }
+      }
+
+      if (row.action === "rosstalk") {
+        params.rosstalkMode = String(params.rosstalkMode || "raw").toLowerCase();
+        if (!["raw", "cc_index", "cc_grid", "preset"].includes(params.rosstalkMode)) {
+          params.rosstalkMode = "raw";
+        }
+        if (params.rosstalkMode === "cc_grid") {
+          params.page = Number(params.page || 1);
+          params.row = Number(params.row || 1);
+          params.column = Number(params.column || 1);
+          delete params.button;
+          delete params.command;
+          delete params.customCommand;
+        } else if (params.rosstalkMode === "cc_index") {
+          params.page = Number(params.page || 1);
+          params.button = Number(params.button || 1);
+          delete params.row;
+          delete params.column;
+          delete params.command;
+          delete params.customCommand;
+        } else if (params.rosstalkMode === "preset") {
+          params.rosstalkPreset = String(params.rosstalkPreset || "none");
+          if (!this.rosstalkPresetById(params.rosstalkPreset)) {
+            params.rosstalkPreset = "none";
+          }
+          if (
+            !params.rosstalkValues ||
+            typeof params.rosstalkValues !== "object" ||
+            Array.isArray(params.rosstalkValues)
+          ) {
+            params.rosstalkValues = {};
+          }
+          params.customCommand = String(params.customCommand || "");
+          params.command = buildRossTalkPresetCommand(
+            params.rosstalkPreset,
+            params.rosstalkValues,
+            params.customCommand,
+          );
+          delete params.page;
+          delete params.button;
+          delete params.row;
+          delete params.column;
+        } else {
+          params.command = String(params.command || "");
+          params.customCommand = params.command;
+        }
+      }
+
+      if (this.isVmixCommandRow(row)) {
+        params.vmixMode =
+          String(params.vmixMode || "").toLowerCase() === "raw"
+            ? "raw"
+            : "builder";
+        if (
+          !params.vmixArgs ||
+          typeof params.vmixArgs !== "object" ||
+          Array.isArray(params.vmixArgs)
+        ) {
+          params.vmixArgs = {};
+        }
+        if (params.vmixMode === "builder") {
+          params.command = buildVmixCommand(params.vmixFunction, params.vmixArgs);
+        }
+      }
+
+      if (row.action === "command" || row.action === "rosstalk") {
+        params.lineEnd = String(params.lineEnd || "").trim().toLowerCase();
+        if (!params.lineEnd) {
+          delete params.lineEnd;
         }
       }
 
@@ -1163,8 +2464,8 @@
       }
 
       this.onApply?.({
-        label: this.label || "Button",
-        color: this.color || "#2ecc71",
+        label: this.label == null ? "Button" : String(this.label),
+        color: this.color || DEFAULT_BUTTON_COLOR,
         x: Math.max(0, Number(this.x || 0)),
         y: Math.max(0, Number(this.y || 0)),
         w: Math.max(60, Number(this.w || 160)),
@@ -1180,3 +2481,4 @@
 
   window.SequenceEditor = SequenceEditor;
 })();
+

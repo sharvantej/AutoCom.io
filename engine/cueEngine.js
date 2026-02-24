@@ -1,6 +1,13 @@
 ﻿const fs = require("fs");
 const path = require("path");
-const { inferProtocol, sendOsc, sendTcp, sendHttp } = require("./transports");
+const {
+  inferProtocol,
+  sendOsc,
+  sendTcp,
+  sendUdp,
+  sendHttp,
+  sendObs,
+} = require("./transports");
 
 const bundledShowDir = path.join(__dirname, "..", "show");
 const showDir = process.env.AUTO_OSC_SHOW_DIR
@@ -75,6 +82,97 @@ function emitDeviceLog(task, connection, message) {
   });
 }
 
+function resolveLineEnd(value, fallback = "\r\n") {
+  if (value == null) return fallback;
+  const raw = String(value);
+  const key = raw.trim().toLowerCase();
+  if (!key) return fallback;
+  if (["none", "off", "false", "0"].includes(key)) return "";
+  if (key === "lf" || key === "\\n") return "\n";
+  if (key === "cr" || key === "\\r") return "\r";
+  if (key === "crlf" || key === "\\r\\n") return "\r\n";
+  return raw;
+}
+
+function parseJsonLoose(text) {
+  try {
+    return JSON.parse(text);
+  } catch {
+    return undefined;
+  }
+}
+
+function resolveOscArgs(task = {}) {
+  if (Array.isArray(task.args)) {
+    return task.args;
+  }
+
+  const argsText = String(task.argsText || "").trim();
+  if (!argsText) return [];
+
+  const parsed = parseJsonLoose(argsText);
+  if (Array.isArray(parsed)) {
+    return parsed;
+  }
+  if (parsed !== undefined) {
+    return [parsed];
+  }
+
+  return [argsText];
+}
+
+function resolveOscAddress(task = {}, protocol = "") {
+  let address = task.address || task.oscAddress || task.path;
+  if (
+    !address &&
+    (String(task.action || "").toLowerCase() === "osc" || protocol === "osc") &&
+    String(task.command || "").trim().startsWith("/")
+  ) {
+    address = String(task.command || "").trim();
+  }
+  if (!address) return "";
+  address = String(address).trim();
+  if (!address) return "";
+  return address.startsWith("/") ? address : `/${address}`;
+}
+
+function buildRossTalkCommand(task = {}) {
+  const mode = String(
+    task.rosstalkMode || task.mode || task.format || "raw",
+  ).toLowerCase();
+
+  if (["cc", "cc_grid", "cc_index"].includes(mode)) {
+    const page = Number(task.page);
+    if (!Number.isInteger(page) || page < 1) {
+      throw new Error("RossTalk page must be >= 1");
+    }
+
+    if (mode === "cc_grid") {
+      const row = Number(task.row);
+      const column = Number(task.column);
+      if (!Number.isInteger(row) || row < 1) {
+        throw new Error("RossTalk row must be >= 1");
+      }
+      if (!Number.isInteger(column) || column < 1) {
+        throw new Error("RossTalk column must be >= 1");
+      }
+      return `CC ${page}/${row}/${column}`;
+    }
+
+    const button = Number(task.button);
+    if (!Number.isInteger(button) || button < 1) {
+      throw new Error("RossTalk button must be >= 1");
+    }
+    return `CC ${page}:${button}`;
+  }
+
+  const command = task.command || task.payload || task.message;
+  if (!String(command || "").trim()) {
+    throw new Error("RossTalk task missing command");
+  }
+  return String(command).trim();
+}
+
 async function executeTask(task, options = {}) {
   const action = String(task.action || task.type || "").toLowerCase();
 
@@ -106,11 +204,24 @@ async function executeTask(task, options = {}) {
   }
 
   if (connectionType === "resolume" && action === "clip") {
+    let address = String(
+      task.command || task.address || task.oscAddress || task.path || "",
+    ).trim();
+    if (!address && Number.isFinite(Number(task.layer)) && Number.isFinite(Number(task.clip))) {
+      address = `composition/layers/${Number(task.layer)}/clips/${Number(task.clip)}/connect`;
+    }
+    if (!address) {
+      throw new Error("Resolume task missing custom command");
+    }
+    if (!address.startsWith("/")) {
+      address = `/${address}`;
+    }
+
     await sendOsc(connection, {
-      address: `/composition/layers/${task.layer}/clips/${task.clip}/connect`,
+      address,
       args: [1],
     });
-    emitDeviceLog(task, connection, `Resolume L${task.layer} C${task.clip}`);
+    emitDeviceLog(task, connection, `Resolume ${address}`);
     return { ok: true };
   }
 
@@ -121,8 +232,11 @@ async function executeTask(task, options = {}) {
     const command =
       action === "cue" ? `Go+ Cue ${task.cue}` : String(task.command || "");
     if (!command) throw new Error("grandMA3 task missing command");
-    await sendOsc(connection, { address: "/cmd", args: [command] });
-    emitDeviceLog(task, connection, `grandMA3 ${command}`);
+    let oscPrefix = String(connection.oscPrefix || task.oscPrefix || "/cmd").trim();
+    if (!oscPrefix) oscPrefix = "/cmd";
+    if (!oscPrefix.startsWith("/")) oscPrefix = `/${oscPrefix}`;
+    await sendOsc(connection, { address: oscPrefix, args: [command] });
+    emitDeviceLog(task, connection, `grandMA3 ${oscPrefix} ${command}`);
     return { ok: true };
   }
 
@@ -142,8 +256,34 @@ async function executeTask(task, options = {}) {
   ) {
     const command = task.command || task.shortcut || task.function;
     if (!command) throw new Error("vMix task missing command");
-    await sendTcp(connection, command, { lineEnd: "\r\n" });
+    await sendTcp(connection, command, {
+      lineEnd: resolveLineEnd(task.lineEnd, "\r\n"),
+    });
     emitDeviceLog(task, connection, `vMix ${command}`);
+    return { ok: true };
+  }
+
+  if (
+    ["ross_talk", "ross_carbonite", "ross_xpression"].includes(connectionType)
+    || action === "rosstalk"
+  ) {
+    const command = buildRossTalkCommand(task);
+    await sendTcp(connection, command, {
+      lineEnd: resolveLineEnd(task.lineEnd, "\r\n"),
+    });
+    emitDeviceLog(task, connection, `RossTalk ${command}`);
+    return { ok: true };
+  }
+
+  if (connectionType === "atem") {
+    const command = task.command || task.payload || task.message;
+    if (!String(command || "").trim()) {
+      throw new Error("ATEM task missing command");
+    }
+    await sendUdp(connection, command, {
+      lineEnd: resolveLineEnd(task.lineEnd, ""),
+    });
+    emitDeviceLog(task, connection, `ATEM ${String(command).slice(0, 80)}`);
     return { ok: true };
   }
 
@@ -159,6 +299,7 @@ async function executeTask(task, options = {}) {
         path: task.path || connection.path || "/",
         headers: task.headers,
         body: task.body,
+        timeoutMs: task.timeoutMs,
       },
     );
     emitDeviceLog(
@@ -172,17 +313,68 @@ async function executeTask(task, options = {}) {
     return { ok: result.ok, status: result.status };
   }
 
-  if (protocol === "osc" || protocol === "udp") {
-    const address = task.address || task.oscAddress || task.path;
-    if (!address) throw new Error("OSC task missing address");
-    await sendOsc(connection, { address, args: task.args || [] });
-    emitDeviceLog(task, connection, `OSC ${address}`);
+  if (protocol === "ws" || protocol === "wss" || connectionType === "obs") {
+    const explicitRequestType = String(task.requestType || "").trim();
+    const command = String(
+      task.command || task.function || task.actionName || "",
+    ).trim();
+    if (!explicitRequestType && !command) {
+      throw new Error("OBS task missing requestType/command");
+    }
+    const result = await sendObs(
+      { ...connection, protocol },
+      {
+        requestType: explicitRequestType || undefined,
+        command,
+        requestData: task.requestData ?? task.payload ?? task.body ?? task.data,
+      },
+    );
+    const label = explicitRequestType || command.split(" ")[0] || "Request";
+    emitDeviceLog(task, connection, `OBS ${label}`);
+    return {
+      ok: true,
+      code: result?.requestStatus?.code ?? null,
+    };
+  }
+
+  const oscAddress = resolveOscAddress(task, protocol);
+  const oscArgs = resolveOscArgs(task);
+  const hasExplicitOscAddress = Boolean(
+    String(task.address || task.oscAddress || task.path || "").trim(),
+  );
+  const wantsOsc =
+    protocol === "osc" ||
+    task.action === "osc" ||
+    (protocol === "udp" && (hasExplicitOscAddress || Array.isArray(task.args)));
+
+  if (wantsOsc) {
+    if (!oscAddress) throw new Error("OSC task missing address");
+    await sendOsc(connection, { address: oscAddress, args: oscArgs });
+    emitDeviceLog(task, connection, `OSC ${oscAddress}`);
     return { ok: true };
+  }
+
+  if (protocol === "udp") {
+    const udpPayload = task.command || task.payload || task.message;
+    if (!String(udpPayload || "").trim()) {
+      throw new Error("UDP task missing payload");
+    }
+    await sendUdp(connection, udpPayload, {
+      lineEnd: resolveLineEnd(task.lineEnd, ""),
+    });
+    emitDeviceLog(task, connection, `UDP ${String(udpPayload).slice(0, 80)}`);
+    return { ok: true };
+  }
+
+  if (protocol === "osc") {
+    throw new Error("OSC task missing address");
   }
 
   const tcpPayload = task.command || task.payload || task.message;
   if (!tcpPayload) throw new Error("TCP task missing payload");
-  await sendTcp(connection, tcpPayload, { lineEnd: task.lineEnd ?? "\r\n" });
+  await sendTcp(connection, tcpPayload, {
+    lineEnd: resolveLineEnd(task.lineEnd, "\r\n"),
+  });
   emitDeviceLog(task, connection, `TCP ${String(tcpPayload).slice(0, 80)}`);
   return { ok: true };
 }
