@@ -13,8 +13,8 @@
     "windows": [
       {
         "title": "Autocom",
-        "width": 1280,
-        "height": 820,
+        "width": 1920,
+        "height": 1080,
         "fullscreen": false,
         "resizable": true,
         "theme": "Dark",
@@ -31,7 +31,18 @@
     "targets": ["nsis", "dmg"],
     "windows": {
       "digestAlgorithm": "sha256",
-      "timestampUrl": "http://timestamp.sectigo.com"
+      "timestampUrl": "http://timestamp.sectigo.com",
+      "webviewInstallMode": {
+        "type": "downloadBootstrapper",
+        "silent": true
+      },
+      "nsis": {
+        "installMode": "currentUser",
+        "startMenuFolder": "Autocom",
+        "displayLanguageSelector": false,
+        "languages": ["English"],
+        "compression": "lzma"
+      }
     },
     "macOS": {
       "frameworks": [],
@@ -39,9 +50,8 @@
       "signingIdentity": null
     },
     "icon": [
-      "target/release/resources/icon.ico"
+      "../public/autocom-title.ico"
     ],
     "externalBin": []
   }
 }
-
