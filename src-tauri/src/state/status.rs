@@ -165,7 +165,6 @@ async fn check_osc_status(host: &str, port: u16) -> (String, Option<String>, Opt
   }
   ("offline".to_string(), Some("failed after retries".to_string()), None)
 }
-}
 
 async fn check_http_status(
   protocol: &str,

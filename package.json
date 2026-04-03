@@ -1,6 +1,6 @@
 {
     "name": "auto-osc-tauri",
-    "version": "3.0.0",
+    "version": "2.0.0",
     "description": "High-performance OSC dashboard using Tauri + React + Rust.",
     "author": "Sharvan Tej",
     "license": "UNLICENSED",
@@ -10,6 +10,8 @@
         "clean": "node scripts/clean.js",
         "dev": "tauri dev",
         "build": "node scripts/run-tauri-build.js",
+        "build:windows": "npm run web:build && tauri build -- --target x86_64-pc-windows-msvc",
+        "build:macos": "npm run web:build && tauri build -- --target universal-apple-darwin",
         "web:dev": "vite --host 0.0.0.0 --port 1430",
         "web:build": "vite build",
         "test": "vitest",
