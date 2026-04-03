@@ -1,158 +1,95 @@
-# OSC Dashboard
+# AUTO OSC (Tauri + React + Rust)
 
-Desktop control dashboard for show cues and device triggers (Resolume, grandMA3, vMix, ATEM, OBS, HTTP, audio, and generic TCP/OSC).
+**v3.0.0 - Major Update**: Migrated from Electron to Tauri for better performance and smaller footprint.
 
-## App Link
+High-performance desktop dashboard for sending control commands to devices using native protocols:
 
-- GitHub Repository: [OSC Dashboard](https://github.com/sharvantej/OSC-Dashboard)
-- Latest Release: [Download for Windows](https://github.com/sharvantej/OSC-Dashboard/releases/latest)
+- OSC
+- Art-Net / DMX
+- RossTalk
+- UDP
+- TCP
+- WebSocket
+- HTTP
 
-## Features
+## Why this architecture
 
-- Visual dashboard with floating edit window (draggable)
-- Per-button task sequences (serial, delay, parallel)
-- Preset shortcut insertion in Sequence Editor (built-in + JSON catalogs)
-- Right sidebar with switchable tabs:
-  - `Connections`
-  - `Action Logs` (default on startup)
-- Connection management with status indicators and active toggles
-- Sequence editor with:
-  - Apply (save, keep open)
-  - Apply & Close
-  - Cancel (discard unsaved modal changes)
-- Pixel-based inspector controls:
-  - Title
-  - X, Y
-  - W, H
-  - Text size
-  - BG color
-  - Text color
-- Edit tool modes:
-  - Move mode (drag selected item on canvas)
-  - Resize mode (resize from all edges/corners)
-- Label boxes for dashboard organization (non-trigger items)
-- Image widgets (add image to dashboard, move/resize anywhere)
-- Canvas background color control
-- Grid lines shown only in edit mode
-- Snap-to-grid option
-- Show/hide borders option with global border color
-- Scroll mode options in floating editor (`True`, `False`, `Vertical`, `Horizontal`, `Always`)
-- Hidden visual scrollbars for cleaner on-screen output
-- Save toast popup (`Ctrl+S`) instead of blocking alert
-- Scrollable workspace for large button layouts
-- Windows installer build (`.exe`)
+- Tauri reduces memory and startup overhead compared to Electron.
+- Rust core sends protocols directly with low latency.
+- React UI remains fast to iterate and easy to extend.
 
-## Editor Controls
+## Stack
 
-- Toggle edit mode: `G`
-- Save layout: `Ctrl+S`
-- Add button: `Ctrl+N`
-- Clear active button: `C`
+- Frontend: React + Vite
+- Desktop shell: Tauri v2
+- Core transport engine: Rust (`src-tauri/src/lib.rs`)
 
-In edit mode:
+## Project layout
 
-- Select an item with single click
-- Move item when `Move` tool is selected
-- Resize item when `Resize` tool is selected
-- Use inspector fields for precise layout and styling changes
-- Drag floating edit window by its header to reposition it
+- `src/` React UI
+- `src-tauri/` Tauri app and Rust protocol dispatcher
+- `src-tauri/src/protocols/` per-protocol transport modules (`osc`, `udp`, `tcp`, `ws`, `http`, `artnet`)
+- `public/` static assets used by the UI shell
+- runtime data is persisted in the Tauri app data directory (`projects.json`, `connections.json`, `layout.json`, `logs.json`, `show.json`)
 
-## Sidebar Tabs
+## Prerequisites
 
-- `Action Logs` tab:
-  - displays runtime logs
-  - no add/manage device footer actions shown
-- `Connections` tab:
-  - view/edit connections
-  - footer actions:
-    - `Add Device` (opens add connection editor)
-    - `Manage Device` (pick one device to edit)
+- Node.js 18+
+- Rust toolchain (`rustup`)
+- Tauri system prerequisites for Windows
 
-## Tech Stack
-
-- Electron
-- Node.js + Express
-- Socket.IO
-
-## Project Structure
-
-- `electron-main.js` - Electron app entry
-- `server.js` - API + socket server
-- `engine/` - cue/task execution and transport logic
-- `public/` - frontend UI (HTML/CSS/JS)
-  - `public/vmix-shortcuts.json` - vMix function catalog for builder mode
-  - `public/shortuts.json` - shortcut preset catalog for companion-style modules
-- `show/` - layout, connections, and show cue data
-
-## Requirements
-
-- Node.js 18+ (recommended: LTS)
-- npm
-- Windows (for installer build)
-
-## Install Dependencies
+## Install
 
 ```bash
 npm install
 ```
 
-## Run in Development
+## Run (Tauri dev)
 
 ```bash
-npm start
+npm run dev
 ```
 
-## Build Windows Installer
+## Build desktop app
 
 ```bash
-npm run dist
+npm run build
 ```
 
-Output:
+## Clean generated artifacts
 
-- `dist/Bunny Setup.exe`
+```bash
+npm run clean
+```
 
-This installer is configured for normal install flow (not one-click) and allows selecting installation directory.
+## Rust command API
 
-## Data Files
+Frontend invokes:
 
-Runtime show data is persisted under Electron user data path (configured via `AUTO_OSC_SHOW_DIR` at app startup).  
-Repository defaults are in `show/`:
+- `healthcheck`
+- `send_protocol`
 
-- `show/layout.json`
-- `show/connections.json`
-- `show/show.json`
+`send_protocol` accepts:
 
-Preset catalogs loaded by the frontend:
+- `protocol`: `osc | udp | tcp | ws | http | artnet | dmx | rosstalk`
+- `host`: string
+- `port`: number
+- `address`: optional string (OSC address or HTTP/WS path)
+- `args`: optional array (for OSC args)
+- `payload`: optional string (UDP/TCP/WS/HTTP body)
 
-- `public/vmix-shortcuts.json`
-- `public/shortuts.json`
+`artnet/dmx` payload forms:
 
-`shortuts.json` currently includes preset templates for:
+- JSON object: `{"universe":0,"values":[255,0,0,...]}`
+- JSON object: `{"universe":0,"channel":1,"value":255}`
 
-- BMD ATEM
-- Resolume Arena
-- MA Lighting grandMA3
-- Generic HTTP
-- RossTalk
-- BMD Videohub
-- Generic SWP-08
-- OBS Studio
-- Behringer X32
-- Generic TCP/UDP
-- Ross XPression
+## Runtime state
 
-## Git Notes
+- `tauri::State` is used for shared runtime state.
+- WebSocket command sessions are cached in Rust and reused to avoid reconnecting on every send.
 
-Large generated folders are ignored:
+## Protocol guidance
 
-- `node_modules/`
-- `dist/`
-
-See `.gitignore`.
-
-## Troubleshooting
-
-- If device status does not turn green, verify host/port and enabled state in Connections.
-- If triggers work but status looks wrong, check connection type/protocol and health behavior in `engine/transports.js`.
-- After frontend changes, restart/reload the app to ensure latest UI is loaded.
+- Use native protocol per target device from Rust.
+- Do not route device traffic through Socket.IO.
+- Socket.IO/WebSocket is only useful for UI event streaming if needed later.
