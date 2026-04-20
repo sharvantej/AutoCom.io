@@ -66,9 +66,7 @@ function safeWriteMappings(next: MappingRecord): void {
   if (typeof window === "undefined") return;
   try {
     window.localStorage.setItem(MAPPING_STORAGE_KEY, JSON.stringify(next));
-  } catch {
-    // Ignore storage write failures
-  }
+  } catch {}
 }
 
 function safeReadTextSizes(): TextSizeRecord {
@@ -88,9 +86,7 @@ function safeWriteTextSizes(next: TextSizeRecord): void {
   if (typeof window === "undefined") return;
   try {
     window.localStorage.setItem(TEXT_SIZE_STORAGE_KEY, JSON.stringify(next));
-  } catch {
-    // Ignore storage write failures
-  }
+  } catch {}
 }
 
 function safeReadKeyStyles(): KeyStyleRecord {
@@ -106,11 +102,7 @@ function safeReadKeyStyles(): KeyStyleRecord {
       const normalizedBg = typeof value.bgColor === "string" ? value.bgColor.toLowerCase() : "";
       const nextBgColor =
         normalizedBg === "#101828" || normalizedBg === "#1e2939" ? "#020817" : value.bgColor;
-      migrated[key] = {
-        ...DEFAULT_KEY_STYLE,
-        ...value,
-        bgColor: nextBgColor,
-      };
+      migrated[key] = { ...DEFAULT_KEY_STYLE, ...value, bgColor: nextBgColor };
     });
     return migrated;
   } catch {
@@ -122,9 +114,7 @@ function safeWriteKeyStyles(next: KeyStyleRecord): void {
   if (typeof window === "undefined") return;
   try {
     window.localStorage.setItem(KEY_STYLE_STORAGE_KEY, JSON.stringify(next));
-  } catch {
-    // Ignore storage write failures
-  }
+  } catch {}
 }
 
 function hexToRgb(hex: string): [number, number, number] {
@@ -157,12 +147,7 @@ function createDeckAddresses(page: number, rows: number, cols: number): DeckAddr
   const out: DeckAddress[] = [];
   for (let row = 1; row <= rows; row += 1) {
     for (let col = 1; col <= cols; col += 1) {
-      out.push({
-        page,
-        row,
-        col,
-        key: `${page}/${row}/${col}`,
-      });
+      out.push({ page, row, col, key: `${page}/${row}/${col}` });
     }
   }
   return out;
@@ -201,25 +186,26 @@ export default function ButtonMapping() {
   const [activePage, setActivePage] = useState(() => readActivePage());
   const [buttons, setButtons] = useState<DashboardButtonEntry[]>([]);
   const [loadingButtons, setLoadingButtons] = useState(false);
-  const [selectedDashboardButtonId, setSelectedDashboardButtonId] = useState<string | null>(null);
   const [selectedDeckKey, setSelectedDeckKey] = useState<string | null>(null);
   const [mappings, setMappings] = useState<MappingRecord>(() => safeReadMappings());
   const [textSizes, setTextSizes] = useState<TextSizeRecord>(() => safeReadTextSizes());
   const [keyStyles, setKeyStyles] = useState<KeyStyleRecord>(() => safeReadKeyStyles());
   const [textSizeInput, setTextSizeInput] = useState("10");
-  const previewHostRef = useRef<HTMLDivElement | null>(null);
-  const [previewHostWidth, setPreviewHostWidth] = useState(0);
-  const [previewHostHeight, setPreviewHostHeight] = useState(0);
+  const gridHostRef = useRef<HTMLDivElement | null>(null);
+  const [gridHostWidth, setGridHostWidth] = useState(0);
+  const [gridHostHeight, setGridHostHeight] = useState(0);
   const [deckDevices, setDeckDevices] = useState<StreamDeckDevice[]>([]);
   const [selectedDeckSerial, setSelectedDeckSerial] = useState<string>(() => readSelectedSerial());
   const [directSyncEnabled, setDirectSyncEnabled] = useState(() => readDirectSyncEnabled());
   const [syncState, setSyncState] = useState<"idle" | "syncing" | "ok" | "error">("idle");
   const [syncError, setSyncError] = useState("");
+
   const selectedDevice = useMemo(
-    () => deckDevices.find((device) => device.serialNumber === selectedDeckSerial) ?? null,
+    () => deckDevices.find((d) => d.serialNumber === selectedDeckSerial) ?? null,
     [deckDevices, selectedDeckSerial],
   );
 
+  // Load dashboard buttons from all projects
   useEffect(() => {
     let disposed = false;
     const fetchButtons = async (silent = false) => {
@@ -234,24 +220,15 @@ export default function ButtonMapping() {
               if (type !== "button") return;
               const itemId = typeof item.id === "string" && item.id.trim() ? item.id.trim() : `btn-${index + 1}`;
               const label = normalizeButtonLabel(item.label, `Button ${index + 1}`);
-              next.push({
-                id: `${project.id}:${itemId}`,
-                projectId: project.id,
-                projectName: project.name,
-                label,
-              });
+              next.push({ id: `${project.id}:${itemId}`, projectId: project.id, projectName: project.name, label });
             });
-          } catch {
-            // Skip project layouts that fail to load
-          }
+          } catch {}
         }
         next.sort((a, b) => {
           if (a.projectName !== b.projectName) return a.projectName.localeCompare(b.projectName);
           return a.label.localeCompare(b.label);
         });
-        if (!disposed) {
-          setButtons(next);
-        }
+        if (!disposed) setButtons(next);
       } finally {
         if (!silent && !disposed) setLoadingButtons(false);
       }
@@ -261,43 +238,27 @@ export default function ButtonMapping() {
       window.setTimeout(() => void fetchButtons(true), 700),
       window.setTimeout(() => void fetchButtons(true), 1700),
     ];
-    const onFocus = () => {
-      void fetchButtons(true);
-    };
+    const onFocus = () => void fetchButtons(true);
     window.addEventListener("focus", onFocus);
     return () => {
       disposed = true;
-      refreshTimers.forEach((timerId) => window.clearTimeout(timerId));
+      refreshTimers.forEach((id) => window.clearTimeout(id));
       window.removeEventListener("focus", onFocus);
     };
   }, [projects]);
 
   const buttonById = useMemo(() => {
     const map = new Map<string, DashboardButtonEntry>();
-    buttons.forEach((entry) => map.set(entry.id, entry));
+    buttons.forEach((e) => map.set(e.id, e));
     return map;
   }, [buttons]);
 
+  // All mapping options: system specials first, then project buttons
   const mappingOptions = useMemo<DashboardButtonEntry[]>(
     () => [
-      {
-        id: SPECIAL_MAPPING_PAGE_PREVIOUS,
-        projectId: -1,
-        projectName: "System",
-        label: "Page Previous",
-      },
-      {
-        id: SPECIAL_MAPPING_PAGE_NEXT,
-        projectId: -1,
-        projectName: "System",
-        label: "Page Next",
-      },
-      {
-        id: SPECIAL_MAPPING_NONE,
-        projectId: -1,
-        projectName: "System",
-        label: "None",
-      },
+      { id: SPECIAL_MAPPING_PAGE_PREVIOUS, projectId: -1, projectName: "System", label: "Page Previous" },
+      { id: SPECIAL_MAPPING_PAGE_NEXT,     projectId: -1, projectName: "System", label: "Page Next"     },
+      { id: SPECIAL_MAPPING_NONE,          projectId: -1, projectName: "System", label: "None"          },
       ...buttons,
     ],
     [buttons],
@@ -307,6 +268,7 @@ export default function ButtonMapping() {
     () => createDeckAddresses(activePage, Math.max(1, rows), Math.max(1, cols)),
     [activePage, cols, rows],
   );
+
   const syncDeckButtons = useMemo(
     () =>
       selectedDevice
@@ -315,6 +277,7 @@ export default function ButtonMapping() {
     [activePage, deckButtons, selectedDevice],
   );
 
+  // Stream Deck device polling
   useEffect(() => {
     let disposed = false;
     if (!isTauri()) return;
@@ -323,11 +286,11 @@ export default function ButtonMapping() {
         const devices = await listStreamDeckDevices();
         if (disposed) return;
         setDeckDevices(devices);
-        const hasSelectedSerial = devices.some((device) => device.serialNumber === selectedDeckSerial);
-        if (devices.length > 0 && !hasSelectedSerial) {
-          const fallbackSerial = devices[0].serialNumber || "";
-          setSelectedDeckSerial(fallbackSerial);
-          window.localStorage.setItem(STREAMDECK_SELECTED_SERIAL_KEY, fallbackSerial);
+        const hasSerial = devices.some((d) => d.serialNumber === selectedDeckSerial);
+        if (devices.length > 0 && !hasSerial) {
+          const fallback = devices[0].serialNumber || "";
+          setSelectedDeckSerial(fallback);
+          window.localStorage.setItem(STREAMDECK_SELECTED_SERIAL_KEY, fallback);
           window.dispatchEvent(new CustomEvent("autocom:streamdeck-controls-changed"));
         }
       } catch (error) {
@@ -349,15 +312,15 @@ export default function ButtonMapping() {
   }, [selectedDeckSerial]);
 
   useEffect(() => {
-    const syncFromTopbar = () => {
+    const sync = () => {
       setDirectSyncEnabled(readDirectSyncEnabled());
       setSelectedDeckSerial(readSelectedSerial());
     };
-    window.addEventListener("autocom:streamdeck-controls-changed", syncFromTopbar as EventListener);
-    window.addEventListener("storage", syncFromTopbar);
+    window.addEventListener("autocom:streamdeck-controls-changed", sync as EventListener);
+    window.addEventListener("storage", sync);
     return () => {
-      window.removeEventListener("autocom:streamdeck-controls-changed", syncFromTopbar as EventListener);
-      window.removeEventListener("storage", syncFromTopbar);
+      window.removeEventListener("autocom:streamdeck-controls-changed", sync as EventListener);
+      window.removeEventListener("storage", sync);
     };
   }, []);
 
@@ -368,19 +331,17 @@ export default function ButtonMapping() {
   }, [activePage]);
 
   useEffect(() => {
-    const syncActivePage = () => {
-      setActivePage(readActivePage());
-    };
-    window.addEventListener("autocom:streamdeck-active-page-changed", syncActivePage as EventListener);
-    window.addEventListener("storage", syncActivePage);
+    const syncPage = () => setActivePage(readActivePage());
+    window.addEventListener("autocom:streamdeck-active-page-changed", syncPage as EventListener);
+    window.addEventListener("storage", syncPage);
     return () => {
-      window.removeEventListener("autocom:streamdeck-active-page-changed", syncActivePage as EventListener);
-      window.removeEventListener("storage", syncActivePage);
+      window.removeEventListener("autocom:streamdeck-active-page-changed", syncPage as EventListener);
+      window.removeEventListener("storage", syncPage);
     };
   }, []);
 
   useEffect(() => {
-    setActivePage((previous) => Math.min(Math.max(1, totalPages), Math.max(1, previous)));
+    setActivePage((prev) => Math.min(Math.max(1, totalPages), Math.max(1, prev)));
   }, [totalPages]);
 
   useEffect(() => {
@@ -389,21 +350,23 @@ export default function ButtonMapping() {
     setCols(selectedDevice.cols);
   }, [selectedDevice]);
 
-  const totalPerPage = Math.max(1, rows) * Math.max(1, cols);
+  // Responsive key sizing: fill available grid area
   const deckKeySize = useMemo(() => {
     const safeCols = Math.max(1, cols);
     const safeRows = Math.max(1, rows);
-    if (previewHostWidth <= 0) return 90;
+    if (gridHostWidth <= 0) return 90;
     const gap = 2;
-    const reserveForControls = 290;
-    const fromWidth = Math.floor((previewHostWidth - (safeCols - 1) * gap) / safeCols);
+    // Reserve ~110px for the inspector strip below
+    const availH = gridHostHeight > 110 ? gridHostHeight - 110 : gridHostHeight;
+    const fromWidth = Math.floor((gridHostWidth - (safeCols - 1) * gap) / safeCols);
     const fromHeight =
-      previewHostHeight > 0
-        ? Math.floor((Math.max(0, previewHostHeight - reserveForControls) - (safeRows - 1) * gap) / safeRows)
+      availH > 0
+        ? Math.floor((availH - (safeRows - 1) * gap) / safeRows)
         : STREAMDECK_KEY_SIZE;
     const next = Math.min(fromWidth, fromHeight);
     return Math.max(44, Math.min(STREAMDECK_KEY_SIZE, next));
-  }, [cols, previewHostHeight, previewHostWidth, rows]);
+  }, [cols, gridHostHeight, gridHostWidth, rows]);
+
   const deckGridWidth = Math.max(1, cols) * deckKeySize + (Math.max(1, cols) - 1) * 2;
 
   const syncKeys = useMemo(
@@ -432,60 +395,47 @@ export default function ButtonMapping() {
     [buttonById, keyStyles, mappings, selectedDeckKey, syncDeckButtons, textSizes],
   );
 
-  const selectedDeckMappedButton = selectedDeckKey ? mappings[selectedDeckKey] ?? null : null;
   const selectedStyle = selectedDeckKey ? (keyStyles[selectedDeckKey] ?? DEFAULT_KEY_STYLE) : DEFAULT_KEY_STYLE;
-  const canMap = Boolean(selectedDashboardButtonId && selectedDeckKey);
+  const selectedMappedId = selectedDeckKey ? (mappings[selectedDeckKey] ?? "") : "";
 
   const updateSelectedStyle = (patch: Partial<KeyStyle>) => {
     if (!selectedDeckKey) return;
     const next: KeyStyleRecord = {
       ...keyStyles,
-      [selectedDeckKey]: {
-        ...(keyStyles[selectedDeckKey] ?? DEFAULT_KEY_STYLE),
-        ...patch,
-      },
+      [selectedDeckKey]: { ...(keyStyles[selectedDeckKey] ?? DEFAULT_KEY_STYLE), ...patch },
     };
     setKeyStyles(next);
     safeWriteKeyStyles(next);
   };
 
-  const mapSelected = () => {
-    if (!selectedDashboardButtonId || !selectedDeckKey) return;
+  // Instant mapping: select changes apply immediately
+  const applyMapping = (mappingId: string) => {
+    if (!selectedDeckKey) return;
     const next = { ...mappings };
-    if (selectedDashboardButtonId === SPECIAL_MAPPING_NONE) {
+    if (!mappingId || mappingId === SPECIAL_MAPPING_NONE) {
       delete next[selectedDeckKey];
     } else {
-      next[selectedDeckKey] = selectedDashboardButtonId;
+      next[selectedDeckKey] = mappingId;
     }
     setMappings(next);
     safeWriteMappings(next);
   };
 
   const unmapSelectedDeck = () => {
-    if (!selectedDeckKey || !mappings[selectedDeckKey]) return;
+    if (!selectedDeckKey) return;
     const next = { ...mappings };
     delete next[selectedDeckKey];
     setMappings(next);
     safeWriteMappings(next);
-    setSelectedDashboardButtonId(null);
   };
 
-  // When a deck key is selected, auto-highlight its currently mapped button in the left list
   const handleDeckKeyClick = (key: string) => {
     setSelectedDeckKey(key);
-    const existingMapping = mappings[key];
-    if (existingMapping) {
-      setSelectedDashboardButtonId(existingMapping);
-    }
   };
 
   useEffect(() => {
-    if (!selectedDeckKey) {
-      setTextSizeInput("10");
-      return;
-    }
-    const current = textSizes[selectedDeckKey] ?? 10;
-    setTextSizeInput(String(current));
+    if (!selectedDeckKey) { setTextSizeInput("10"); return; }
+    setTextSizeInput(String(textSizes[selectedDeckKey] ?? 10));
   }, [selectedDeckKey, textSizes]);
 
   const saveSelectedTextSize = () => {
@@ -498,19 +448,18 @@ export default function ButtonMapping() {
     safeWriteTextSizes(next);
   };
 
+  // Measure grid host
   useEffect(() => {
-    const node = previewHostRef.current;
+    const node = gridHostRef.current;
     if (!node) return;
-    const update = () => {
-      setPreviewHostWidth(node.clientWidth);
-      setPreviewHostHeight(node.clientHeight);
-    };
+    const update = () => { setGridHostWidth(node.clientWidth); setGridHostHeight(node.clientHeight); };
     update();
     const observer = new ResizeObserver(() => update());
     observer.observe(node);
     return () => observer.disconnect();
   }, []);
 
+  // Stream Deck sync
   useEffect(() => {
     if (!isTauri()) return;
     if (!directSyncEnabled) return;
@@ -526,11 +475,7 @@ export default function ButtonMapping() {
         });
         setSyncState("ok");
       } catch (error) {
-        if (isStreamDeckTransientDisconnectError(error)) {
-          setSyncState("idle");
-          setSyncError("");
-          return;
-        }
+        if (isStreamDeckTransientDisconnectError(error)) { setSyncState("idle"); setSyncError(""); return; }
         setSyncState("error");
         setSyncError(error instanceof Error ? error.message : "Failed to sync Stream Deck surface.");
       }
@@ -538,400 +483,308 @@ export default function ButtonMapping() {
     return () => window.clearTimeout(timerId);
   }, [directSyncEnabled, selectedDevice, syncKeys]);
 
-  // Stepper helpers
-  const stepPages = (delta: number) => {
-    setTotalPages((prev) => Math.max(1, prev + delta));
-  };
-  const stepActivePage = (delta: number) => {
-    setActivePage((prev) => Math.max(1, Math.min(Math.max(1, totalPages), prev + delta)));
-  };
+  const stepPages = (delta: number) => setTotalPages((p) => Math.max(1, p + delta));
+  const stepActivePage = (delta: number) =>
+    setActivePage((p) => Math.max(1, Math.min(Math.max(1, totalPages), p + delta)));
 
-  // Stepper button shared styles
-  const stepperBtn = (enabled: boolean) => ({
+  const stepBtn = (enabled: boolean): React.CSSProperties => ({
     borderColor: t.inputBorder,
     backgroundColor: t.bgSidebar,
     color: enabled ? t.textPrimary : t.textSecondary,
     cursor: enabled ? "pointer" : "not-allowed",
-  } as React.CSSProperties);
+  });
+
+  const hasKey = !!selectedDeckKey;
+  const hasMappedContent = !!selectedMappedId;
+
+  // Group project buttons by project name for the select
+  const projectGroups = useMemo(() => {
+    const groups = new Map<string, DashboardButtonEntry[]>();
+    buttons.forEach((b) => {
+      if (!groups.has(b.projectName)) groups.set(b.projectName, []);
+      groups.get(b.projectName)!.push(b);
+    });
+    return groups;
+  }, [buttons]);
 
   return (
     <div
-      className="button-mapping-page flex h-full w-full page-pop overflow-auto xl:overflow-hidden flex-col xl:flex-row"
+      className="button-mapping-page flex h-full w-full flex-col page-pop overflow-hidden"
       style={{ background: `linear-gradient(180deg, ${t.bgContent} 0%, ${t.bgOuter} 100%)` }}
     >
-      {/* ── LEFT PANEL: Dashboard Buttons ── */}
+      {/* ── TOP HEADER ── */}
       <div
-        className="flex w-full xl:w-1/2 min-w-0 min-h-0 border-b xl:border-b-0 xl:border-r"
-        style={{ borderColor: t.topbarBorder, backgroundColor: t.bgSidebar }}
+        className="flex h-[44px] shrink-0 items-center gap-4 border-b px-4"
+        style={{ borderColor: t.topbarBorder }}
       >
-        <div className="grid w-full min-w-0 min-h-0 grid-cols-1 md:grid-cols-[minmax(0,1fr)_88px] gap-0">
+        <span className="text-[15px] font-semibold tracking-[0.01em]" style={{ color: t.textPrimary }}>
+          Button Mapping
+        </span>
 
-          {/* Button list */}
-          <section className="min-w-0 min-h-0 md:border-r flex flex-col" style={{ borderColor: t.topbarBorder }}>
-            <div
-              className="h-[44px] px-3 flex items-center justify-start border-b"
-              style={{ borderColor: t.topbarBorder, color: t.textPrimary, backgroundColor: t.bgContent }}
-            >
-              <span className="text-[15px] font-semibold tracking-[0.01em]">Dashboard Buttons</span>
-            </div>
-            <div
-              className="min-h-0 flex-1 overflow-y-auto app-scrollbar p-2"
-              style={{ backgroundColor: t.bgContent }}
-            >
-              {loadingButtons ? (
-                <div className="text-[12px] px-1 pt-1" style={{ color: t.textSecondary }}>Loading buttons…</div>
-              ) : mappingOptions.length === 0 ? (
-                <div className="flex flex-col items-center justify-center h-32 gap-2">
-                  <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" style={{ color: t.textSecondary }}>
-                    <rect x="2" y="7" width="20" height="14" rx="0" />
-                    <path d="M8 7V5a4 4 0 0 1 8 0v2" />
-                    <circle cx="12" cy="14" r="1.5" />
-                  </svg>
-                  <span className="text-[12px]" style={{ color: t.textSecondary }}>No dashboard buttons found.</span>
-                  <span className="text-[11px]" style={{ color: t.textSecondary, opacity: 0.6 }}>Create a project and add button widgets first.</span>
-                </div>
-              ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-1.5">
-                  {mappingOptions.map((entry) => {
-                    const active = selectedDashboardButtonId === entry.id;
-                    // Check if this button is mapped to any key on current page
-                    const isMappedOnPage = Object.entries(mappings).some(
-                      ([k, v]) => v === entry.id && k.startsWith(`${activePage}/`)
-                    );
-                    return (
-                      <button
-                        key={entry.id}
-                        className="w-full px-2.5 py-2 border text-left transition-colors"
-                        style={{
-                          borderColor: active
-                            ? "rgba(139, 92, 246, 0.6)"
-                            : isMappedOnPage
-                              ? "rgba(139, 92, 246, 0.25)"
-                              : t.topbarBorder,
-                          backgroundColor: active
-                            ? t.navActive
-                            : isMappedOnPage
-                              ? "rgba(139, 92, 246, 0.07)"
-                              : t.bgSidebar,
-                          color: active ? t.textPrimary : isMappedOnPage ? "rgba(167,139,250,0.9)" : t.textSecondary,
-                          fontSize: 12,
-                        }}
-                        onClick={() => setSelectedDashboardButtonId(entry.id)}
-                      >
-                        <div className="truncate text-center">{entry.label}</div>
-                      </button>
-                    );
-                  })}
-                </div>
-              )}
-            </div>
-          </section>
+        <div className="ml-auto flex items-center gap-4 text-[12px]" style={{ color: t.textSecondary }}>
+          {/* Pages stepper */}
+          <div className="flex items-center gap-1">
+            <span>Pages</span>
+            <button className="w-[22px] h-[24px] border flex items-center justify-center text-[13px]"
+              style={stepBtn(totalPages > 1)} disabled={totalPages <= 1} onClick={() => stepPages(-1)}>−</button>
+            <span className="w-[20px] text-center" style={{ color: t.textPrimary }}>{totalPages}</span>
+            <button className="w-[22px] h-[24px] border flex items-center justify-center text-[13px]"
+              style={stepBtn(totalPages < 32)} disabled={totalPages >= 32} onClick={() => stepPages(1)}>+</button>
+          </div>
 
-          {/* Map / Unmap actions */}
-          <section className="flex flex-col" style={{ borderColor: t.topbarBorder, backgroundColor: t.bgContent }}>
-            <div className="h-[44px] border-b" style={{ borderColor: t.topbarBorder }} />
-            <div className="flex flex-row md:flex-col items-center gap-2 p-2">
-              <button
-                className="w-full h-[36px] border px-2 py-2 text-[12px] flex items-center justify-center transition-colors"
-                style={{
-                  borderColor: canMap ? "rgba(139, 92, 246, 0.6)" : t.topbarBorder,
-                  backgroundColor: canMap ? t.navActive : t.bgSidebar,
-                  color: canMap ? t.textPrimary : t.textSecondary,
-                  cursor: canMap ? "pointer" : "not-allowed",
-                }}
-                onClick={mapSelected}
-                disabled={!canMap}
-              >
-                Map
-              </button>
-              <button
-                className="w-full h-[36px] border px-2 py-2 text-[12px] flex items-center justify-center transition-colors"
-                style={{
-                  borderColor: selectedDeckMappedButton ? "rgba(239,68,68,0.5)" : t.topbarBorder,
-                  backgroundColor: t.bgSidebar,
-                  color: selectedDeckMappedButton ? "#ef4444" : t.textSecondary,
-                  cursor: selectedDeckMappedButton ? "pointer" : "not-allowed",
-                }}
-                onClick={unmapSelectedDeck}
-                disabled={!selectedDeckMappedButton}
-              >
-                Unmap
-              </button>
-            </div>
-          </section>
-
+          {/* Page navigation */}
+          <div className="flex items-center gap-1">
+            <button className="h-[24px] border px-2 text-[12px] flex items-center justify-center"
+              style={stepBtn(activePage > 1)} disabled={activePage <= 1} onClick={() => stepActivePage(-1)}>{"<"}</button>
+            <span className="w-[44px] text-center" style={{ color: t.textPrimary }}>
+              {activePage} / {Math.max(1, totalPages)}
+            </span>
+            <button className="h-[24px] border px-2 text-[12px] flex items-center justify-center"
+              style={stepBtn(activePage < Math.max(1, totalPages))}
+              disabled={activePage >= Math.max(1, totalPages)} onClick={() => stepActivePage(1)}>{">"}</button>
+          </div>
         </div>
       </div>
 
-      {/* ── RIGHT PANEL: Stream Deck Preview ── */}
-      <div className="flex w-full xl:w-1/2 min-w-0 flex-col" style={{ backgroundColor: t.bgContent }}>
+      {/* Sync error */}
+      {syncState === "error" && syncError && (
+        <div className="px-4 py-1 shrink-0 text-[11px] border-b" style={{ color: "#ef4444", borderColor: t.topbarBorder }}>
+          {syncError}
+        </div>
+      )}
 
-        {/* Right header */}
+      {/* ── GRID AREA ── */}
+      <div ref={gridHostRef} className="flex-1 min-h-0 overflow-auto flex items-center justify-center p-4">
         <div
-          className="min-h-[44px] px-4 py-2 border-b flex flex-col md:flex-row md:items-center gap-2 md:gap-3 md:justify-between"
-          style={{ borderColor: t.topbarBorder }}
+          className="grid p-[2px]"
+          style={{
+            gridTemplateColumns: `repeat(${Math.max(1, cols)}, ${deckKeySize}px)`,
+            columnGap: "2px",
+            rowGap: "2px",
+            backgroundColor: "rgba(15, 23, 42, 0.35)",
+            width: deckGridWidth + 4,
+          }}
         >
-          <div className="text-[15px] font-semibold tracking-[0.01em]" style={{ color: t.textPrimary }}>
-            Stream Deck Preview
-          </div>
-          <div className="flex flex-wrap items-center gap-3 text-[12px]" style={{ color: t.textSecondary }}>
-
-            {/* Pages */}
-            <div className="flex items-center gap-1">
-              <span style={{ color: t.textSecondary }}>Pages</span>
+          {deckButtons.map((entry) => {
+            const key = entry.key;
+            const mappedId = mappings[key];
+            const mapped = mappedId ? buttonById.get(mappedId) : null;
+            const specialLabel = getSpecialMappingLabel(mappedId);
+            const isSelected = selectedDeckKey === key;
+            const keyTextSize = textSizes[key] ?? 10;
+            const style = keyStyles[key] ?? DEFAULT_KEY_STYLE;
+            const customLabel = style.customLabel.trim();
+            const deckAddress = `${entry.page}/${entry.row}/${entry.col}`;
+            const hasMapped = !!(customLabel || mapped?.label || specialLabel);
+            return (
               <button
-                className="w-[22px] h-[24px] border flex items-center justify-center text-[13px] leading-none"
-                style={stepperBtn(totalPages > 1)}
-                disabled={totalPages <= 1}
-                onClick={() => stepPages(-1)}
-              >−</button>
-              <span className="w-[20px] text-center" style={{ color: t.textPrimary }}>{totalPages}</span>
-              <button
-                className="w-[22px] h-[24px] border flex items-center justify-center text-[13px] leading-none"
-                style={stepperBtn(totalPages < 32)}
-                disabled={totalPages >= 32}
-                onClick={() => stepPages(1)}
-              >+</button>
-            </div>
+                key={key}
+                className="border overflow-hidden flex flex-col items-stretch transition-colors"
+                style={{
+                  width: deckKeySize,
+                  height: deckKeySize,
+                  borderColor: isSelected
+                    ? "rgba(139, 92, 246, 0.85)"
+                    : hasMapped
+                      ? "rgba(139, 92, 246, 0.3)"
+                      : "#2c3138",
+                  backgroundColor: style.bgColor,
+                  color: style.textColor,
+                  boxShadow: isSelected ? "0 0 0 1px rgba(139,92,246,0.4)" : "none",
+                  padding: "4px 6px",
+                }}
+                title={deckAddress}
+                onClick={() => handleDeckKeyClick(key)}
+              >
+                {style.topbarEnabled && (
+                  <span
+                    className="block w-full truncate text-[10px] text-left pb-[2px] border-b"
+                    style={{ borderColor: "rgba(139, 92, 246, 0.5)", color: "rgba(248, 250, 252, 0.6)" }}
+                  >
+                    {deckAddress}
+                  </span>
+                )}
+                <span
+                  className="flex-1 flex items-center break-words line-clamp-4 leading-tight"
+                  style={{
+                    fontSize: keyTextSize,
+                    lineHeight: 1.1,
+                    justifyContent:
+                      style.textAlign === "left" ? "flex-start"
+                      : style.textAlign === "right" ? "flex-end"
+                      : "center",
+                    textAlign: style.textAlign,
+                  }}
+                >
+                  {customLabel || mapped?.label || specialLabel || ""}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+      </div>
 
-          </div>
+      {/* ── INSPECTOR STRIP ── */}
+      <div
+        className="shrink-0 border-t"
+        style={{ borderColor: t.topbarBorder, backgroundColor: t.bgSidebar }}
+      >
+        {/* Row 1: Assign + Unmap */}
+        <div
+          className="flex items-center gap-2 px-4 py-2 border-b"
+          style={{ borderColor: t.topbarBorder, opacity: hasKey ? 1 : 0.45 }}
+        >
+          <span className="text-[11px] font-semibold uppercase tracking-[0.06em] shrink-0" style={{ color: t.textSecondary }}>
+            Assign
+          </span>
+
+          {/* Mapping select — changes apply immediately */}
+          <select
+            className="flex-1 h-[32px] border px-2 text-[12px] outline-none"
+            style={{
+              backgroundColor: t.rowBg,
+              borderColor: t.inputBorder,
+              color: t.textPrimary,
+              cursor: hasKey ? "pointer" : "not-allowed",
+            }}
+            disabled={!hasKey}
+            value={selectedMappedId}
+            onChange={(e) => applyMapping(e.target.value)}
+          >
+            <option value="">— unassigned —</option>
+            <optgroup label="System">
+              <option value={SPECIAL_MAPPING_PAGE_PREVIOUS}>Page Previous</option>
+              <option value={SPECIAL_MAPPING_PAGE_NEXT}>Page Next</option>
+            </optgroup>
+            {loadingButtons ? (
+              <optgroup label="Buttons">
+                <option disabled>Loading…</option>
+              </optgroup>
+            ) : projectGroups.size > 0 ? (
+              Array.from(projectGroups.entries()).map(([projectName, entries]) => (
+                <optgroup key={projectName} label={projectName}>
+                  {entries.map((b) => (
+                    <option key={b.id} value={b.id}>{b.label}</option>
+                  ))}
+                </optgroup>
+              ))
+            ) : null}
+          </select>
+
+          {/* Label override */}
+          <span className="text-[11px] font-semibold uppercase tracking-[0.06em] shrink-0" style={{ color: t.textSecondary }}>
+            Label
+          </span>
+          <input
+            type="text"
+            value={selectedStyle.customLabel}
+            disabled={!hasKey}
+            className="h-[32px] w-[140px] shrink-0 border px-2 text-[12px] outline-none"
+            style={{
+              backgroundColor: hasKey ? t.rowBg : t.bgSidebar,
+              borderColor: t.inputBorder,
+              color: t.textPrimary,
+            }}
+            placeholder="Override…"
+            onChange={(e) => updateSelectedStyle({ customLabel: e.target.value })}
+          />
+
+          {/* Unmap */}
+          <button
+            className="h-[32px] shrink-0 border px-3 text-[12px] transition-colors ml-auto"
+            style={{
+              borderColor: hasMappedContent ? "rgba(239,68,68,0.5)" : t.inputBorder,
+              backgroundColor: t.bgSidebar,
+              color: hasMappedContent ? "#ef4444" : t.textSecondary,
+              cursor: hasMappedContent && hasKey ? "pointer" : "not-allowed",
+            }}
+            disabled={!hasMappedContent || !hasKey}
+            onClick={unmapSelectedDeck}
+          >
+            Unmap
+          </button>
         </div>
 
-        {/* Sync error banner */}
-        {syncState === "error" && syncError ? (
-          <div className="px-4 py-1 text-[11px] border-b" style={{ color: "#ef4444", borderColor: t.topbarBorder }}>
-            {syncError}
-          </div>
-        ) : null}
+        {/* Row 2: Style controls */}
+        <div
+          className="flex items-center gap-2 px-4 py-2 text-[11px]"
+          style={{ opacity: hasKey ? 1 : 0.4, pointerEvents: hasKey ? "auto" : "none" }}
+        >
+          {/* Font size */}
+          <span className="font-semibold uppercase tracking-[0.06em] shrink-0" style={{ color: t.textSecondary }}>Size</span>
+          <input
+            type="text"
+            inputMode="numeric"
+            pattern="[0-9]*"
+            value={textSizeInput}
+            disabled={!hasKey}
+            className="h-[30px] w-[46px] shrink-0 border px-2 text-[12px] outline-none"
+            style={{ backgroundColor: t.rowBg, borderColor: t.inputBorder, color: t.textPrimary }}
+            onChange={(e) => setTextSizeInput(e.target.value)}
+            onBlur={saveSelectedTextSize}
+            onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); saveSelectedTextSize(); } }}
+          />
 
-        {/* Grid + controls */}
-        <div className="flex-1 min-h-0 overflow-hidden p-2 md:p-4">
-          <div ref={previewHostRef} className="flex h-full w-full justify-center min-w-0 min-h-0">
-            <div className="flex h-full min-h-0 flex-col" style={{ width: deckGridWidth }}>
+          {/* Text color */}
+          <span className="font-semibold uppercase tracking-[0.06em] shrink-0" style={{ color: t.textSecondary }}>Text</span>
+          <input
+            type="color"
+            value={selectedStyle.textColor}
+            disabled={!hasKey}
+            className="h-[30px] w-[48px] shrink-0 border p-0"
+            style={{ backgroundColor: t.rowBg, borderColor: t.inputBorder, cursor: hasKey ? "pointer" : "default" }}
+            onChange={(e) => updateSelectedStyle({ textColor: e.target.value })}
+          />
 
-              {/* Deck key grid */}
-              <div
-                className="grid items-stretch p-[2px]"
+          {/* BG color */}
+          <span className="font-semibold uppercase tracking-[0.06em] shrink-0" style={{ color: t.textSecondary }}>BG</span>
+          <input
+            type="color"
+            value={selectedStyle.bgColor}
+            disabled={!hasKey}
+            className="h-[30px] w-[48px] shrink-0 border p-0"
+            style={{ backgroundColor: t.rowBg, borderColor: t.inputBorder, cursor: hasKey ? "pointer" : "default" }}
+            onChange={(e) => updateSelectedStyle({ bgColor: e.target.value })}
+          />
+
+          {/* Topbar */}
+          <span className="font-semibold uppercase tracking-[0.06em] shrink-0" style={{ color: t.textSecondary }}>Topbar</span>
+          <select
+            className="h-[30px] border px-2 text-[12px] outline-none shrink-0"
+            style={{ backgroundColor: t.rowBg, borderColor: t.inputBorder, color: t.textSecondary }}
+            value={selectedStyle.topbarEnabled ? "show" : "hide"}
+            onChange={(e) => updateSelectedStyle({ topbarEnabled: e.target.value !== "hide" })}
+            disabled={!hasKey}
+          >
+            <option value="show">On</option>
+            <option value="hide">Off</option>
+          </select>
+
+          {/* Text align */}
+          <span className="font-semibold uppercase tracking-[0.06em] shrink-0" style={{ color: t.textSecondary }}>Align</span>
+          <div className="h-[30px] border flex overflow-hidden shrink-0" style={{ borderColor: t.inputBorder }}>
+            {(["left", "center", "right"] as KeyTextAlign[]).map((align) => (
+              <button
+                key={align}
+                className="w-[30px] h-full border-r last:border-r-0 text-[11px] transition-colors"
                 style={{
-                  gridTemplateColumns: `repeat(${Math.max(1, cols)}, ${deckKeySize}px)`,
-                  columnGap: "2px",
-                  rowGap: "2px",
-                  backgroundColor: "rgba(15, 23, 42, 0.35)",
+                  borderColor: t.inputBorder,
+                  backgroundColor: selectedStyle.textAlign === align ? t.navActive : t.rowBg,
+                  color: selectedStyle.textAlign === align ? t.textPrimary : t.textSecondary,
                 }}
+                onClick={() => updateSelectedStyle({ textAlign: align })}
+                disabled={!hasKey}
               >
-                {deckButtons.map((entry) => {
-                  const key = entry.key;
-                  const mappedId = mappings[key];
-                  const mapped = mappedId ? buttonById.get(mappedId) : null;
-                  const specialLabel = getSpecialMappingLabel(mappedId);
-                  const isSelected = selectedDeckKey === key;
-                  const keyTextSize = textSizes[key] ?? 10;
-                  const style = keyStyles[key] ?? DEFAULT_KEY_STYLE;
-                  const customLabel = style.customLabel.trim();
-                  const deckAddress = `${entry.page}/${entry.row}/${entry.col}`;
-                  const hasMappedContent = !!(customLabel || mapped?.label || specialLabel);
-                  return (
-                    <button
-                      key={key}
-                      className="size-controlled-button border px-[6px] py-[4px] overflow-hidden flex flex-col items-stretch text-center transition-colors"
-                      style={{
-                        width: deckKeySize,
-                        height: deckKeySize,
-                        borderColor: isSelected
-                          ? "rgba(139, 92, 246, 0.7)"
-                          : hasMappedContent
-                            ? "rgba(139, 92, 246, 0.25)"
-                            : "#2c3138",
-                        backgroundColor: style.bgColor,
-                        color: style.textColor,
-                        boxShadow: isSelected ? "0 0 0 1px rgba(139,92,246,0.3)" : "none",
-                      }}
-                      title={`${entry.page}/${entry.row}/${entry.col}`}
-                      onClick={() => handleDeckKeyClick(key)}
-                    >
-                      {style.topbarEnabled ? (
-                        <span
-                          className="block w-full truncate text-[10px] text-left pb-[2px] border-b"
-                          style={{ borderColor: "rgba(139, 92, 246, 0.5)", color: "rgba(248, 250, 252, 0.6)" }}
-                        >
-                          {deckAddress}
-                        </span>
-                      ) : null}
-                      <span
-                        className="flex-1 flex items-center break-words line-clamp-4 leading-tight"
-                        style={{
-                          fontSize: keyTextSize,
-                          lineHeight: 1.1,
-                          justifyContent:
-                            style.textAlign === "left" ? "flex-start" : style.textAlign === "right" ? "flex-end" : "center",
-                          textAlign: style.textAlign,
-                        }}
-                      >
-                        {customLabel || mapped?.label || specialLabel || ""}
-                      </span>
-                    </button>
-                  );
-                })}
-              </div>
-
-              {/* Page nav + button text label */}
-              <div
-                className="mt-2 min-h-[35px] flex flex-col md:flex-row md:items-center gap-2"
-                style={{ backgroundColor: "transparent" }}
-              >
-                <div className="flex items-center gap-2">
-                  <div className="text-[11px] font-semibold uppercase tracking-[0.06em]" style={{ color: t.textSecondary }}>
-                    Button text
-                  </div>
-                  <input
-                    type="text"
-                    value={selectedStyle.customLabel}
-                    disabled={!selectedDeckKey}
-                    className="h-[35px] w-[170px] border px-2 text-[12px] outline-none"
-                    style={{
-                      backgroundColor: selectedDeckKey ? t.rowBg : t.bgSidebar,
-                      borderColor: t.inputBorder,
-                      color: t.textPrimary,
-                      opacity: selectedDeckKey ? 1 : 0.45,
-                    }}
-                    onChange={(event) => updateSelectedStyle({ customLabel: event.target.value })}
-                    placeholder={selectedDeckKey ? "Override label" : "Select a key first"}
-                  />
-                </div>
-
-                {/* Page navigation */}
-                <div className="ml-0 md:ml-auto flex items-center gap-1">
-                  <button
-                    className="h-[35px] border px-3 text-[12px] flex items-center justify-center hover:border-[rgba(139,92,246,0.5)]"
-                    style={stepperBtn(activePage > 1)}
-                    disabled={activePage <= 1}
-                    onClick={() => stepActivePage(-1)}
-                    aria-label="Previous page"
-                  >{"<"}</button>
-                  <div className="w-[56px] text-center text-[12px]" style={{ color: t.textSecondary }}>
-                    {activePage} / {Math.max(1, totalPages)}
-                  </div>
-                  <button
-                    className="h-[35px] border px-3 text-[12px] flex items-center justify-center hover:border-[rgba(139,92,246,0.5)]"
-                    style={stepperBtn(activePage < Math.max(1, totalPages))}
-                    disabled={activePage >= Math.max(1, totalPages)}
-                    onClick={() => stepActivePage(1)}
-                    aria-label="Next page"
-                  >{">"}</button>
-                </div>
-              </div>
-
-              {/* Key style controls */}
-              <div className="mt-3 min-h-0 flex-1 flex flex-col gap-3">
-                <div
-                  className="grid grid-cols-2 md:grid-cols-5 gap-2"
-                  style={{ opacity: selectedDeckKey ? 1 : 0.4, pointerEvents: selectedDeckKey ? "auto" : "none" }}
-                >
-                  {/* Font size */}
-                  <label
-                    className="flex flex-col gap-1 p-2 border text-[12px]"
-                    style={{ color: t.textSecondary, borderColor: t.inputBorder, backgroundColor: t.bgSidebar }}
-                  >
-                    Font size
-                    <input
-                      type="text"
-                      inputMode="numeric"
-                      pattern="[0-9]*"
-                      value={textSizeInput}
-                      disabled={!selectedDeckKey}
-                      className="h-[36px] border px-2 outline-none"
-                      style={{ backgroundColor: t.rowBg, borderColor: t.inputBorder, color: t.textPrimary }}
-                      onChange={(event) => setTextSizeInput(event.target.value)}
-                      onBlur={saveSelectedTextSize}
-                      onKeyDown={(event) => {
-                        if (event.key === "Enter") {
-                          event.preventDefault();
-                          saveSelectedTextSize();
-                        }
-                      }}
-                    />
-                  </label>
-
-                  {/* Text color */}
-                  <label
-                    className="flex flex-col gap-1 p-2 border text-[12px]"
-                    style={{ color: t.textSecondary, borderColor: t.inputBorder, backgroundColor: t.bgSidebar }}
-                  >
-                    Text
-                    <input
-                      type="color"
-                      value={selectedStyle.textColor}
-                      disabled={!selectedDeckKey}
-                      className="h-[36px] p-0 w-full"
-                      style={{ backgroundColor: t.rowBg, cursor: selectedDeckKey ? "pointer" : "default" }}
-                      onChange={(event) => updateSelectedStyle({ textColor: event.target.value })}
-                    />
-                  </label>
-
-                  {/* BG color */}
-                  <label
-                    className="flex flex-col gap-1 p-2 border text-[12px]"
-                    style={{ color: t.textSecondary, borderColor: t.inputBorder, backgroundColor: t.bgSidebar }}
-                  >
-                    BG
-                    <input
-                      type="color"
-                      value={selectedStyle.bgColor}
-                      disabled={!selectedDeckKey}
-                      className="h-[36px] p-0 w-full"
-                      style={{ backgroundColor: t.rowBg, cursor: selectedDeckKey ? "pointer" : "default" }}
-                      onChange={(event) => updateSelectedStyle({ bgColor: event.target.value })}
-                    />
-                  </label>
-
-                  {/* Topbar */}
-                  <label
-                    className="flex flex-col gap-1 p-2 border text-[12px]"
-                    style={{ color: t.textSecondary, borderColor: t.inputBorder, backgroundColor: t.bgSidebar }}
-                  >
-                    Topbar
-                    <select
-                      className="h-[36px] border px-2 outline-none"
-                      style={{ backgroundColor: t.rowBg, borderColor: t.inputBorder, color: t.textSecondary }}
-                      value={selectedStyle.topbarEnabled ? "show" : "hide"}
-                      onChange={(event) => updateSelectedStyle({ topbarEnabled: event.target.value !== "hide" })}
-                      disabled={!selectedDeckKey}
-                    >
-                      <option value="show">On</option>
-                      <option value="hide">Off</option>
-                    </select>
-                  </label>
-
-                  {/* Text align */}
-                  <div
-                    className="flex flex-col gap-1 p-2 border text-[12px]"
-                    style={{ color: t.textPrimary, borderColor: t.inputBorder, backgroundColor: t.bgSidebar }}
-                  >
-                    Text align
-                    <div className="h-[36px] border flex overflow-hidden" style={{ borderColor: t.inputBorder }}>
-                      {(["left", "center", "right"] as KeyTextAlign[]).map((align) => (
-                        <button
-                          key={align}
-                          className="flex-1 h-full border-r last:border-r-0 text-[11px] transition-colors"
-                          style={{
-                            borderColor: t.inputBorder,
-                            backgroundColor: selectedStyle.textAlign === align ? t.navActive : t.rowBg,
-                            color: selectedStyle.textAlign === align ? t.textPrimary : t.textSecondary,
-                          }}
-                          onClick={() => updateSelectedStyle({ textAlign: align })}
-                          disabled={!selectedDeckKey}
-                        >
-                          {align.charAt(0).toUpperCase()}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-
-              </div>
-
-            </div>
+                {align.charAt(0).toUpperCase()}
+              </button>
+            ))}
           </div>
+
+          {selectedDeckKey && (
+            <span className="ml-auto text-[11px]" style={{ color: t.textSecondary }}>
+              {selectedDeckKey}
+            </span>
+          )}
         </div>
       </div>
     </div>
