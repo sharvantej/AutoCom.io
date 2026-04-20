@@ -309,14 +309,12 @@ export default function ButtonMapping() {
     const safeRows = Math.max(1, rows);
     if (gridHostWidth <= 0) return 90;
     const gap = 3;
-    const inspectorH = selectedDeckKey ? 84 : 0;
-    const availH = gridHostHeight > inspectorH ? gridHostHeight - inspectorH : gridHostHeight;
     const fromWidth = Math.floor((gridHostWidth - (safeCols - 1) * gap) / safeCols);
-    const fromHeight = availH > 0
-      ? Math.floor((availH - (safeRows - 1) * gap) / safeRows)
+    const fromHeight = gridHostHeight > 0
+      ? Math.floor((gridHostHeight - (safeRows - 1) * gap) / safeRows)
       : STREAMDECK_KEY_SIZE;
     return Math.max(52, Math.min(STREAMDECK_KEY_SIZE, Math.min(fromWidth, fromHeight)));
-  }, [cols, gridHostHeight, gridHostWidth, rows, selectedDeckKey]);
+  }, [cols, gridHostHeight, gridHostWidth, rows]);
 
   const deckGridWidth = Math.max(1, cols) * deckKeySize + (Math.max(1, cols) - 1) * 3;
 
@@ -579,6 +577,9 @@ export default function ButtonMapping() {
           </div>
         )}
 
+        {/* Grid + right inspector */}
+        <div className="flex flex-1 min-h-0">
+
         {/* Grid */}
         <div
           ref={gridHostRef}
@@ -732,79 +733,127 @@ export default function ButtonMapping() {
           </div>
         </div>
 
-        {/* ── INSPECTOR STRIP (only when key selected) ── */}
+        {/* ── RIGHT INSPECTOR PANEL (slides in on key select) ── */}
         {selectedDeckKey && (
           <div
-            className="shrink-0 border-t flex flex-col"
-            style={{ borderColor: t.topbarBorder, backgroundColor: t.bgSidebar }}
+            className="flex flex-col shrink-0 border-l h-full overflow-y-auto app-scrollbar"
+            style={{
+              width: 180,
+              borderColor: t.topbarBorder,
+              backgroundColor: t.bgSidebar,
+            }}
           >
-            {/* Row 1: Label override */}
-            <div className="flex items-center gap-3 px-4 py-2 border-b" style={{ borderColor: t.topbarBorder }}>
-              <span className="text-[11px] font-semibold uppercase tracking-[0.06em] shrink-0" style={{ color: t.textSecondary }}>
+            {/* Panel header */}
+            <div
+              className="flex items-center justify-between px-3 h-[44px] shrink-0 border-b"
+              style={{ borderColor: t.topbarBorder }}
+            >
+              <span className="text-[11px] font-semibold uppercase tracking-[0.07em]" style={{ color: t.textSecondary }}>
+                Key Style
+              </span>
+              <span className="text-[11px]" style={{ color: t.textSecondary, opacity: 0.5 }}>
+                {selectedDeckKey}
+              </span>
+            </div>
+
+            {/* LABEL */}
+            <div className="flex flex-col gap-1.5 px-3 py-3 border-b" style={{ borderColor: t.topbarBorder }}>
+              <span className="text-[10px] font-semibold uppercase tracking-[0.07em]" style={{ color: t.textSecondary }}>
                 Label
               </span>
               <input
                 type="text"
                 value={selectedStyle.customLabel}
-                className="h-[30px] w-[200px] border px-2 text-[12px] outline-none"
+                className="h-[32px] w-full border px-2 text-[12px] outline-none"
                 style={{ backgroundColor: t.rowBg, borderColor: t.inputBorder, color: t.textPrimary }}
-                placeholder="Override button label…"
+                placeholder="Override label…"
                 onChange={(e) => updateSelectedStyle({ customLabel: e.target.value })}
               />
-              <span className="ml-auto text-[11px]" style={{ color: t.textSecondary, opacity: 0.5 }}>
-                {selectedDeckKey}
-              </span>
             </div>
 
-            {/* Row 2: Style controls */}
-            <div className="flex items-center gap-3 px-4 py-2 text-[11px]" style={{ color: t.textSecondary }}>
-              <span className="font-semibold uppercase tracking-[0.06em] shrink-0">Size</span>
+            {/* FONT SIZE */}
+            <div className="flex flex-col gap-1.5 px-3 py-3 border-b" style={{ borderColor: t.topbarBorder }}>
+              <span className="text-[10px] font-semibold uppercase tracking-[0.07em]" style={{ color: t.textSecondary }}>
+                Font Size
+              </span>
               <input
                 type="text" inputMode="numeric" pattern="[0-9]*"
                 value={textSizeInput}
-                className="h-[28px] w-[44px] shrink-0 border px-2 text-[12px] outline-none"
+                className="h-[32px] w-full border px-2 text-[12px] outline-none"
                 style={{ backgroundColor: t.rowBg, borderColor: t.inputBorder, color: t.textPrimary }}
                 onChange={(e) => setTextSizeInput(e.target.value)}
                 onBlur={saveSelectedTextSize}
                 onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); saveSelectedTextSize(); } }}
               />
+            </div>
 
-              <span className="font-semibold uppercase tracking-[0.06em] shrink-0">Text</span>
-              <input type="color" value={selectedStyle.textColor}
-                className="h-[28px] w-[44px] shrink-0 border p-0"
+            {/* TEXT COLOR */}
+            <div className="flex flex-col gap-1.5 px-3 py-3 border-b" style={{ borderColor: t.topbarBorder }}>
+              <span className="text-[10px] font-semibold uppercase tracking-[0.07em]" style={{ color: t.textSecondary }}>
+                Text Color
+              </span>
+              <input
+                type="color"
+                value={selectedStyle.textColor}
+                className="h-[32px] w-full border p-0"
                 style={{ backgroundColor: t.rowBg, borderColor: t.inputBorder, cursor: "pointer" }}
                 onChange={(e) => updateSelectedStyle({ textColor: e.target.value })}
               />
+            </div>
 
-              <span className="font-semibold uppercase tracking-[0.06em] shrink-0">BG</span>
-              <input type="color" value={selectedStyle.bgColor}
-                className="h-[28px] w-[44px] shrink-0 border p-0"
+            {/* BG COLOR */}
+            <div className="flex flex-col gap-1.5 px-3 py-3 border-b" style={{ borderColor: t.topbarBorder }}>
+              <span className="text-[10px] font-semibold uppercase tracking-[0.07em]" style={{ color: t.textSecondary }}>
+                Background
+              </span>
+              <input
+                type="color"
+                value={selectedStyle.bgColor}
+                className="h-[32px] w-full border p-0"
                 style={{ backgroundColor: t.rowBg, borderColor: t.inputBorder, cursor: "pointer" }}
                 onChange={(e) => updateSelectedStyle({ bgColor: e.target.value })}
               />
+            </div>
 
-              <span className="font-semibold uppercase tracking-[0.06em] shrink-0">Topbar</span>
-              <select
-                className="h-[28px] border px-2 text-[12px] outline-none shrink-0"
-                style={{ backgroundColor: t.rowBg, borderColor: t.inputBorder, color: t.textSecondary }}
-                value={selectedStyle.topbarEnabled ? "show" : "hide"}
-                onChange={(e) => updateSelectedStyle({ topbarEnabled: e.target.value !== "hide" })}
-              >
-                <option value="show">On</option>
-                <option value="hide">Off</option>
-              </select>
+            {/* TOPBAR */}
+            <div className="flex flex-col gap-1.5 px-3 py-3 border-b" style={{ borderColor: t.topbarBorder }}>
+              <span className="text-[10px] font-semibold uppercase tracking-[0.07em]" style={{ color: t.textSecondary }}>
+                Topbar
+              </span>
+              <div className="flex h-[32px] border overflow-hidden" style={{ borderColor: t.inputBorder }}>
+                {(["show", "hide"] as const).map((val) => (
+                  <button
+                    key={val}
+                    className="flex-1 h-full border-r last:border-r-0 text-[11px] transition-colors"
+                    style={{
+                      borderColor: t.inputBorder,
+                      backgroundColor:
+                        (val === "show") === selectedStyle.topbarEnabled ? t.navActive : t.rowBg,
+                      color:
+                        (val === "show") === selectedStyle.topbarEnabled ? t.textPrimary : t.textSecondary,
+                    }}
+                    onClick={() => updateSelectedStyle({ topbarEnabled: val === "show" })}
+                  >
+                    {val === "show" ? "On" : "Off"}
+                  </button>
+                ))}
+              </div>
+            </div>
 
-              <span className="font-semibold uppercase tracking-[0.06em] shrink-0">Align</span>
-              <div className="h-[28px] border flex overflow-hidden shrink-0" style={{ borderColor: t.inputBorder }}>
+            {/* TEXT ALIGN */}
+            <div className="flex flex-col gap-1.5 px-3 py-3 border-b" style={{ borderColor: t.topbarBorder }}>
+              <span className="text-[10px] font-semibold uppercase tracking-[0.07em]" style={{ color: t.textSecondary }}>
+                Align
+              </span>
+              <div className="flex h-[32px] border overflow-hidden" style={{ borderColor: t.inputBorder }}>
                 {(["left", "center", "right"] as KeyTextAlign[]).map((align) => (
                   <button
                     key={align}
-                    className="w-[28px] h-full border-r last:border-r-0 transition-colors"
+                    className="flex-1 h-full border-r last:border-r-0 text-[11px] transition-colors"
                     style={{
                       borderColor: t.inputBorder,
                       backgroundColor: selectedStyle.textAlign === align ? t.navActive : t.rowBg,
                       color: selectedStyle.textAlign === align ? t.textPrimary : t.textSecondary,
-                      fontSize: 11,
                     }}
                     onClick={() => updateSelectedStyle({ textAlign: align })}
                   >
@@ -813,8 +862,25 @@ export default function ButtonMapping() {
                 ))}
               </div>
             </div>
+
+            {/* Close / deselect */}
+            <div className="px-3 py-3 mt-auto">
+              <button
+                className="w-full h-[32px] border text-[11px] transition-colors"
+                style={{
+                  borderColor: t.inputBorder,
+                  backgroundColor: t.bgContent,
+                  color: t.textSecondary,
+                }}
+                onClick={() => setSelectedDeckKey(null)}
+              >
+                Done
+              </button>
+            </div>
           </div>
         )}
+
+        </div>{/* end grid + inspector flex row */}
       </div>
     </div>
   );
