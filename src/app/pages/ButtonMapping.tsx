@@ -538,34 +538,12 @@ export default function ButtonMapping() {
 
         {/* Top header */}
         <div
-          className="flex h-[44px] shrink-0 items-center gap-4 border-b px-4"
+          className="flex h-[44px] shrink-0 items-center border-b px-4"
           style={{ borderColor: t.topbarBorder }}
         >
           <span className="text-[15px] font-semibold tracking-[0.01em]" style={{ color: t.textPrimary }}>
             Stream Deck
           </span>
-          <div className="ml-auto flex items-center gap-4 text-[12px]" style={{ color: t.textSecondary }}>
-            {/* Pages stepper */}
-            <div className="flex items-center gap-1">
-              <span>Pages</span>
-              <button className="w-[22px] h-[24px] border flex items-center justify-center text-[13px]"
-                style={stepBtn(totalPages > 1)} disabled={totalPages <= 1} onClick={() => stepPages(-1)}>−</button>
-              <span className="w-[20px] text-center" style={{ color: t.textPrimary }}>{totalPages}</span>
-              <button className="w-[22px] h-[24px] border flex items-center justify-center text-[13px]"
-                style={stepBtn(totalPages < 32)} disabled={totalPages >= 32} onClick={() => stepPages(1)}>+</button>
-            </div>
-            {/* Page navigation */}
-            <div className="flex items-center gap-1">
-              <button className="h-[24px] border px-2 flex items-center justify-center"
-                style={stepBtn(activePage > 1)} disabled={activePage <= 1} onClick={() => stepActivePage(-1)}>{"<"}</button>
-              <span className="w-[44px] text-center" style={{ color: t.textPrimary }}>
-                {activePage} / {Math.max(1, totalPages)}
-              </span>
-              <button className="h-[24px] border px-2 flex items-center justify-center"
-                style={stepBtn(activePage < Math.max(1, totalPages))}
-                disabled={activePage >= Math.max(1, totalPages)} onClick={() => stepActivePage(1)}>{">"}</button>
-            </div>
-          </div>
         </div>
 
         {/* Sync error */}
@@ -586,6 +564,7 @@ export default function ButtonMapping() {
             if (e.target === e.currentTarget) setSelectedDeckKey(null);
           }}
         >
+          <div className="flex flex-col items-center gap-2">
           <div
             className="grid p-[2px]"
             style={{
@@ -731,6 +710,39 @@ export default function ButtonMapping() {
               );
             })}
           </div>
+
+          {/* Controls row below grid — left: pages, right: page nav */}
+          <div
+            className="flex items-center justify-between text-[12px]"
+            style={{
+              width: deckGridWidth + 4,
+              color: t.textSecondary,
+              transition: "width 0.22s cubic-bezier(0.25,0.1,0.25,1)",
+            }}
+          >
+            {/* Pages stepper — left-aligned to grid start */}
+            <div className="flex items-center gap-1">
+              <span>Pages</span>
+              <button className="w-[22px] h-[24px] border flex items-center justify-center text-[13px]"
+                style={stepBtn(totalPages > 1)} disabled={totalPages <= 1} onClick={() => stepPages(-1)}>−</button>
+              <span className="w-[20px] text-center" style={{ color: t.textPrimary }}>{totalPages}</span>
+              <button className="w-[22px] h-[24px] border flex items-center justify-center text-[13px]"
+                style={stepBtn(totalPages < 32)} disabled={totalPages >= 32} onClick={() => stepPages(1)}>+</button>
+            </div>
+            {/* Page navigation — right-aligned to grid end */}
+            <div className="flex items-center gap-1">
+              <button className="h-[24px] border px-2 flex items-center justify-center"
+                style={stepBtn(activePage > 1)} disabled={activePage <= 1} onClick={() => stepActivePage(-1)}>{"<"}</button>
+              <span className="w-[44px] text-center" style={{ color: t.textPrimary }}>
+                {activePage} / {Math.max(1, totalPages)}
+              </span>
+              <button className="h-[24px] border px-2 flex items-center justify-center"
+                style={stepBtn(activePage < Math.max(1, totalPages))}
+                disabled={activePage >= Math.max(1, totalPages)} onClick={() => stepActivePage(1)}>{">"}</button>
+            </div>
+          </div>
+
+          </div>{/* end flex-col grid wrapper */}
         </div>
 
         {/* ── RIGHT INSPECTOR PANEL (slides in on key select) ── */}
