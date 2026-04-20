@@ -1144,10 +1144,10 @@ export default function Connections() {
     <>
       <div className="flex-1 overflow-y-auto page-pop" style={{ backgroundColor: t.bgContent }}>
         <div className="px-[16px]" style={{ paddingTop: 16 }}>
-          <div className="flex items-center justify-between" style={{ height: 35 }}>
+          <div className="flex items-center" style={{ gap: 15 }}>
             <motion.button
-              className="text-[14px] px-[12px] shrink-0 hover:bg-[var(--btn-hover)] transition-colors"
-              style={{ height: 35, backgroundColor: t.btnSecondary, color: t.textPrimary }}
+              className="flex items-center justify-center text-[14px] px-[12px] hover:bg-[var(--btn-hover)] transition-colors"
+              style={{ height: 35, backgroundColor: t.rowBg, color: t.textPrimary, border: `1px solid ${t.inputBorder}` }}
               onClick={openAdd}
               whileTap={{ scale: 0.96 }}
               transition={{ duration: 0.1 }}
@@ -1156,7 +1156,11 @@ export default function Connections() {
             </motion.button>
           </div>
 
-          <div className="mt-[16px] flex flex-col gap-[2px]">
+          <div style={{ marginTop: 16 }}>
+            <span className="text-[14px]" style={{ color: t.projectsHeading }}>Connections</span>
+          </div>
+
+          <div style={{ marginTop: 16, backgroundColor: t.rowBg }}>
             {connections.length === 0 && (
               <div className="flex flex-col items-center justify-center py-[60px] px-[24px] text-center">
                 <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ color: t.textMuted, marginBottom: 16, opacity: 0.5 }}>
@@ -1172,98 +1176,52 @@ export default function Connections() {
                 <motion.div
                   key={conn.id}
                   layout
-                  className="flex items-center relative group hover:bg-[var(--row-hover)] transition-colors card-pop"
-                  style={{ height: 35, backgroundColor: t.rowBg }}
+                  className="flex items-center justify-between h-[35px] pl-[16px] pr-0 group card-pop hover:bg-[var(--row-hover)] transition-colors border-b"
+                  style={{ borderColor: t.divider }}
                   initial={{ opacity: 0, y: -6 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, x: -10, transition: { duration: 0.15 } }}
                   transition={{ duration: 0.18, ease: [0.4, 0, 0.2, 1] }}
                 >
-                  {(() => {
-                    const typeLabel = getConnectionTypeReferenceLabel(conn.device);
-                    return (
-                      <>
-                        <div className="flex items-center px-[12px]" style={{ width: 200 }}>
-                          <span className="text-[14px] truncate" style={{ color: t.textPrimary }}>
-                            {conn.name}
-                          </span>
-                        </div>
-                        <div className="h-[24px] w-px shrink-0" style={{ backgroundColor: t.bgContent }} />
-
-                        <div className="flex items-center px-[12px]" style={{ minWidth: 180 }}>
-                          <span className="text-[11px]" style={{ color: t.textMuted }}>
-                            IP - {conn.ip}
-                            {conn.port ? `:${conn.port}` : ""}
-                          </span>
-                        </div>
-                        <div className="h-[24px] w-px shrink-0" style={{ backgroundColor: t.bgContent }} />
-
-                        <div className="flex items-center px-[12px]" style={{ minWidth: 160 }}>
-                          <span className="text-[11px]" style={{ color: t.textMuted }}>
-                            Protocol - {conn.protocol}
-                          </span>
-                        </div>
-                        <div className="h-[24px] w-px shrink-0" style={{ backgroundColor: t.bgContent }} />
-
-                        <div className="flex items-center px-[12px]" style={{ minWidth: 190 }}>
-                          <span className="text-[11px] truncate" style={{ color: t.textMuted }}>
-                            Device - {typeLabel}
-                          </span>
-                        </div>
-                        <div className="h-[24px] w-px shrink-0" style={{ backgroundColor: t.bgContent }} />
-
-                        <div className="flex-1" />
-
-                        <div className="flex items-center gap-[10px] px-[12px]">
-                          <motion.button
-                            className="flex items-center transition-colors"
-                            style={{ color: conn.active ? t.toggleColor : t.textPrimary }}
-                            title={conn.active ? "Deactivate" : "Activate"}
-                            onClick={() => { void handleToggle(conn.id); }}
-                            whileTap={{ scale: 0.88 }}
-                            transition={{ duration: 0.1 }}
-                          >
-                            <motion.span
-                              key={conn.active ? "on" : "off"}
-                              initial={{ scale: 0.75, opacity: 0 }}
-                              animate={{ scale: 1, opacity: 1 }}
-                              transition={{ duration: 0.15, ease: "backOut" }}
-                            >
-                              {conn.active ? <ToggleRight size={24} /> : <ToggleLeft size={24} />}
-                            </motion.span>
-                          </motion.button>
-
-                          <motion.button
-                            className="transition-colors"
-                            style={{ color: t.textPrimary }}
-                            title="Edit"
-                            onClick={() => openEdit(conn)}
-                            whileTap={{ scale: 0.85 }}
-                            transition={{ duration: 0.1 }}
-                          >
-                            <Pencil size={16} />
-                          </motion.button>
-
-                          <motion.button
-                            className="transition-colors"
-                            style={{ color: t.textPrimary }}
-                            title="Delete"
-                            onClick={() => { void handleDelete(conn.id); }}
-                            onMouseEnter={e => {
-                              e.currentTarget.style.color = t.deleteHover;
-                            }}
-                            onMouseLeave={e => {
-                              e.currentTarget.style.color = t.textPrimary;
-                            }}
-                            whileTap={{ scale: 0.85 }}
-                            transition={{ duration: 0.1 }}
-                          >
-                            <Trash2 size={16} />
-                          </motion.button>
-                        </div>
-                      </>
-                    );
-                  })()}
+                  <span className="text-[14px] truncate" style={{ color: t.textPrimary }}>{conn.name}</span>
+                  <div className="flex items-center gap-[8px] ml-auto">
+                    <motion.button
+                      className="h-[35px] w-[35px] opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center"
+                      style={{ color: conn.active ? t.toggleColor : t.textMuted }}
+                      title={conn.active ? "Deactivate" : "Activate"}
+                      onClick={() => { void handleToggle(conn.id); }}
+                      whileTap={{ scale: 0.88 }}
+                      transition={{ duration: 0.1 }}
+                    >
+                      <motion.span key={conn.active ? "on" : "off"} initial={{ scale: 0.75, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={{ duration: 0.15, ease: "backOut" }}>
+                        {conn.active ? <ToggleRight size={20} /> : <ToggleLeft size={20} />}
+                      </motion.span>
+                    </motion.button>
+                    <motion.button
+                      className="h-[35px] w-[35px] opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center border"
+                      style={{ color: t.textMuted, borderColor: t.inputBorder, backgroundColor: t.rowBg }}
+                      title="Edit"
+                      onClick={() => openEdit(conn)}
+                      onMouseEnter={e => (e.currentTarget.style.color = t.textPrimary)}
+                      onMouseLeave={e => (e.currentTarget.style.color = t.textMuted)}
+                      whileTap={{ scale: 0.85 }}
+                      transition={{ duration: 0.1 }}
+                    >
+                      <Pencil size={14} />
+                    </motion.button>
+                    <motion.button
+                      className="h-[35px] w-[35px] opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center border"
+                      style={{ color: t.textMuted, borderColor: t.inputBorder, backgroundColor: t.rowBg }}
+                      title="Delete"
+                      onClick={() => { void handleDelete(conn.id); }}
+                      onMouseEnter={e => (e.currentTarget.style.color = t.deleteHover)}
+                      onMouseLeave={e => (e.currentTarget.style.color = t.textMuted)}
+                      whileTap={{ scale: 0.85 }}
+                      transition={{ duration: 0.1 }}
+                    >
+                      <Trash2 size={14} />
+                    </motion.button>
+                  </div>
                 </motion.div>
               ))}
             </AnimatePresence>
