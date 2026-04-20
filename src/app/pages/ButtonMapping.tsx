@@ -901,7 +901,7 @@ export default function ButtonMapping() {
             <div className="flex items-center gap-1">
               <button className="h-[24px] border px-2 flex items-center justify-center"
                 style={stepBtn(activePage > 1)} disabled={activePage <= 1} onClick={() => stepActivePage(-1)}>{"<"}</button>
-              <span className="w-[32px] text-center" style={{ color: t.textPrimary }}>
+              <span className="text-center whitespace-nowrap px-1" style={{ color: t.textPrimary }}>
                 {activePage} / {Math.max(1, totalPages)}
               </span>
               <button className="h-[24px] border px-2 flex items-center justify-center"
