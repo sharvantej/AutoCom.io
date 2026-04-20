@@ -4,7 +4,7 @@ import { useNavigate } from "react-router";
 import {
   SquareArrowOutUpRight,
   Ellipsis,
-  Pencil, CopyPlus, Download, Trash2, X, Plus,
+  Pencil, CopyPlus, Download, Trash2, X, Plus, FolderOpen, Upload,
 } from "lucide-react";
 import { createNumericId } from "../services/ids";
 import { isTauri } from "../services/tauri";
@@ -395,7 +395,29 @@ export default function Projects() {
 
           {/* Project rows */}
           <div style={{ marginTop: 16, backgroundColor: t.rowBg }}>
-            {projects.map(project => (
+            {projects.length === 0 ? (
+              <div className='flex flex-col items-center justify-center py-[60px] px-[24px] text-center'>
+                <FolderOpen size={36} style={{ color: t.textMuted, marginBottom: 16, opacity: 0.5 }} />
+                <span className='text-[14px] mb-[8px]' style={{ color: t.textPrimary }}>No projects yet</span>
+                <span className='text-[13px] mb-[24px]' style={{ color: t.textMuted }}>Create a project to start building your control dashboard, or import an existing one.</span>
+                <div className='flex items-center gap-[10px]'>
+                  <button
+                    className='flex items-center gap-[6px] text-[13px] px-[14px] transition-colors'
+                    style={{ height: 34, backgroundColor: 'rgba(124,58,237,0.2)', color: '#a78bfa', border: '1px solid rgba(124,58,237,0.4)' }}
+                    onClick={() => { setNewProjectName(''); setModal('new'); }}
+                  >
+                    <Plus size={13} /><span>New Project</span>
+                  </button>
+                  <button
+                    className='flex items-center gap-[6px] text-[13px] px-[14px] transition-colors'
+                    style={{ height: 34, backgroundColor: t.inputBg, color: t.textMuted, border: `1px solid ${t.inputBorder}` }}
+                    onClick={() => importFileInputRef.current?.click()}
+                  >
+                    <Upload size={13} /><span>Import Project</span>
+                  </button>
+                </div>
+              </div>
+            ) : projects.map(project => (
               <div
                 key={project.id}
                 className="flex items-center justify-between h-[35px] pl-[16px] pr-0 group card-pop

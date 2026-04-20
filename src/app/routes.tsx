@@ -8,7 +8,7 @@ const importConnections = () => import("./pages/Connections");
 const importButtonMapping = () => import("./pages/ButtonMapping");
 const importLogs = () => import("./pages/Logs");
 const importSettings = () => import("./pages/Settings");
-const importPlaceholder = () => import("./pages/Placeholder");
+const importUserGuide = () => import("./pages/UserGuide");
 const importProjectDashboard = () => import("./pages/ProjectDashboard");
 
 const Layout = lazy(importLayout);
@@ -17,7 +17,7 @@ const Connections = lazy(importConnections);
 const ButtonMapping = lazy(importButtonMapping);
 const Logs = lazy(importLogs);
 const Settings = lazy(importSettings);
-const Placeholder = lazy(importPlaceholder);
+const UserGuide = lazy(importUserGuide);
 const ProjectDashboard = lazy(importProjectDashboard);
 
 let preloadPromise: Promise<unknown[]> | null = null;
@@ -31,14 +31,13 @@ export function preloadRouteChunks(): Promise<unknown[]> {
       importButtonMapping(),
       importLogs(),
       importSettings(),
-      importPlaceholder(),
+      importUserGuide(),
       importProjectDashboard(),
     ]);
   }
   return preloadPromise;
 }
 
-function UserGuidePage() { return <Placeholder title="User Guide" />; }
 function RouteLoading() {
   return (
     <div className="h-full w-full flex flex-col items-center justify-center gap-3 text-sm opacity-80">
@@ -80,7 +79,7 @@ export const router = createBrowserRouter([
           { path: "connections",      Component: Connections      },
           { path: "button-mapping",   Component: ButtonMapping    },
           { path: "logs",             Component: Logs             },
-          { path: "user-guide",       Component: UserGuidePage    },
+          { path: "user-guide",       Component: UserGuide        },
           { path: "settings",         Component: Settings         },
         ],
       },

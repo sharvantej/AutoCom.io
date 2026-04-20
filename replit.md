@@ -21,8 +21,20 @@ This project runs as a web-only frontend (the Rust/Tauri backend is not availabl
 ## Key Files
 - `vite.config.js` - Vite configuration (port 5000, host 0.0.0.0, allowedHosts: true)
 - `src/app/` - Main React app (routes, layout, pages, services, components)
+- `src/app/pages/UserGuide.tsx` - Full User Guide with 9 sections (Overview, Projects, Connections, Dashboard Editor, Tasks, Button Mapping, Logs, Settings, Shortcuts)
+- `src/app/pages/Projects.tsx` - Projects list with improved empty state when no projects exist
+- `src/app/context/AppContext.tsx` - Global state with localStorage persistence (no Tauri needed)
 - `src/app/services/tauri.ts` - Tauri IPC bridge with graceful web fallback
 - `src-tauri/` - Rust/Tauri source (desktop only, not used in Replit)
+
+## Web-Mode Data Persistence
+All data is persisted to browser localStorage with these keys:
+- `autocom.projects` - project list
+- `autocom.connections` - device connections
+- `autocom.logs` - application logs
+- `autocom.project.dashboard.{id}` - per-project dashboard layouts
+- `autocom.button-mapping.v1` - Stream Deck key mappings
+- `autocom.theme`, `autocom.font`, `autocom.sidebarOpen` - UI preferences
 
 ## Deployment
 Configured as a static site deployment:
