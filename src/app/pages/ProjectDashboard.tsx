@@ -346,9 +346,9 @@ const FLOATING_EDITOR_MARGIN = 24;
 const FLOATING_EDITOR_OFFSET = 28;
 const FLOATING_EDITOR_MIN_WIDTH = 380;
 const FLOATING_EDITOR_MIN_HEIGHT = 300;
-const WORKSPACE_WINDOW_MIN_WIDTH = 1100;
-const WORKSPACE_WINDOW_MIN_HEIGHT = 680;
-const WORKSPACE_WINDOW_PADDING = 36;
+const WORKSPACE_WINDOW_MIN_WIDTH = 560;
+const WORKSPACE_WINDOW_MIN_HEIGHT = 400;
+const WORKSPACE_WINDOW_PADDING = 20;
 const WORKSPACE_SPLITTER_WIDTH = 0;
 const WORKSPACE_LEFT_PANE_MIN_WIDTH = 280;
 const WORKSPACE_RIGHT_PANE_MIN_WIDTH = 480;
@@ -474,8 +474,8 @@ export default function ProjectDashboard() {
   const [tallyButtonId, setTallyButtonId] = useState<string | null>(null);
   const [dashboardSaveStatus, setDashboardSaveStatus] = useState<DashboardSaveStatus>("idle");
   const [workspaceWindowSize, setWorkspaceWindowSize] = useState(() => ({
-    width: 1420,
-    height: 860,
+    width: 994,
+    height: 602,
   }));
   const [workspaceSplitRatio, setWorkspaceSplitRatio] = useState(0.5);
   const [workspaceTaskActions, setWorkspaceTaskActions] = useState<WorkspaceTaskActions | null>(null);
@@ -1741,17 +1741,25 @@ export default function ProjectDashboard() {
                 />
               )}
               {showTaskWorkspace && editorItem && (
+                <div
+                  className="absolute inset-0 z-[80] flex items-center justify-center"
+                  style={{ backgroundColor: "rgba(3,7,18,0.82)" }}
+                  onClick={e => e.stopPropagation()}
+                  onMouseDown={e => e.stopPropagation()}
+                >
                 <motion.div
-                  className="absolute top-0 right-0 bottom-0 z-[80] flex flex-col overflow-hidden border-l"
+                  className="relative flex min-h-0 flex-col overflow-hidden border"
                   style={{
-                    width: "30%",
-                    minWidth: 320,
+                    width: workspaceWindowSize.width,
+                    height: workspaceWindowSize.height,
+                    maxWidth: "calc(100% - 20px)",
+                    maxHeight: "calc(100% - 20px)",
                     backgroundColor: P.surface900,
                     borderColor: P.surface600,
-                    boxShadow: "-8px 0 40px rgba(0,0,0,0.45)",
+                    boxShadow: "0 24px 64px rgba(0,0,0,0.52)",
                   }}
-                  initial={{ opacity: 0, x: 24 }}
-                  animate={{ opacity: 1, x: 0 }}
+                  initial={{ opacity: 0, scale: 0.97 }}
+                  animate={{ opacity: 1, scale: 1 }}
                   transition={{ duration: 0.22 * animationDurationScale, ease: [0.16, 1, 0.3, 1] }}
                   onClick={e => e.stopPropagation()}
                   onMouseDown={e => e.stopPropagation()}
@@ -2151,7 +2159,19 @@ export default function ProjectDashboard() {
                         />
                       </div>
                     </div>
-                  </motion.div>
+                  {/* Resize grip — bottom-right corner */}
+                  <div
+                    className="absolute bottom-0 right-0 z-10 flex items-end justify-end"
+                    style={{ width: 18, height: 18, cursor: "se-resize" }}
+                    onMouseDown={(e) => { e.stopPropagation(); startWindowResize("workspace", e); }}
+                    title="Drag to resize"
+                  >
+                    <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
+                      <path d="M9 1L1 9M9 5L5 9M9 9" stroke="#4b5563" strokeWidth="1.25" strokeLinecap="round"/>
+                    </svg>
+                  </div>
+                </motion.div>
+                </div>
               )}
               {showFloatingCreate && editorItem && (
                 <div
