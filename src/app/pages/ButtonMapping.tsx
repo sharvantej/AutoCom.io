@@ -808,7 +808,7 @@ export default function ButtonMapping() {
                   return (
                     <button
                       key={key}
-                      className="size-controlled-button border-[2px] px-[6px] py-[4px] overflow-hidden flex flex-col items-stretch text-center transition-colors"
+                      className="size-controlled-button border px-[6px] py-[4px] overflow-hidden flex flex-col items-stretch text-center transition-colors"
                       style={{
                         width: deckKeySize,
                         height: deckKeySize,
