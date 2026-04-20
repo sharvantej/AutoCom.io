@@ -1886,24 +1886,43 @@ export default function ProjectDashboard() {
                         </div>
                       </div>
                       {/* Live button preview */}
-                      <div className="flex items-center gap-[10px] mt-[12px]">
-                        <span style={{ fontSize: 11, color: P.muted500, flexShrink: 0, whiteSpace: "nowrap" }}>Preview</span>
+                      <div
+                        className="relative flex items-center justify-center mt-[12px]"
+                        style={{
+                          height: 56,
+                          backgroundColor: P.ink950,
+                          border: `1px solid ${P.surface700}`,
+                        }}
+                      >
+                        <span style={{
+                          position: "absolute", top: 4, left: 7,
+                          fontSize: 9, letterSpacing: "0.07em", textTransform: "uppercase" as const,
+                          color: P.muted500, opacity: 0.55,
+                        }}>
+                          Preview
+                        </span>
                         <div
-                          className="flex-1 flex items-center overflow-hidden"
                           style={{
                             height: 34,
+                            minWidth: 72,
+                            maxWidth: "55%",
+                            width: "fit-content",
+                            display: "flex",
+                            alignItems: "center",
                             backgroundColor: editorItem.bgColor || "#101828",
                             color: editorItem.fgColor || "#f9fafb",
                             fontSize: editorItem.fontSize || 14,
                             justifyContent: editorItem.textAlign === "left" ? "flex-start" : editorItem.textAlign === "right" ? "flex-end" : "center",
-                            paddingLeft: 10,
-                            paddingRight: 10,
+                            paddingLeft: 12,
+                            paddingRight: 12,
                             border: `1px solid ${P.surface600}`,
+                            overflow: "hidden",
+                            boxShadow: "0 2px 8px rgba(0,0,0,0.45)",
                           }}
                         >
                           {editorItem.label
-                            ? <span className="truncate">{editorItem.label}</span>
-                            : <span style={{ color: P.muted500, fontSize: 11, fontStyle: "italic" }}>Button label</span>
+                            ? <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{editorItem.label}</span>
+                            : <span style={{ color: "#475569", fontSize: 11, fontStyle: "italic" }}>Label</span>
                           }
                         </div>
                       </div>
