@@ -494,6 +494,7 @@ export default function ButtonMapping() {
                   key={btn.id}
                   btn={btn}
                   isDragging={draggingId === btn.id}
+                  highlighted
                   t={t}
                   onDragStart={handleDragStart}
                   onDragEnd={handleDragEnd}
@@ -505,11 +506,7 @@ export default function ButtonMapping() {
           {/* Project buttons */}
           {loadingButtons ? (
             <div className="text-[11px] px-1" style={{ color: t.textSecondary }}>Loading…</div>
-          ) : projectGroups.size === 0 ? (
-            <div className="text-[11px] px-1 leading-relaxed" style={{ color: t.textSecondary, opacity: 0.6 }}>
-              No dashboard buttons. Create a project and add button widgets.
-            </div>
-          ) : (
+          ) : projectGroups.size === 0 ? null : (
             Array.from(projectGroups.entries()).map(([projectName, entries]) => (
               <div key={projectName}>
                 <div
@@ -900,12 +897,14 @@ export default function ButtonMapping() {
 function DraggableChip({
   btn,
   isDragging,
+  highlighted = false,
   t,
   onDragStart,
   onDragEnd,
 }: {
   btn: DashboardButtonEntry;
   isDragging: boolean;
+  highlighted?: boolean;
   t: ReturnType<typeof useTheme>;
   onDragStart: (e: React.DragEvent, id: string) => void;
   onDragEnd: () => void;
@@ -917,8 +916,8 @@ function DraggableChip({
       onDragEnd={onDragEnd}
       className="px-2 py-1.5 border text-[12px] truncate select-none transition-all"
       style={{
-        borderColor: isDragging ? "rgba(139,92,246,0.7)" : t.inputBorder,
-        backgroundColor: isDragging ? t.navActive : t.bgContent,
+        borderColor: isDragging ? "rgba(139,92,246,0.7)" : highlighted ? t.topbarBorder : t.inputBorder,
+        backgroundColor: isDragging ? t.navActive : highlighted ? t.rowBg : t.bgContent,
         color: isDragging ? t.textPrimary : t.textSecondary,
         cursor: "grab",
         opacity: isDragging ? 0.5 : 1,
