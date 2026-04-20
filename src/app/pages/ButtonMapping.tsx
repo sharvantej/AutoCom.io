@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import { AnimatePresence, motion } from "motion/react";
 import { useAppContext, useTheme } from "../context/AppContext";
 import { loadDashboardLayout } from "../services/runtimeState";
 import { isTauri } from "../services/tauri";
@@ -596,6 +597,7 @@ export default function ButtonMapping() {
               rowGap: "3px",
               backgroundColor: "rgba(15, 23, 42, 0.4)",
               width: deckGridWidth + 4,
+              transition: "width 0.22s cubic-bezier(0.25,0.1,0.25,1), grid-template-columns 0.22s cubic-bezier(0.25,0.1,0.25,1)",
             }}
           >
             {deckButtons.map((entry) => {
@@ -615,10 +617,11 @@ export default function ButtonMapping() {
               return (
                 <div
                   key={key}
-                  className="relative border overflow-hidden flex flex-col items-stretch transition-all select-none"
+                  className="relative border overflow-hidden flex flex-col items-stretch select-none"
                   style={{
                     width: deckKeySize,
                     height: deckKeySize,
+                    transition: "width 0.22s cubic-bezier(0.25,0.1,0.25,1), height 0.22s cubic-bezier(0.25,0.1,0.25,1), border-color 0.15s ease, background-color 0.15s ease, box-shadow 0.15s ease",
                     borderColor: isDragTarget
                       ? "rgba(139, 92, 246, 1)"
                       : isSelected
@@ -734,13 +737,19 @@ export default function ButtonMapping() {
         </div>
 
         {/* ── RIGHT INSPECTOR PANEL (slides in on key select) ── */}
+        <AnimatePresence initial={false}>
         {selectedDeckKey && (
-          <div
+          <motion.div
+            key="inspector"
+            initial={{ width: 0, opacity: 0 }}
+            animate={{ width: 180, opacity: 1 }}
+            exit={{ width: 0, opacity: 0 }}
+            transition={{ duration: 0.22, ease: [0.25, 0.1, 0.25, 1] }}
             className="flex flex-col shrink-0 border-l h-full overflow-y-auto app-scrollbar"
             style={{
-              width: 180,
               borderColor: t.topbarBorder,
               backgroundColor: t.bgSidebar,
+              minWidth: 0,
             }}
           >
             {/* Panel header */}
@@ -877,8 +886,9 @@ export default function ButtonMapping() {
                 Done
               </button>
             </div>
-          </div>
+          </motion.div>
         )}
+        </AnimatePresence>
 
         </div>{/* end grid + inspector flex row */}
       </div>
