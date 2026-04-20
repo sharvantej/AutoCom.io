@@ -49,12 +49,6 @@ function RouteLoading() {
   );
 }
 
-/**
- * AppRoot wraps the entire router tree with AppProvider.
- * This is the correct pattern for React Router Data mode — placing
- * the provider inside the router tree guarantees every route component
- * (including Layout) is always a descendant of the provider.
- */
 function AppRoot() {
   return (
     <AppProvider>
@@ -67,7 +61,6 @@ function AppRoot() {
 
 export const router = createBrowserRouter([
   {
-    // Provider wrapper — no path, just wraps everything
     Component: AppRoot,
     children: [
       {

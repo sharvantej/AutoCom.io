@@ -928,12 +928,6 @@ export default function ButtonMapping() {
                   </div>
                 </div>
 
-                {/* Hint when no key selected */}
-                {!selectedDeckKey && (
-                  <div className="text-[11px] text-center" style={{ color: t.textSecondary, opacity: 0.5 }}>
-                    Click a key above to configure its style
-                  </div>
-                )}
               </div>
 
             </div>
