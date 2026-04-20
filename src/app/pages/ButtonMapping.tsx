@@ -30,10 +30,19 @@ type KeyStyle = {
   customLabel: string;
 };
 type KeyStyleRecord = Record<string, KeyStyle>;
+type FeedbackStyle = {
+  activeBgColor: string;
+  activeTextColor: string;
+  isActive: boolean;
+};
+type FeedbackRecord = Record<string, FeedbackStyle>;
+type PageNamesRecord = Record<number, string>;
 
 const MAPPING_STORAGE_KEY = "autocom.button-mapping.v1";
 const TEXT_SIZE_STORAGE_KEY = "autocom.button-text-size.v1";
 const KEY_STYLE_STORAGE_KEY = "autocom.button-style.v1";
+const FEEDBACK_STORAGE_KEY = "autocom.button-feedback.v1";
+const PAGE_NAMES_STORAGE_KEY = "autocom.page-names.v1";
 const STREAMDECK_DIRECT_SYNC_KEY = "autocom.streamdeck.directSync.v1";
 const STREAMDECK_SELECTED_SERIAL_KEY = "autocom.streamdeck.selectedSerial.v1";
 const STREAMDECK_ACTIVE_PAGE_KEY = "autocom.streamdeck.activePage.v1";
@@ -47,6 +56,11 @@ const DEFAULT_KEY_STYLE: KeyStyle = {
   topbarEnabled: true,
   textAlign: "center",
   customLabel: "",
+};
+const DEFAULT_FEEDBACK_STYLE: FeedbackStyle = {
+  activeBgColor: "#7c1d1d",
+  activeTextColor: "#fca5a5",
+  isActive: false,
 };
 
 function safeReadMappings(): MappingRecord {
@@ -97,6 +111,34 @@ function safeReadKeyStyles(): KeyStyleRecord {
 function safeWriteKeyStyles(next: KeyStyleRecord): void {
   if (typeof window === "undefined") return;
   try { window.localStorage.setItem(KEY_STYLE_STORAGE_KEY, JSON.stringify(next)); } catch {}
+}
+function safeReadFeedbacks(): FeedbackRecord {
+  if (typeof window === "undefined") return {};
+  try {
+    const raw = window.localStorage.getItem(FEEDBACK_STORAGE_KEY);
+    if (!raw) return {};
+    const parsed = JSON.parse(raw) as unknown;
+    if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) return {};
+    return parsed as FeedbackRecord;
+  } catch { return {}; }
+}
+function safeWriteFeedbacks(next: FeedbackRecord): void {
+  if (typeof window === "undefined") return;
+  try { window.localStorage.setItem(FEEDBACK_STORAGE_KEY, JSON.stringify(next)); } catch {}
+}
+function safeReadPageNames(): PageNamesRecord {
+  if (typeof window === "undefined") return {};
+  try {
+    const raw = window.localStorage.getItem(PAGE_NAMES_STORAGE_KEY);
+    if (!raw) return {};
+    const parsed = JSON.parse(raw) as unknown;
+    if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) return {};
+    return parsed as PageNamesRecord;
+  } catch { return {}; }
+}
+function safeWritePageNames(next: PageNamesRecord): void {
+  if (typeof window === "undefined") return;
+  try { window.localStorage.setItem(PAGE_NAMES_STORAGE_KEY, JSON.stringify(next)); } catch {}
 }
 
 function hexToRgb(hex: string): [number, number, number] {
@@ -175,6 +217,13 @@ export default function ButtonMapping() {
   const [directSyncEnabled, setDirectSyncEnabled] = useState(() => readDirectSyncEnabled());
   const [syncState, setSyncState] = useState<"idle" | "syncing" | "ok" | "error">("idle");
   const [syncError, setSyncError] = useState("");
+  const [feedbacks, setFeedbacks] = useState<FeedbackRecord>(() => safeReadFeedbacks());
+  const [pageNames, setPageNames] = useState<PageNamesRecord>(() => safeReadPageNames());
+  const [editingPageName, setEditingPageName] = useState(false);
+  const [pageNameInput, setPageNameInput] = useState("");
+  const [showPagesPanel, setShowPagesPanel] = useState(false);
+  const [dragOverPage, setDragOverPage] = useState<number | null>(null);
+  const [draggingPage, setDraggingPage] = useState<number | null>(null);
 
   const selectedDevice = useMemo(
     () => deckDevices.find((d) => d.serialNumber === selectedDeckSerial) ?? null,
@@ -341,6 +390,7 @@ export default function ButtonMapping() {
   );
 
   const selectedStyle = selectedDeckKey ? (keyStyles[selectedDeckKey] ?? DEFAULT_KEY_STYLE) : DEFAULT_KEY_STYLE;
+  const selectedFeedback = selectedDeckKey ? (feedbacks[selectedDeckKey] ?? DEFAULT_FEEDBACK_STYLE) : DEFAULT_FEEDBACK_STYLE;
 
   const updateSelectedStyle = (patch: Partial<KeyStyle>) => {
     if (!selectedDeckKey) return;
@@ -350,6 +400,56 @@ export default function ButtonMapping() {
     };
     setKeyStyles(next);
     safeWriteKeyStyles(next);
+  };
+
+  const updateSelectedFeedback = (patch: Partial<FeedbackStyle>) => {
+    if (!selectedDeckKey) return;
+    const next: FeedbackRecord = {
+      ...feedbacks,
+      [selectedDeckKey]: { ...(feedbacks[selectedDeckKey] ?? DEFAULT_FEEDBACK_STYLE), ...patch },
+    };
+    setFeedbacks(next);
+    safeWriteFeedbacks(next);
+  };
+
+  const savePageName = () => {
+    setEditingPageName(false);
+    const trimmed = pageNameInput.trim();
+    const next = { ...pageNames };
+    if (trimmed) next[activePage] = trimmed;
+    else delete next[activePage];
+    setPageNames(next);
+    safeWritePageNames(next);
+  };
+
+  const swapTwoPages = (pageA: number, pageB: number) => {
+    if (pageA === pageB) return;
+    const remapKeys = <T,>(record: Record<string, T>): Record<string, T> => {
+      const result: Record<string, T> = {};
+      for (const [key, val] of Object.entries(record)) {
+        const parts = key.split("/");
+        const pg = parseInt(parts[0], 10);
+        if (pg === pageA) result[`${pageB}/${parts.slice(1).join("/")}`] = val;
+        else if (pg === pageB) result[`${pageA}/${parts.slice(1).join("/")}`] = val;
+        else result[key] = val;
+      }
+      return result;
+    };
+    const nextMappings = remapKeys(mappings);
+    const nextTextSizes = remapKeys(textSizes);
+    const nextKeyStyles = remapKeys(keyStyles);
+    const nextFeedbacks = remapKeys(feedbacks);
+    setMappings(nextMappings); safeWriteMappings(nextMappings);
+    setTextSizes(nextTextSizes); safeWriteTextSizes(nextTextSizes);
+    setKeyStyles(nextKeyStyles as KeyStyleRecord); safeWriteKeyStyles(nextKeyStyles as KeyStyleRecord);
+    setFeedbacks(nextFeedbacks as FeedbackRecord); safeWriteFeedbacks(nextFeedbacks as FeedbackRecord);
+    const nextPageNames = { ...pageNames };
+    const nameA = nextPageNames[pageA];
+    const nameB = nextPageNames[pageB];
+    if (nameB !== undefined) nextPageNames[pageA] = nameB; else delete nextPageNames[pageA];
+    if (nameA !== undefined) nextPageNames[pageB] = nameA; else delete nextPageNames[pageB];
+    setPageNames(nextPageNames);
+    safeWritePageNames(nextPageNames);
   };
 
   const unmapKey = (key: string, e?: React.MouseEvent) => {
@@ -591,6 +691,10 @@ export default function ButtonMapping() {
               const isDragTarget = dragOverKey === key;
               const keyTextSize = textSizes[key] ?? 14;
               const style = keyStyles[key] ?? DEFAULT_KEY_STYLE;
+              const feedback = feedbacks[key] ?? DEFAULT_FEEDBACK_STYLE;
+              const hasFeedbackActive = feedback.isActive;
+              const displayBgColor = hasFeedbackActive ? feedback.activeBgColor : style.bgColor;
+              const displayTextColor = hasFeedbackActive ? feedback.activeTextColor : style.textColor;
               const customLabel = style.customLabel.trim();
               const displayLabel = customLabel || mapped?.label || specialLabel || "";
               const isMapped = !!displayLabel;
@@ -608,12 +712,14 @@ export default function ButtonMapping() {
                       ? "rgba(139, 92, 246, 1)"
                       : isSelected
                         ? "rgba(139, 92, 246, 0.85)"
-                        : isMapped
-                          ? "rgba(139, 92, 246, 0.3)"
-                          : "#2c3138",
+                        : hasFeedbackActive
+                          ? "rgba(239, 68, 68, 0.6)"
+                          : isMapped
+                            ? "rgba(139, 92, 246, 0.3)"
+                            : "#2c3138",
                     backgroundColor: isDragTarget
                       ? "rgba(139, 92, 246, 0.15)"
-                      : style.bgColor,
+                      : displayBgColor,
                     boxShadow: isDragTarget
                       ? "inset 0 0 0 1px rgba(139,92,246,0.5)"
                       : isSelected
@@ -710,7 +816,7 @@ export default function ButtonMapping() {
                         style={{
                           fontSize: keyTextSize,
                           lineHeight: 1.25,
-                          color: style.textColor,
+                          color: displayTextColor,
                           textAlign: style.textAlign,
                           wordBreak: "break-word",
                           overflowWrap: "break-word",
@@ -727,35 +833,143 @@ export default function ButtonMapping() {
             })}
           </div>
 
-          {/* Controls row below grid — left: pages, right: page nav */}
+          {/* Controls row below grid — left: pages stepper + manage, center: page name, right: page nav */}
           <div
-            className="flex items-center justify-between text-[12px]"
+            className="relative flex items-center justify-between text-[12px]"
             style={{
               width: deckGridWidth + 4,
               color: t.textSecondary,
               transition: "width 0.22s cubic-bezier(0.25,0.1,0.25,1)",
             }}
           >
-            {/* Pages stepper — left-aligned to grid start */}
+            {/* Pages stepper + Manage button */}
             <div className="flex items-center gap-1">
-              <span>Pages</span>
+              <button
+                className="h-[24px] border px-2 text-[11px] flex items-center gap-1 transition-colors"
+                style={{
+                  ...stepBtn(true),
+                  backgroundColor: showPagesPanel ? t.navActive : t.bgSidebar,
+                  color: showPagesPanel ? t.textPrimary : t.textSecondary,
+                }}
+                onClick={() => setShowPagesPanel((v) => !v)}
+                title="Manage pages"
+              >
+                <svg width="10" height="10" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="square">
+                  <line x1="1" y1="3" x2="11" y2="3"/><line x1="1" y1="6" x2="11" y2="6"/><line x1="1" y1="9" x2="11" y2="9"/>
+                </svg>
+                Pages
+              </button>
               <button className="w-[22px] h-[24px] border flex items-center justify-center text-[13px]"
                 style={stepBtn(totalPages > 1)} disabled={totalPages <= 1} onClick={() => stepPages(-1)}>−</button>
               <span className="w-[20px] text-center" style={{ color: t.textPrimary }}>{totalPages}</span>
               <button className="w-[22px] h-[24px] border flex items-center justify-center text-[13px]"
                 style={stepBtn(totalPages < 32)} disabled={totalPages >= 32} onClick={() => stepPages(1)}>+</button>
             </div>
+
+            {/* Center: editable page name */}
+            <div className="flex-1 flex items-center justify-center px-3">
+              {editingPageName ? (
+                <input
+                  autoFocus
+                  value={pageNameInput}
+                  onChange={(e) => setPageNameInput(e.target.value)}
+                  onBlur={savePageName}
+                  onKeyDown={(e) => { if (e.key === "Enter") savePageName(); if (e.key === "Escape") setEditingPageName(false); }}
+                  className="h-[24px] w-full max-w-[180px] border px-2 text-[12px] text-center outline-none"
+                  style={{ backgroundColor: t.rowBg, borderColor: t.topbarBorder, color: t.textPrimary }}
+                  placeholder={`Page ${activePage}`}
+                />
+              ) : (
+                <button
+                  className="max-w-[200px] truncate text-[12px] px-2 h-[24px] border transition-colors"
+                  style={{
+                    borderColor: "transparent",
+                    color: pageNames[activePage] ? t.textPrimary : t.textSecondary,
+                    backgroundColor: "transparent",
+                  }}
+                  onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.borderColor = t.inputBorder; }}
+                  onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.borderColor = "transparent"; }}
+                  onClick={() => { setPageNameInput(pageNames[activePage] ?? ""); setEditingPageName(true); }}
+                  title="Click to rename this page"
+                >
+                  {pageNames[activePage] || `Page ${activePage}`}
+                </button>
+              )}
+            </div>
+
             {/* Page navigation — right-aligned to grid end */}
             <div className="flex items-center gap-1">
               <button className="h-[24px] border px-2 flex items-center justify-center"
                 style={stepBtn(activePage > 1)} disabled={activePage <= 1} onClick={() => stepActivePage(-1)}>{"<"}</button>
-              <span className="w-[44px] text-center" style={{ color: t.textPrimary }}>
+              <span className="w-[32px] text-center" style={{ color: t.textPrimary }}>
                 {activePage} / {Math.max(1, totalPages)}
               </span>
               <button className="h-[24px] border px-2 flex items-center justify-center"
                 style={stepBtn(activePage < Math.max(1, totalPages))}
                 disabled={activePage >= Math.max(1, totalPages)} onClick={() => stepActivePage(1)}>{">"}</button>
             </div>
+
+            {/* Pages panel — floats above the controls bar */}
+            <AnimatePresence>
+            {showPagesPanel && (
+              <motion.div
+                key="pages-panel"
+                initial={{ opacity: 0, y: 6 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 6 }}
+                transition={{ duration: 0.15 }}
+                className="absolute bottom-[calc(100%+6px)] left-0 border flex flex-col overflow-hidden z-30"
+                style={{
+                  minWidth: 220,
+                  backgroundColor: t.bgSidebar,
+                  borderColor: t.topbarBorder,
+                  boxShadow: "0 8px 24px rgba(0,0,0,0.4)",
+                }}
+              >
+                <div className="flex items-center justify-between px-3 h-[36px] border-b shrink-0" style={{ borderColor: t.topbarBorder }}>
+                  <span className="text-[10px] font-semibold uppercase tracking-[0.07em]" style={{ color: t.textSecondary }}>Manage Pages</span>
+                  <button onClick={() => setShowPagesPanel(false)} style={{ color: t.textSecondary, fontSize: 16, lineHeight: 1 }}>×</button>
+                </div>
+                <div className="flex flex-col overflow-y-auto app-scrollbar" style={{ maxHeight: 240 }}>
+                  {Array.from({ length: totalPages }, (_, i) => i + 1).map((pg) => (
+                    <div
+                      key={pg}
+                      draggable
+                      onDragStart={() => setDraggingPage(pg)}
+                      onDragEnd={() => { setDraggingPage(null); setDragOverPage(null); }}
+                      onDragOver={(e) => { e.preventDefault(); setDragOverPage(pg); }}
+                      onDragLeave={() => setDragOverPage(null)}
+                      onDrop={() => {
+                        if (draggingPage && draggingPage !== pg) swapTwoPages(draggingPage, pg);
+                        setDraggingPage(null); setDragOverPage(null);
+                      }}
+                      className="flex items-center gap-2 px-3 h-[36px] border-b select-none transition-colors"
+                      style={{
+                        borderColor: t.topbarBorder,
+                        backgroundColor: dragOverPage === pg && draggingPage !== pg
+                          ? t.navActive
+                          : activePage === pg ? t.rowBg : "transparent",
+                        cursor: "grab",
+                      }}
+                      onClick={() => { setActivePage(pg); setShowPagesPanel(false); }}
+                    >
+                      {/* drag handle */}
+                      <svg width="8" height="14" viewBox="0 0 8 14" fill="none" style={{ opacity: 0.4, flexShrink: 0 }}>
+                        {[2,6,10].map(y => <><circle key={`l${y}`} cx="2" cy={y} r="1.2" fill="currentColor"/><circle key={`r${y}`} cx="6" cy={y} r="1.2" fill="currentColor"/></>)}
+                      </svg>
+                      <span className="text-[11px] w-[20px] shrink-0" style={{ color: t.textSecondary }}>{pg}</span>
+                      <span className="flex-1 text-[12px] truncate" style={{ color: activePage === pg ? t.textPrimary : t.textSecondary }}>
+                        {pageNames[pg] || `Page ${pg}`}
+                      </span>
+                      {dragOverPage === pg && draggingPage !== pg && (
+                        <span className="text-[10px] shrink-0" style={{ color: t.textSecondary }}>swap</span>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </motion.div>
+            )}
+            </AnimatePresence>
           </div>
 
           </div>{/* end flex-col grid wrapper */}
@@ -894,6 +1108,49 @@ export default function ButtonMapping() {
                     {align.charAt(0).toUpperCase()}
                   </button>
                 ))}
+              </div>
+            </div>
+
+            {/* FEEDBACK */}
+            <div className="flex flex-col gap-1.5 px-3 py-3 border-b" style={{ borderColor: t.topbarBorder }}>
+              <div className="flex items-center justify-between">
+                <span className="text-[10px] font-semibold uppercase tracking-[0.07em]" style={{ color: t.textSecondary }}>
+                  Feedback
+                </span>
+                {/* Active toggle */}
+                <button
+                  className="h-[20px] px-2 border text-[10px] font-semibold uppercase tracking-[0.05em] transition-all"
+                  style={{
+                    borderColor: selectedFeedback.isActive ? "rgba(239,68,68,0.7)" : t.inputBorder,
+                    backgroundColor: selectedFeedback.isActive ? "rgba(239,68,68,0.15)" : t.rowBg,
+                    color: selectedFeedback.isActive ? "#ef4444" : t.textSecondary,
+                  }}
+                  onClick={() => updateSelectedFeedback({ isActive: !selectedFeedback.isActive })}
+                >
+                  {selectedFeedback.isActive ? "Active" : "Off"}
+                </button>
+              </div>
+              <div className="flex gap-1.5">
+                <div className="flex flex-col gap-1 flex-1">
+                  <span className="text-[9px]" style={{ color: t.textSecondary }}>BG</span>
+                  <input
+                    type="color"
+                    value={selectedFeedback.activeBgColor}
+                    className="h-[28px] w-full border p-0"
+                    style={{ backgroundColor: t.rowBg, borderColor: t.inputBorder, cursor: "pointer" }}
+                    onChange={(e) => updateSelectedFeedback({ activeBgColor: e.target.value })}
+                  />
+                </div>
+                <div className="flex flex-col gap-1 flex-1">
+                  <span className="text-[9px]" style={{ color: t.textSecondary }}>Text</span>
+                  <input
+                    type="color"
+                    value={selectedFeedback.activeTextColor}
+                    className="h-[28px] w-full border p-0"
+                    style={{ backgroundColor: t.rowBg, borderColor: t.inputBorder, cursor: "pointer" }}
+                    onChange={(e) => updateSelectedFeedback({ activeTextColor: e.target.value })}
+                  />
+                </div>
               </div>
             </div>
 
