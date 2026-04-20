@@ -703,7 +703,7 @@ export default function ButtonMapping() {
               return (
                 <div
                   key={key}
-                  className="relative border overflow-hidden flex flex-col items-stretch select-none"
+                  className="group relative border overflow-hidden flex flex-col items-stretch select-none"
                   style={{
                     width: deckKeySize,
                     height: deckKeySize,
@@ -748,7 +748,7 @@ export default function ButtonMapping() {
                       </span>
                       {isMapped && (
                         <button
-                          className="shrink-0 flex items-center justify-center leading-none transition-opacity"
+                          className="shrink-0 flex items-center justify-center leading-none opacity-0 group-hover:opacity-100 transition-opacity"
                           style={{
                             width: 18,
                             height: 18,
@@ -770,7 +770,7 @@ export default function ButtonMapping() {
                   {/* If topbar hidden but mapped, show floating × */}
                   {!style.topbarEnabled && isMapped && (
                     <button
-                      className="absolute top-[3px] right-[4px] flex items-center justify-center leading-none z-10 transition-opacity"
+                      className="absolute top-[3px] right-[4px] flex items-center justify-center leading-none z-10 opacity-0 group-hover:opacity-100 transition-opacity"
                       style={{
                         width: 19,
                         height: 19,
