@@ -12,7 +12,7 @@
         "build": "node scripts/run-tauri-build.js",
         "build:windows": "node scripts/run-tauri-build.js",
         "build:macos": "node scripts/run-tauri-build.js -- --target universal-apple-darwin",
-        "web:dev": "vite --host 0.0.0.0 --port 1430",
+        "web:dev": "vite",
         "web:build": "vite build",
         "test": "vitest",
         "test:run": "vitest run",
