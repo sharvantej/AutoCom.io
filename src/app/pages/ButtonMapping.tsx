@@ -365,6 +365,12 @@ export default function ButtonMapping() {
     const next = { ...mappings, [key]: buttonId };
     setMappings(next);
     safeWriteMappings(next);
+    // Ensure default 14px is persisted if no custom size has been set for this key
+    if (textSizes[key] === undefined) {
+      const nextSizes = { ...textSizes, [key]: 14 };
+      setTextSizes(nextSizes);
+      safeWriteTextSizes(nextSizes);
+    }
     setSelectedDeckKey(key);
   };
 
@@ -583,7 +589,7 @@ export default function ButtonMapping() {
               const specialLabel = getSpecialMappingLabel(mappedId);
               const isSelected = selectedDeckKey === key;
               const isDragTarget = dragOverKey === key;
-              const keyTextSize = textSizes[key] ?? 10;
+              const keyTextSize = textSizes[key] ?? 14;
               const style = keyStyles[key] ?? DEFAULT_KEY_STYLE;
               const customLabel = style.customLabel.trim();
               const displayLabel = customLabel || mapped?.label || specialLabel || "";
@@ -690,21 +696,31 @@ export default function ButtonMapping() {
 
                   {/* Label */}
                   {isMapped && !isDragTarget && (
-                    <span
-                      className="flex-1 flex items-center break-words line-clamp-4 leading-tight"
+                    <div
+                      className="flex-1 flex items-center overflow-hidden px-[3px]"
                       style={{
-                        fontSize: keyTextSize,
-                        lineHeight: 1.1,
-                        color: style.textColor,
                         justifyContent:
                           style.textAlign === "left" ? "flex-start"
                           : style.textAlign === "right" ? "flex-end"
                           : "center",
-                        textAlign: style.textAlign,
                       }}
                     >
-                      {displayLabel}
-                    </span>
+                      <span
+                        className="w-full leading-tight"
+                        style={{
+                          fontSize: keyTextSize,
+                          lineHeight: 1.25,
+                          color: style.textColor,
+                          textAlign: style.textAlign,
+                          wordBreak: "break-word",
+                          overflowWrap: "break-word",
+                          whiteSpace: "normal",
+                          display: "block",
+                        }}
+                      >
+                        {displayLabel}
+                      </span>
+                    </div>
                   )}
                 </div>
               );
