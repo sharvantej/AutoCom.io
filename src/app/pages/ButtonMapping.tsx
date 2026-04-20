@@ -881,14 +881,25 @@ export default function ButtonMapping() {
               </div>
             </div>
 
-            {/* Close / deselect */}
-            <div className="px-3 py-3 mt-auto">
+            {/* Unmap + Done */}
+            <div className="px-3 pb-4 pt-2 mt-auto flex flex-col gap-2">
+              {selectedDeckKey && mappings[selectedDeckKey] && (
+                <UnmapButton onClick={() => { unmapKey(selectedDeckKey); }} />
+              )}
               <button
-                className="w-full h-[32px] border text-[11px] transition-colors"
+                className="w-full h-[34px] border text-[12px] transition-all"
                 style={{
                   borderColor: t.inputBorder,
                   backgroundColor: t.bgContent,
                   color: t.textSecondary,
+                }}
+                onMouseEnter={(e) => {
+                  (e.currentTarget as HTMLButtonElement).style.borderColor = t.topbarBorder;
+                  (e.currentTarget as HTMLButtonElement).style.color = t.textPrimary;
+                }}
+                onMouseLeave={(e) => {
+                  (e.currentTarget as HTMLButtonElement).style.borderColor = t.inputBorder;
+                  (e.currentTarget as HTMLButtonElement).style.color = t.textSecondary;
                 }}
                 onClick={() => setSelectedDeckKey(null)}
               >
@@ -939,5 +950,38 @@ function DraggableChip({
     >
       {btn.label}
     </div>
+  );
+}
+
+// ── Unmap button ───────────────────────────────────────────────────────────────
+function UnmapButton({ onClick }: { onClick: () => void }) {
+  const [hovered, setHovered] = useState(false);
+
+  return (
+    <button
+      className="w-full border flex flex-col items-center justify-center gap-1 transition-all"
+      style={{
+        height: 64,
+        borderColor: hovered ? "rgba(239,68,68,0.7)" : "rgba(239,68,68,0.3)",
+        backgroundColor: hovered ? "rgba(239,68,68,0.12)" : "rgba(239,68,68,0.05)",
+        color: hovered ? "#ef4444" : "rgba(239,68,68,0.65)",
+      }}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      onClick={onClick}
+    >
+      <svg
+        width="18"
+        height="18"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinecap="square"
+      >
+        <path d="M18 6L6 18M6 6l12 12" />
+      </svg>
+      <span className="text-[11px] font-semibold uppercase tracking-[0.07em]">Unmap</span>
+    </button>
   );
 }
