@@ -36,6 +36,8 @@ const KEY_STYLE_STORAGE_KEY = "autocom.button-style.v1";
 const STREAMDECK_DIRECT_SYNC_KEY = "autocom.streamdeck.directSync.v1";
 const STREAMDECK_SELECTED_SERIAL_KEY = "autocom.streamdeck.selectedSerial.v1";
 const STREAMDECK_ACTIVE_PAGE_KEY = "autocom.streamdeck.activePage.v1";
+const STREAMDECK_ROWS_KEY = "autocom.streamdeck.rows.v1";
+const STREAMDECK_COLS_KEY = "autocom.streamdeck.cols.v1";
 const STREAMDECK_KEY_SIZE = 120;
 const SPECIAL_MAPPING_PREFIX = "__special__:";
 const SPECIAL_MAPPING_PAGE_NEXT = `${SPECIAL_MAPPING_PREFIX}page_next`;
@@ -153,6 +155,20 @@ function readActivePage(): number {
   return Number.isFinite(parsed) ? Math.max(1, parsed) : 1;
 }
 
+function readStoredRows(): number {
+  if (typeof window === "undefined") return 4;
+  const raw = window.localStorage.getItem(STREAMDECK_ROWS_KEY);
+  const parsed = Number.parseInt(raw ?? "4", 10);
+  return Number.isFinite(parsed) ? Math.max(1, Math.min(8, parsed)) : 4;
+}
+
+function readStoredCols(): number {
+  if (typeof window === "undefined") return 8;
+  const raw = window.localStorage.getItem(STREAMDECK_COLS_KEY);
+  const parsed = Number.parseInt(raw ?? "8", 10);
+  return Number.isFinite(parsed) ? Math.max(1, Math.min(16, parsed)) : 8;
+}
+
 function createDeckAddresses(page: number, rows: number, cols: number): DeckAddress[] {
   const out: DeckAddress[] = [];
   for (let row = 1; row <= rows; row += 1) {
@@ -195,8 +211,8 @@ function isStreamDeckTransientDisconnectError(error: unknown): boolean {
 export default function ButtonMapping() {
   const t = useTheme();
   const { projects } = useAppContext();
-  const [rows, setRows] = useState(4);
-  const [cols, setCols] = useState(8);
+  const [rows, setRows] = useState(() => readStoredRows());
+  const [cols, setCols] = useState(() => readStoredCols());
   const [totalPages, setTotalPages] = useState(1);
   const [activePage, setActivePage] = useState(() => readActivePage());
   const [buttons, setButtons] = useState<DashboardButtonEntry[]>([]);
@@ -219,6 +235,17 @@ export default function ButtonMapping() {
     () => deckDevices.find((device) => device.serialNumber === selectedDeckSerial) ?? null,
     [deckDevices, selectedDeckSerial],
   );
+
+  // Persist manual rows/cols (web mode)
+  useEffect(() => {
+    if (selectedDevice) return;
+    window.localStorage.setItem(STREAMDECK_ROWS_KEY, String(rows));
+  }, [rows, selectedDevice]);
+
+  useEffect(() => {
+    if (selectedDevice) return;
+    window.localStorage.setItem(STREAMDECK_COLS_KEY, String(cols));
+  }, [cols, selectedDevice]);
 
   useEffect(() => {
     let disposed = false;
@@ -277,6 +304,7 @@ export default function ButtonMapping() {
     buttons.forEach((entry) => map.set(entry.id, entry));
     return map;
   }, [buttons]);
+
   const mappingOptions = useMemo<DashboardButtonEntry[]>(
     () => [
       {
@@ -466,6 +494,16 @@ export default function ButtonMapping() {
     delete next[selectedDeckKey];
     setMappings(next);
     safeWriteMappings(next);
+    setSelectedDashboardButtonId(null);
+  };
+
+  // When a deck key is selected, auto-highlight its currently mapped button in the left list
+  const handleDeckKeyClick = (key: string) => {
+    setSelectedDeckKey(key);
+    const existingMapping = mappings[key];
+    if (existingMapping) {
+      setSelectedDashboardButtonId(existingMapping);
+    }
   };
 
   useEffect(() => {
@@ -527,10 +565,43 @@ export default function ButtonMapping() {
     return () => window.clearTimeout(timerId);
   }, [directSyncEnabled, selectedDevice, syncKeys]);
 
+  const webMode = !isTauri() || !selectedDevice;
+
+  // Stepper helpers
+  const stepRows = (delta: number) => {
+    setRows((prev) => Math.max(1, Math.min(8, prev + delta)));
+  };
+  const stepCols = (delta: number) => {
+    setCols((prev) => Math.max(1, Math.min(16, prev + delta)));
+  };
+  const stepPages = (delta: number) => {
+    setTotalPages((prev) => Math.max(1, prev + delta));
+  };
+  const stepActivePage = (delta: number) => {
+    setActivePage((prev) => Math.max(1, Math.min(Math.max(1, totalPages), prev + delta)));
+  };
+
+  // Stepper button shared styles
+  const stepperBtn = (enabled: boolean) => ({
+    borderColor: t.inputBorder,
+    backgroundColor: t.bgSidebar,
+    color: enabled ? t.textPrimary : t.textSecondary,
+    cursor: enabled ? "pointer" : "not-allowed",
+  } as React.CSSProperties);
+
   return (
-    <div className="button-mapping-page flex h-full w-full page-pop overflow-auto xl:overflow-hidden flex-col xl:flex-row" style={{ background: `linear-gradient(180deg, ${t.bgContent} 0%, ${t.bgOuter} 100%)` }}>
-      <div className="flex w-full xl:w-1/2 min-w-0 min-h-0 border-b xl:border-b-0 xl:border-r" style={{ borderColor: t.topbarBorder, backgroundColor: t.bgSidebar }}>
+    <div
+      className="button-mapping-page flex h-full w-full page-pop overflow-auto xl:overflow-hidden flex-col xl:flex-row"
+      style={{ background: `linear-gradient(180deg, ${t.bgContent} 0%, ${t.bgOuter} 100%)` }}
+    >
+      {/* ── LEFT PANEL: Dashboard Buttons ── */}
+      <div
+        className="flex w-full xl:w-1/2 min-w-0 min-h-0 border-b xl:border-b-0 xl:border-r"
+        style={{ borderColor: t.topbarBorder, backgroundColor: t.bgSidebar }}
+      >
         <div className="grid w-full min-w-0 min-h-0 grid-cols-1 md:grid-cols-[minmax(0,1fr)_88px] gap-0">
+
+          {/* Button list */}
           <section className="min-w-0 min-h-0 md:border-r flex flex-col" style={{ borderColor: t.topbarBorder }}>
             <div
               className="h-[44px] px-3 flex items-center justify-start border-b"
@@ -543,25 +614,41 @@ export default function ButtonMapping() {
               style={{ backgroundColor: t.bgContent }}
             >
               {loadingButtons ? (
-                <div className="text-[12px]" style={{ color: t.textSecondary }}>Loading buttons...</div>
+                <div className="text-[12px] px-1 pt-1" style={{ color: t.textSecondary }}>Loading buttons…</div>
               ) : mappingOptions.length === 0 ? (
-                <div className="text-[12px]" style={{ color: t.textSecondary }}>No dashboard buttons found.</div>
+                <div className="flex flex-col items-center justify-center h-32 gap-2">
+                  <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" style={{ color: t.textSecondary }}>
+                    <rect x="2" y="7" width="20" height="14" rx="0" />
+                    <path d="M8 7V5a4 4 0 0 1 8 0v2" />
+                    <circle cx="12" cy="14" r="1.5" />
+                  </svg>
+                  <span className="text-[12px]" style={{ color: t.textSecondary }}>No dashboard buttons found.</span>
+                  <span className="text-[11px]" style={{ color: t.textSecondary, opacity: 0.6 }}>Create a project and add button widgets first.</span>
+                </div>
               ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-2">
-                  {mappingOptions.map((entry, index) => {
+                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-1.5">
+                  {mappingOptions.map((entry) => {
                     const active = selectedDashboardButtonId === entry.id;
+                    // Check if this button is mapped to any key on current page
+                    const isMappedOnPage = Object.entries(mappings).some(
+                      ([k, v]) => v === entry.id && k.startsWith(`${activePage}/`)
+                    );
                     return (
                       <button
                         key={entry.id}
-                        className="w-full px-2.5 py-2.5 border rounded-[8px] text-left transition-colors"
+                        className="w-full px-2.5 py-2 border text-left transition-colors"
                         style={{
-                          borderColor: active ? "rgba(139, 92, 246, 0.5)" : t.topbarBorder,
+                          borderColor: active
+                            ? "rgba(139, 92, 246, 0.6)"
+                            : isMappedOnPage
+                              ? "rgba(139, 92, 246, 0.25)"
+                              : t.topbarBorder,
                           backgroundColor: active
                             ? t.navActive
-                            : index % 2 === 0
-                              ? t.bgSidebar
-                              : t.rowBg,
-                          color: t.textPrimary,
+                            : isMappedOnPage
+                              ? "rgba(139, 92, 246, 0.07)"
+                              : t.bgSidebar,
+                          color: active ? t.textPrimary : isMappedOnPage ? "rgba(167,139,250,0.9)" : t.textSecondary,
                           fontSize: 12,
                         }}
                         onClick={() => setSelectedDashboardButtonId(entry.id)}
@@ -575,13 +662,14 @@ export default function ButtonMapping() {
             </div>
           </section>
 
+          {/* Map / Unmap actions */}
           <section className="flex flex-col" style={{ borderColor: t.topbarBorder, backgroundColor: t.bgContent }}>
             <div className="h-[44px] border-b" style={{ borderColor: t.topbarBorder }} />
             <div className="flex flex-row md:flex-col items-center gap-2 p-2">
               <button
-              className="w-full h-[36px] border rounded-[8px] px-2 py-2 text-[12px] flex items-center justify-center transition-colors"
-              style={{
-                  borderColor: canMap ? "rgba(139, 92, 246, 0.5)" : t.topbarBorder,
+                className="w-full h-[36px] border px-2 py-2 text-[12px] flex items-center justify-center transition-colors"
+                style={{
+                  borderColor: canMap ? "rgba(139, 92, 246, 0.6)" : t.topbarBorder,
                   backgroundColor: canMap ? t.navActive : t.bgSidebar,
                   color: canMap ? t.textPrimary : t.textSecondary,
                   cursor: canMap ? "pointer" : "not-allowed",
@@ -592,9 +680,9 @@ export default function ButtonMapping() {
                 Map
               </button>
               <button
-              className="w-full h-[36px] border rounded-[8px] px-2 py-2 text-[12px] flex items-center justify-center transition-colors"
-              style={{
-                  borderColor: selectedDeckMappedButton ? "#ef4444" : "rgba(239,68,68,0.5)",
+                className="w-full h-[36px] border px-2 py-2 text-[12px] flex items-center justify-center transition-colors"
+                style={{
+                  borderColor: selectedDeckMappedButton ? "rgba(239,68,68,0.5)" : t.topbarBorder,
                   backgroundColor: t.bgSidebar,
                   color: selectedDeckMappedButton ? "#ef4444" : t.textSecondary,
                   cursor: selectedDeckMappedButton ? "pointer" : "not-allowed",
@@ -610,38 +698,95 @@ export default function ButtonMapping() {
         </div>
       </div>
 
+      {/* ── RIGHT PANEL: Stream Deck Preview ── */}
       <div className="flex w-full xl:w-1/2 min-w-0 flex-col" style={{ backgroundColor: t.bgContent }}>
-        <div className="min-h-[44px] px-4 py-2 border-b flex flex-col md:flex-row md:items-center gap-2 md:gap-0 md:justify-between" style={{ borderColor: t.topbarBorder }}>
+
+        {/* Right header */}
+        <div
+          className="min-h-[44px] px-4 py-2 border-b flex flex-col md:flex-row md:items-center gap-2 md:gap-3 md:justify-between"
+          style={{ borderColor: t.topbarBorder }}
+        >
           <div className="text-[15px] font-semibold tracking-[0.01em]" style={{ color: t.textPrimary }}>
             Stream Deck Preview
           </div>
-          <div className="flex flex-wrap items-center justify-end gap-2 text-[12px]" style={{ color: t.textSecondary }}>
-            <label className="flex items-center gap-1 text-center">
-              Pages
-              <input
-                type="text"
-                inputMode="numeric"
-                pattern="[0-9]*"
-                value={totalPages}
-                className="w-[36px] h-[24px] border px-0 py-0 rounded-[4px] text-center outline-none focus:border-[rgba(139,92,246,0.5)] focus:ring-0"
-                style={{ backgroundColor: t.bgSidebar, borderColor: t.topbarBorder, color: t.textPrimary }}
-                onChange={(event) => setTotalPages(Math.max(1, Number.parseInt(event.target.value, 10) || 1))}
-              />
-            </label>
+          <div className="flex flex-wrap items-center gap-3 text-[12px]" style={{ color: t.textSecondary }}>
+
+            {/* Rows (web mode only) */}
+            {webMode && (
+              <div className="flex items-center gap-1">
+                <span style={{ color: t.textSecondary }}>Rows</span>
+                <button
+                  className="w-[22px] h-[24px] border flex items-center justify-center text-[13px] leading-none"
+                  style={stepperBtn(rows > 1)}
+                  disabled={rows <= 1}
+                  onClick={() => stepRows(-1)}
+                >−</button>
+                <span className="w-[20px] text-center" style={{ color: t.textPrimary }}>{rows}</span>
+                <button
+                  className="w-[22px] h-[24px] border flex items-center justify-center text-[13px] leading-none"
+                  style={stepperBtn(rows < 8)}
+                  disabled={rows >= 8}
+                  onClick={() => stepRows(1)}
+                >+</button>
+              </div>
+            )}
+
+            {/* Cols (web mode only) */}
+            {webMode && (
+              <div className="flex items-center gap-1">
+                <span style={{ color: t.textSecondary }}>Cols</span>
+                <button
+                  className="w-[22px] h-[24px] border flex items-center justify-center text-[13px] leading-none"
+                  style={stepperBtn(cols > 1)}
+                  disabled={cols <= 1}
+                  onClick={() => stepCols(-1)}
+                >−</button>
+                <span className="w-[20px] text-center" style={{ color: t.textPrimary }}>{cols}</span>
+                <button
+                  className="w-[22px] h-[24px] border flex items-center justify-center text-[13px] leading-none"
+                  style={stepperBtn(cols < 16)}
+                  disabled={cols >= 16}
+                  onClick={() => stepCols(1)}
+                >+</button>
+              </div>
+            )}
+
+            {/* Pages */}
+            <div className="flex items-center gap-1">
+              <span style={{ color: t.textSecondary }}>Pages</span>
+              <button
+                className="w-[22px] h-[24px] border flex items-center justify-center text-[13px] leading-none"
+                style={stepperBtn(totalPages > 1)}
+                disabled={totalPages <= 1}
+                onClick={() => stepPages(-1)}
+              >−</button>
+              <span className="w-[20px] text-center" style={{ color: t.textPrimary }}>{totalPages}</span>
+              <button
+                className="w-[22px] h-[24px] border flex items-center justify-center text-[13px] leading-none"
+                style={stepperBtn(totalPages < 32)}
+                disabled={totalPages >= 32}
+                onClick={() => stepPages(1)}
+              >+</button>
+            </div>
+
           </div>
         </div>
 
+        {/* Sync error banner */}
         {syncState === "error" && syncError ? (
           <div className="px-4 py-1 text-[11px] border-b" style={{ color: "#ef4444", borderColor: t.topbarBorder }}>
             {syncError}
           </div>
         ) : null}
 
+        {/* Grid + controls */}
         <div className="flex-1 min-h-0 overflow-hidden p-2 md:p-4">
           <div ref={previewHostRef} className="flex h-full w-full justify-center min-w-0 min-h-0">
             <div className="flex h-full min-h-0 flex-col" style={{ width: deckGridWidth }}>
+
+              {/* Deck key grid */}
               <div
-                className="grid items-stretch rounded-[12px] p-[2px]"
+                className="grid items-stretch p-[2px]"
                 style={{
                   gridTemplateColumns: `repeat(${Math.max(1, cols)}, ${deckKeySize}px)`,
                   columnGap: "2px",
@@ -659,20 +804,25 @@ export default function ButtonMapping() {
                   const style = keyStyles[key] ?? DEFAULT_KEY_STYLE;
                   const customLabel = style.customLabel.trim();
                   const deckAddress = `${entry.page}/${entry.row}/${entry.col}`;
+                  const hasMappedContent = !!(customLabel || mapped?.label || specialLabel);
                   return (
                     <button
                       key={key}
-                      className="size-controlled-button rounded-[12px] border-[2px] px-[6px] py-[4px] overflow-hidden flex flex-col items-stretch text-center"
+                      className="size-controlled-button border-[2px] px-[6px] py-[4px] overflow-hidden flex flex-col items-stretch text-center transition-colors"
                       style={{
                         width: deckKeySize,
                         height: deckKeySize,
-                        borderColor: isSelected ? "rgba(139, 92, 246, 0.5)" : "#2c3138",
+                        borderColor: isSelected
+                          ? "rgba(139, 92, 246, 0.7)"
+                          : hasMappedContent
+                            ? "rgba(139, 92, 246, 0.25)"
+                            : "#2c3138",
                         backgroundColor: style.bgColor,
                         color: style.textColor,
-                        boxShadow: isSelected ? "0 0 0 0.5px rgba(139,92,246,0.35)" : "none",
+                        boxShadow: isSelected ? "0 0 0 1px rgba(139,92,246,0.3)" : "none",
                       }}
                       title={`${entry.page}/${entry.row}/${entry.col}`}
-                      onClick={() => setSelectedDeckKey(key)}
+                      onClick={() => handleDeckKeyClick(key)}
                     >
                       {style.topbarEnabled ? (
                         <span
@@ -698,62 +848,65 @@ export default function ButtonMapping() {
                   );
                 })}
               </div>
+
+              {/* Page nav + button text label */}
               <div
                 className="mt-2 min-h-[35px] flex flex-col md:flex-row md:items-center gap-2"
                 style={{ backgroundColor: "transparent" }}
               >
                 <div className="flex items-center gap-2">
-                  <div className="text-[12px] font-semibold uppercase tracking-[0.06em]" style={{ color: t.textPrimary }}>
+                  <div className="text-[11px] font-semibold uppercase tracking-[0.06em]" style={{ color: t.textSecondary }}>
                     Button text
                   </div>
                   <input
                     type="text"
                     value={selectedStyle.customLabel}
                     disabled={!selectedDeckKey}
-                    className="h-[35px] w-[170px] border rounded-[6px] px-2 text-[12px] outline-none"
-                    style={{ backgroundColor: t.rowBg, borderColor: t.inputBorder, color: t.textPrimary }}
+                    className="h-[35px] w-[170px] border px-2 text-[12px] outline-none"
+                    style={{
+                      backgroundColor: selectedDeckKey ? t.rowBg : t.bgSidebar,
+                      borderColor: t.inputBorder,
+                      color: t.textPrimary,
+                      opacity: selectedDeckKey ? 1 : 0.45,
+                    }}
                     onChange={(event) => updateSelectedStyle({ customLabel: event.target.value })}
-                    placeholder="Type label"
+                    placeholder={selectedDeckKey ? "Override label" : "Select a key first"}
                   />
                 </div>
-                <div className="ml-0 md:ml-auto flex items-center gap-2">
+
+                {/* Page navigation */}
+                <div className="ml-0 md:ml-auto flex items-center gap-1">
                   <button
-                    className="h-[35px] border rounded-[6px] px-3 text-[12px] flex items-center justify-start hover:border-[rgba(139,92,246,0.5)] active:border-[rgba(139,92,246,0.5)]"
-                    style={{
-                      borderColor: t.inputBorder,
-                      color: activePage > 1 ? t.textPrimary : t.textSecondary,
-                      backgroundColor: t.rowBg,
-                      cursor: activePage > 1 ? "pointer" : "not-allowed",
-                    }}
+                    className="h-[35px] border px-3 text-[12px] flex items-center justify-center hover:border-[rgba(139,92,246,0.5)]"
+                    style={stepperBtn(activePage > 1)}
                     disabled={activePage <= 1}
-                    onClick={() => setActivePage((previous) => Math.max(1, previous - 1))}
+                    onClick={() => stepActivePage(-1)}
                     aria-label="Previous page"
-                  >
-                    {"<"}
-                  </button>
+                  >{"<"}</button>
                   <div className="w-[56px] text-center text-[12px]" style={{ color: t.textSecondary }}>
                     {activePage} / {Math.max(1, totalPages)}
                   </div>
                   <button
-                    className="h-[35px] border rounded-[6px] px-3 text-[12px] flex items-center justify-start hover:border-[rgba(139,92,246,0.5)] active:border-[rgba(139,92,246,0.5)]"
-                    style={{
-                      borderColor: t.inputBorder,
-                      color: activePage < Math.max(1, totalPages) ? t.textPrimary : t.textSecondary,
-                      backgroundColor: t.rowBg,
-                      cursor: activePage < Math.max(1, totalPages) ? "pointer" : "not-allowed",
-                    }}
+                    className="h-[35px] border px-3 text-[12px] flex items-center justify-center hover:border-[rgba(139,92,246,0.5)]"
+                    style={stepperBtn(activePage < Math.max(1, totalPages))}
                     disabled={activePage >= Math.max(1, totalPages)}
-                    onClick={() => setActivePage((previous) => Math.min(Math.max(1, totalPages), previous + 1))}
+                    onClick={() => stepActivePage(1)}
                     aria-label="Next page"
-                  >
-                    {">"}
-                  </button>
+                  >{">"}</button>
                 </div>
               </div>
 
-              <div className="mt-3 min-h-0 flex-1 flex flex-col gap-3" style={{ backgroundColor: "transparent" }}>
-                <div className="grid grid-cols-2 md:grid-cols-5 gap-2">
-                  <label className="flex flex-col gap-1 p-2 border rounded-[8px] text-[12px]" style={{ color: t.textSecondary, borderColor: t.inputBorder, backgroundColor: t.bgSidebar }}>
+              {/* Key style controls */}
+              <div className="mt-3 min-h-0 flex-1 flex flex-col gap-3">
+                <div
+                  className="grid grid-cols-2 md:grid-cols-5 gap-2"
+                  style={{ opacity: selectedDeckKey ? 1 : 0.4, pointerEvents: selectedDeckKey ? "auto" : "none" }}
+                >
+                  {/* Font size */}
+                  <label
+                    className="flex flex-col gap-1 p-2 border text-[12px]"
+                    style={{ color: t.textSecondary, borderColor: t.inputBorder, backgroundColor: t.bgSidebar }}
+                  >
                     Font size
                     <input
                       type="text"
@@ -761,7 +914,7 @@ export default function ButtonMapping() {
                       pattern="[0-9]*"
                       value={textSizeInput}
                       disabled={!selectedDeckKey}
-                      className="h-[36px] border rounded-[4px] px-2 outline-none"
+                      className="h-[36px] border px-2 outline-none"
                       style={{ backgroundColor: t.rowBg, borderColor: t.inputBorder, color: t.textPrimary }}
                       onChange={(event) => setTextSizeInput(event.target.value)}
                       onBlur={saveSelectedTextSize}
@@ -774,34 +927,46 @@ export default function ButtonMapping() {
                     />
                   </label>
 
-                  <label className="flex flex-col gap-1 p-2 border rounded-[8px] text-[12px]" style={{ color: t.textSecondary, borderColor: t.inputBorder, backgroundColor: t.rowBg }}>
+                  {/* Text color */}
+                  <label
+                    className="flex flex-col gap-1 p-2 border text-[12px]"
+                    style={{ color: t.textSecondary, borderColor: t.inputBorder, backgroundColor: t.bgSidebar }}
+                  >
                     Text
                     <input
                       type="color"
                       value={selectedStyle.textColor}
                       disabled={!selectedDeckKey}
-                      className="h-[36px] p-0 rounded-[4px]"
-                      style={{ backgroundColor: t.rowBg }}
+                      className="h-[36px] p-0 w-full"
+                      style={{ backgroundColor: t.rowBg, cursor: selectedDeckKey ? "pointer" : "default" }}
                       onChange={(event) => updateSelectedStyle({ textColor: event.target.value })}
                     />
                   </label>
 
-                  <label className="flex flex-col gap-1 p-2 border rounded-[8px] text-[12px]" style={{ color: t.textSecondary, borderColor: t.inputBorder, backgroundColor: t.bgSidebar }}>
+                  {/* BG color */}
+                  <label
+                    className="flex flex-col gap-1 p-2 border text-[12px]"
+                    style={{ color: t.textSecondary, borderColor: t.inputBorder, backgroundColor: t.bgSidebar }}
+                  >
                     BG
                     <input
                       type="color"
                       value={selectedStyle.bgColor}
                       disabled={!selectedDeckKey}
-                      className="h-[36px] p-0 rounded-[4px]"
-                      style={{ backgroundColor: t.rowBg }}
+                      className="h-[36px] p-0 w-full"
+                      style={{ backgroundColor: t.rowBg, cursor: selectedDeckKey ? "pointer" : "default" }}
                       onChange={(event) => updateSelectedStyle({ bgColor: event.target.value })}
                     />
                   </label>
 
-                  <label className="flex flex-col gap-1 p-2 border rounded-[8px] text-[12px]" style={{ color: t.textSecondary, borderColor: t.inputBorder, backgroundColor: t.rowBg }}>
+                  {/* Topbar */}
+                  <label
+                    className="flex flex-col gap-1 p-2 border text-[12px]"
+                    style={{ color: t.textSecondary, borderColor: t.inputBorder, backgroundColor: t.bgSidebar }}
+                  >
                     Topbar
                     <select
-                      className="h-[36px] border rounded-[4px] px-2 outline-none"
+                      className="h-[36px] border px-2 outline-none"
                       style={{ backgroundColor: t.rowBg, borderColor: t.inputBorder, color: t.textSecondary }}
                       value={selectedStyle.topbarEnabled ? "show" : "hide"}
                       onChange={(event) => updateSelectedStyle({ topbarEnabled: event.target.value !== "hide" })}
@@ -812,13 +977,17 @@ export default function ButtonMapping() {
                     </select>
                   </label>
 
-                  <div className="flex flex-col gap-1 p-2 border rounded-[8px] text-[12px]" style={{ color: t.textPrimary, borderColor: t.inputBorder, backgroundColor: t.bgSidebar }}>
+                  {/* Text align */}
+                  <div
+                    className="flex flex-col gap-1 p-2 border text-[12px]"
+                    style={{ color: t.textPrimary, borderColor: t.inputBorder, backgroundColor: t.bgSidebar }}
+                  >
                     Text align
-                    <div className="h-[36px] border rounded-[4px] flex overflow-hidden" style={{ borderColor: t.inputBorder }}>
+                    <div className="h-[36px] border flex overflow-hidden" style={{ borderColor: t.inputBorder }}>
                       {(["left", "center", "right"] as KeyTextAlign[]).map((align) => (
                         <button
                           key={align}
-                          className="flex-1 h-full border-r last:border-r-0 text-[11px]"
+                          className="flex-1 h-full border-r last:border-r-0 text-[11px] transition-colors"
                           style={{
                             borderColor: t.inputBorder,
                             backgroundColor: selectedStyle.textAlign === align ? t.navActive : t.rowBg,
@@ -833,7 +1002,15 @@ export default function ButtonMapping() {
                     </div>
                   </div>
                 </div>
+
+                {/* Hint when no key selected */}
+                {!selectedDeckKey && (
+                  <div className="text-[11px] text-center" style={{ color: t.textSecondary, opacity: 0.5 }}>
+                    Click a key above to configure its style
+                  </div>
+                )}
               </div>
+
             </div>
           </div>
         </div>
