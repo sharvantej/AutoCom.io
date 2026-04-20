@@ -1,0 +1,29 @@
+[package]
+name = "auto-osc-tauri"
+version = "2.0.0"
+description = "AUTO OSC protocol dispatcher"
+authors = ["Sharvan Tej"]
+edition = "2021"
+
+[lib]
+name = "auto_osc_tauri_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[build-dependencies]
+tauri-build = { version = "2.0.2", features = [] }
+
+[dependencies]
+tauri = { version = "2.1.1", features = [] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+tokio = { version = "1", features = ["rt-multi-thread", "net", "time", "io-util", "sync"] }
+reqwest = { version = "0.12", default-features = false, features = ["json", "rustls-tls"] }
+tokio-tungstenite = { version = "0.24", features = ["rustls-tls-webpki-roots"] }
+futures-util = "0.3"
+rosc = "0.10"
+sha2 = "0.10"
+base64 = "0.22"
+quick-xml = { version = "0.37", features = ["serialize"] }
+elgato-streamdeck = "0.12"
+image = { version = "0.25", default-features = true }
+font8x8 = "0.3"

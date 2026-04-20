@@ -1,0 +1,120 @@
+name: CI/CD
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  lint-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+        cache: 'npm'
+
+    - name: Install dependencies
+      run: npm ci
+
+    - name: Run linter
+      run: npm run lint
+
+    - name: Run type check
+      run: npm run typecheck
+
+    - name: Run tests
+      run: npm run test:run
+
+    - name: Build web
+      run: npm run web:build
+
+  build-windows:
+    runs-on: windows-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+        cache: 'npm'
+
+    - name: Install Rust toolchain
+      uses: dtolnay/rust-toolchain@stable
+
+    - name: Install dependencies
+      run: npm ci
+
+    - name: Build Tauri app (Windows)
+      run: npm run build
+
+    - name: Upload Windows artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: autocom-windows
+        path: build/windows/*.exe
+
+  build-macos:
+    runs-on: macos-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+        cache: 'npm'
+
+    - name: Install Rust toolchain
+      uses: dtolnay/rust-toolchain@stable
+
+    - name: Add macOS target
+      run: rustup target add aarch64-apple-darwin
+
+    - name: Install dependencies
+      run: npm ci
+
+    - name: Build Tauri app (macOS)
+      run: npm run build
+
+    - name: Upload macOS artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: autocom-macos
+        path: build/macos/*.dmg
+
+  create-release:
+    needs: [build-windows, build-macos]
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/')
+
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Download Windows build
+      uses: actions/download-artifact@v4
+      with:
+        name: autocom-windows
+
+    - name: Download macOS build
+      uses: actions/download-artifact@v4
+      with:
+        name: autocom-macos
+
+    - name: Create Release
+      uses: softprops/action-gh-release@v1
+      with:
+        files: |
+          *.exe
+          *.dmg
+        body_path: docs/RELEASE_NOTES_v2.0.0.md
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN}}

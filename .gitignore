@@ -1,0 +1,12 @@
+node_modules/
+dist/
+build/
+tmp/
+*.log
+npm-debug.log*
+Thumbs.db
+.DS_Store
+src-tauri/target/
+src-tauri/gen/
+*.code-workspace
+AutomationController-main/

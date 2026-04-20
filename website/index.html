@@ -1,0 +1,168 @@
+﻿<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Autocom | Broadcast Control Dashboard</title>
+    <meta
+      name="description"
+      content="Autocom is a high-performance broadcast control dashboard built for fast-paced live production workflows."
+    />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="container nav">
+        <a class="brand" href="#">
+          <img src="./assets/autocom-title.png" alt="Autocom" />
+          <span>Autocom</span>
+        </a>
+        <nav class="menu">
+          <a href="#features">Features</a>
+          <a href="#screenshots">Screenshots</a>
+          <a href="#pricing">Pricing</a>
+          <a href="#download">Download</a>
+          <a href="#contact">Contact</a>
+        </nav>
+      </div>
+    </header>
+
+    <main>
+      <section class="hero container">
+        <div class="hero-copy">
+          <p class="kicker">Built for Live Broadcast</p>
+          <h1>Control everything in milliseconds.</h1>
+          <p>
+            Autocom gives operators a fast, reliable dashboard for vMix, OBS, OSC,
+            TCP, and production-critical actions in one place.
+          </p>
+          <div class="hero-actions">
+            <a class="btn btn-primary" id="heroDownloadBtn" href="#download">Get Installer</a>
+            <a class="btn btn-secondary" href="#features">See Features</a>
+          </div>
+        </div>
+        <div class="hero-panel">
+          <div class="mock-window">
+            <div class="mock-title">Autocom Dashboard</div>
+            <div class="mock-grid">
+              <span>OPEN</span><span>ROLL IN</span><span>CAM 1</span><span>CUT</span>
+              <span>TAKE</span><span>LOWER 3RD</span><span>MIC ON</span><span>OUT</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="features" class="container section">
+        <h2>Features</h2>
+        <div class="cards">
+          <article class="card">
+            <h3>Fast Execution</h3>
+            <p>Optimized for low-latency live workflows where timing is critical.</p>
+          </article>
+          <article class="card">
+            <h3>Button Mapping</h3>
+            <p>Map dashboard actions to Stream Deck style layouts with page control.</p>
+          </article>
+          <article class="card">
+            <h3>Multi-Protocol</h3>
+            <p>Works across OBS, vMix, OSC, TCP, UDP, and more production systems.</p>
+          </article>
+        </div>
+      </section>
+
+      <section id="screenshots" class="container section">
+        <h2>Screenshots</h2>
+        <div class="shots">
+          <article class="shot">
+            <div class="shot-header">Project Dashboard</div>
+            <div class="shot-body">
+              <div class="shot-grid">
+                <span>OPEN</span><span>CAM 1</span><span>CUT</span><span>OUT</span>
+              </div>
+            </div>
+          </article>
+          <article class="shot">
+            <div class="shot-header">Connections</div>
+            <div class="shot-body lines">
+              <div></div><div></div><div></div><div></div>
+            </div>
+          </article>
+          <article class="shot">
+            <div class="shot-header">Button Mapping</div>
+            <div class="shot-body map">
+              <div class="tiny-grid">
+                <span></span><span></span><span></span><span></span>
+                <span></span><span></span><span></span><span></span>
+              </div>
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <section id="pricing" class="container section">
+        <h2>Pricing</h2>
+        <div class="pricing">
+          <article class="price-card active">
+            <h3>Community</h3>
+            <p class="price">Free</p>
+            <ul>
+              <li>Full desktop app</li>
+              <li>MIT License</li>
+              <li>Unlimited local projects</li>
+            </ul>
+          </article>
+          <article class="price-card">
+            <h3>Studio Support</h3>
+            <p class="price">Custom</p>
+            <ul>
+              <li>Setup assistance</li>
+              <li>Workflow consultation</li>
+              <li>Priority help</li>
+            </ul>
+          </article>
+        </div>
+      </section>
+
+      <section id="download" class="container section">
+        <h2>Download</h2>
+        <div class="download-box">
+          <p>Recommended for Windows users</p>
+          <a class="btn btn-primary" id="setupDownloadBtn" href="#">Autocom_2.0.0_x64-setup.exe</a>
+          <a class="btn btn-secondary" id="portableDownloadBtn" href="#">Autocom.exe</a>
+          <small>Version 2.0.0 • Windows x64</small>
+        </div>
+      </section>
+
+      <section id="contact" class="container section">
+        <h2>Contact</h2>
+        <div class="contact-grid">
+          <a class="contact-card" href="https://github.com/sharvantej/AutoCom.io" target="_blank" rel="noreferrer">
+            <strong>GitHub</strong>
+            <span>AutoCom.io repository</span>
+          </a>
+          <a class="contact-card" href="mailto:hello@autocom.app">
+            <strong>Email</strong>
+            <span>hello@autocom.app</span>
+          </a>
+          <a class="contact-card" href="#download">
+            <strong>Release</strong>
+            <span>Get latest Windows installer</span>
+          </a>
+        </div>
+        <form class="subscribe" onsubmit="return false;">
+          <input type="email" id="email" placeholder="you@studio.com" />
+          <button class="btn btn-secondary" id="notifyBtn" type="submit">Notify Me</button>
+        </form>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <div class="container">
+        <p>© 2026 Autocom. MIT Licensed.</p>
+      </div>
+    </footer>
+
+    <script src="./script.js"></script>
+  </body>
+  </html>
+

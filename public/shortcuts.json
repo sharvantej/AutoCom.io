@@ -1,0 +1,1638 @@
+{
+  "source": [
+    "https://github.com/bitfocus/companion-module-bmd-atem",
+    "https://github.com/bitfocus/companion-module-resolume-arena",
+    "https://github.com/bitfocus/companion-module-malighting-grandma3",
+    "https://github.com/bitfocus/companion-module-generic-http",
+    "https://github.com/bitfocus/companion-module-rossvideo-rosstalk",
+    "https://github.com/bitfocus/companion-module-bmd-videohub",
+    "https://github.com/bitfocus/companion-module-generic-swp08",
+    "https://github.com/bitfocus/companion-module-obs-studio",
+    "https://github.com/bitfocus/companion-module-behringer-x32",
+    "https://github.com/bitfocus/companion-module-generic-tcp-udp",
+    "https://github.com/bitfocus/companion-module-rossvideo-xpression"
+  ],
+  "generatedAt": "2026-02-24T00:00:00.000Z",
+  "versionHint": "Companion shortcut catalog",
+  "notes": "Shortcut templates for supported connection types. Select a matching connection before applying.",
+  "totalModules": 11,
+  "totalShortcuts": 167,
+  "modules": [
+    {
+      "id": "bmd-atem",
+      "name": "BMD ATEM",
+      "connectionType": "atem",
+      "protocol": "udp",
+      "shortcuts": [
+        {
+          "id": "cut",
+          "label": "CUT operation",
+          "action": "command",
+          "params": {
+            "command": "CUT",
+            "lineEnd": "none"
+          }
+        },
+        {
+          "id": "auto",
+          "label": "AUTO transition operation",
+          "action": "command",
+          "params": {
+            "command": "AUTO",
+            "lineEnd": "none"
+          }
+        },
+        {
+          "id": "program_1",
+          "label": "Set input on Program (Input 1)",
+          "action": "command",
+          "params": {
+            "command": "PROGRAM 1",
+            "lineEnd": "none"
+          }
+        },
+        {
+          "id": "preview_1",
+          "label": "Set input on Preview (Input 1)",
+          "action": "command",
+          "params": {
+            "command": "PREVIEW 1",
+            "lineEnd": "none"
+          }
+        },
+        {
+          "id": "program_2",
+          "label": "Set input on Program (Input 2)",
+          "action": "command",
+          "params": {
+            "command": "PROGRAM 2",
+            "lineEnd": "none"
+          }
+        },
+        {
+          "id": "preview_2",
+          "label": "Set input on Preview (Input 2)",
+          "action": "command",
+          "params": {
+            "command": "PREVIEW 2",
+            "lineEnd": "none"
+          }
+        },
+        {
+          "id": "aux_1_input_1",
+          "label": "Set AUX bus 1 to Input 1",
+          "action": "command",
+          "params": {
+            "command": "AUX 1 1",
+            "lineEnd": "none"
+          }
+        },
+        {
+          "id": "aux_1_input_2",
+          "label": "Set AUX bus 1 to Input 2",
+          "action": "command",
+          "params": {
+            "command": "AUX 1 2",
+            "lineEnd": "none"
+          }
+        },
+        {
+          "id": "usk_source",
+          "label": "Set inputs on Upstream KEY (M/E 1, KEY 1, Source 1)",
+          "action": "command",
+          "params": {
+            "command": "USK 1 1 SOURCE 1",
+            "lineEnd": "none"
+          }
+        },
+        {
+          "id": "usk_onair_on",
+          "label": "Set Upstream KEY OnAir (ON)",
+          "action": "command",
+          "params": {
+            "command": "USK 1 1 ON",
+            "lineEnd": "none"
+          }
+        },
+        {
+          "id": "usk_onair_off",
+          "label": "Set Upstream KEY OnAir (OFF)",
+          "action": "command",
+          "params": {
+            "command": "USK 1 1 OFF",
+            "lineEnd": "none"
+          }
+        },
+        {
+          "id": "usk_onair_toggle",
+          "label": "Set Upstream KEY OnAir (TOGGLE)",
+          "action": "command",
+          "params": {
+            "command": "USK 1 1 TOGGLE",
+            "lineEnd": "none"
+          }
+        },
+        {
+          "id": "dsk_source",
+          "label": "Set inputs on Downstream KEY (KEY 1, Source 1)",
+          "action": "command",
+          "params": {
+            "command": "DSK 1 SOURCE 1",
+            "lineEnd": "none"
+          }
+        },
+        {
+          "id": "dsk_on",
+          "label": "Set Downstream Key On Air (ON)",
+          "action": "command",
+          "params": {
+            "command": "DSK 1 ON",
+            "lineEnd": "none"
+          }
+        },
+        {
+          "id": "dsk_off",
+          "label": "Set Downstream Key On Air (OFF)",
+          "action": "command",
+          "params": {
+            "command": "DSK 1 OFF",
+            "lineEnd": "none"
+          }
+        },
+        {
+          "id": "dsk_toggle",
+          "label": "Set Downstream Key On Air (TOGGLE)",
+          "action": "command",
+          "params": {
+            "command": "DSK 1 TOGGLE",
+            "lineEnd": "none"
+          }
+        },
+        {
+          "id": "dsk_auto",
+          "label": "Auto DSK Transition",
+          "action": "command",
+          "params": {
+            "command": "DSK 1 AUTO",
+            "lineEnd": "none"
+          }
+        },
+        {
+          "id": "dsk_tie",
+          "label": "Tie DSK to transition",
+          "action": "command",
+          "params": {
+            "command": "DSK 1 TIE",
+            "lineEnd": "none"
+          }
+        },
+        {
+          "id": "transition_type_mix",
+          "label": "Change transition type (MIX)",
+          "action": "command",
+          "params": {
+            "command": "TRANSITION 1 STYLE MIX",
+            "lineEnd": "none"
+          }
+        },
+        {
+          "id": "transition_type_dip",
+          "label": "Change transition type (DIP)",
+          "action": "command",
+          "params": {
+            "command": "TRANSITION 1 STYLE DIP",
+            "lineEnd": "none"
+          }
+        },
+        {
+          "id": "transition_selection_bg",
+          "label": "Change transition selection (BKGD)",
+          "action": "command",
+          "params": {
+            "command": "TRANSITION 1 SELECTION BKGD",
+            "lineEnd": "none"
+          }
+        },
+        {
+          "id": "transition_selection_key1",
+          "label": "Change transition selection (KEY1)",
+          "action": "command",
+          "params": {
+            "command": "TRANSITION 1 SELECTION KEY1",
+            "lineEnd": "none"
+          }
+        },
+        {
+          "id": "transition_component_key1_on",
+          "label": "Change transition selection component (KEY1 ON)",
+          "action": "command",
+          "params": {
+            "command": "TRANSITION 1 COMPONENT KEY1 ON",
+            "lineEnd": "none"
+          }
+        },
+        {
+          "id": "transition_component_key1_off",
+          "label": "Change transition selection component (KEY1 OFF)",
+          "action": "command",
+          "params": {
+            "command": "TRANSITION 1 COMPONENT KEY1 OFF",
+            "lineEnd": "none"
+          }
+        },
+        {
+          "id": "transition_rate_25",
+          "label": "Change transition rate (25)",
+          "action": "command",
+          "params": {
+            "command": "TRANSITION 1 RATE 25",
+            "lineEnd": "none"
+          }
+        },
+        {
+          "id": "transition_preview_toggle",
+          "label": "Toggle transition preview",
+          "action": "command",
+          "params": {
+            "command": "TRANSITION 1 PREVIEW TOGGLE",
+            "lineEnd": "none"
+          }
+        },
+        {
+          "id": "ftb_auto",
+          "label": "Execute fade to/from black (AUTO)",
+          "action": "command",
+          "params": {
+            "command": "FTB 1 AUTO",
+            "lineEnd": "none"
+          }
+        },
+        {
+          "id": "ftb_on",
+          "label": "Execute fade to/from black (ON)",
+          "action": "command",
+          "params": {
+            "command": "FTB 1 ON",
+            "lineEnd": "none"
+          }
+        },
+        {
+          "id": "ftb_off",
+          "label": "Execute fade to/from black (OFF)",
+          "action": "command",
+          "params": {
+            "command": "FTB 1 OFF",
+            "lineEnd": "none"
+          }
+        },
+        {
+          "id": "ftb_toggle",
+          "label": "Execute fade to/from black (TOGGLE)",
+          "action": "command",
+          "params": {
+            "command": "FTB 1 TOGGLE",
+            "lineEnd": "none"
+          }
+        },
+        {
+          "id": "ftb_rate_25",
+          "label": "Set fade to black rate (25)",
+          "action": "command",
+          "params": {
+            "command": "FTB 1 RATE 25",
+            "lineEnd": "none"
+          }
+        },
+        {
+          "id": "macro_run_1",
+          "label": "Run MACRO 1",
+          "action": "command",
+          "params": {
+            "command": "MACRO RUN 1",
+            "lineEnd": "none"
+          }
+        },
+        {
+          "id": "macro_run_2",
+          "label": "Run MACRO 2",
+          "action": "command",
+          "params": {
+            "command": "MACRO RUN 2",
+            "lineEnd": "none"
+          }
+        },
+        {
+          "id": "macro_continue",
+          "label": "Continue MACRO",
+          "action": "command",
+          "params": {
+            "command": "MACRO CONTINUE",
+            "lineEnd": "none"
+          }
+        },
+        {
+          "id": "macro_stop",
+          "label": "Stop MACROS",
+          "action": "command",
+          "params": {
+            "command": "MACRO STOP",
+            "lineEnd": "none"
+          }
+        },
+        {
+          "id": "mv_window_source",
+          "label": "Change MV window source (MV 1 Window 1 -> Source 1)",
+          "action": "command",
+          "params": {
+            "command": "MV 1 WINDOW 1 SOURCE 1",
+            "lineEnd": "none"
+          }
+        },
+        {
+          "id": "ssrc_box_onair_on",
+          "label": "Set SuperSource box On Air (ON)",
+          "action": "command",
+          "params": {
+            "command": "SSRC 1 BOX 1 ONAIR ON",
+            "lineEnd": "none"
+          }
+        },
+        {
+          "id": "ssrc_box_onair_off",
+          "label": "Set SuperSource box On Air (OFF)",
+          "action": "command",
+          "params": {
+            "command": "SSRC 1 BOX 1 ONAIR OFF",
+            "lineEnd": "none"
+          }
+        },
+        {
+          "id": "ssrc_box_source",
+          "label": "Change SuperSource box source (Box 1 -> Source 1)",
+          "action": "command",
+          "params": {
+            "command": "SSRC 1 BOX 1 SOURCE 1",
+            "lineEnd": "none"
+          }
+        },
+        {
+          "id": "ssrc_geom_set",
+          "label": "Change SuperSource geometry properties",
+          "action": "command",
+          "params": {
+            "command": "SSRC 1 BOX 1 GEOM 0.0 0.0 1.0",
+            "lineEnd": "none"
+          }
+        },
+        {
+          "id": "ssrc_geom_offset",
+          "label": "Offset SuperSource geometry properties",
+          "action": "command",
+          "params": {
+            "command": "SSRC 1 BOX 1 GEOM_OFFSET 0.05 -0.05 0.00",
+            "lineEnd": "none"
+          }
+        },
+        {
+          "id": "mediaplayer_still_1",
+          "label": "Change media player source (Still 1)",
+          "action": "command",
+          "params": {
+            "command": "MEDIAPLAYER 1 STILL 1",
+            "lineEnd": "none"
+          }
+        },
+        {
+          "id": "mediaplayer_clip_1",
+          "label": "Change media player source (Clip 1)",
+          "action": "command",
+          "params": {
+            "command": "MEDIAPLAYER 1 CLIP 1",
+            "lineEnd": "none"
+          }
+        },
+        {
+          "id": "mediaplayer_next",
+          "label": "Cycle media player source (Next)",
+          "action": "command",
+          "params": {
+            "command": "MEDIAPLAYER 1 NEXT",
+            "lineEnd": "none"
+          }
+        },
+        {
+          "id": "mediaplayer_prev",
+          "label": "Cycle media player source (Previous)",
+          "action": "command",
+          "params": {
+            "command": "MEDIAPLAYER 1 PREV",
+            "lineEnd": "none"
+          }
+        },
+        {
+          "id": "recording_toggle",
+          "label": "Mini-Pro recording control (TOGGLE)",
+          "action": "command",
+          "params": {
+            "command": "RECORDING TOGGLE",
+            "lineEnd": "none"
+          }
+        },
+        {
+          "id": "recording_start",
+          "label": "Mini-Pro recording control (START)",
+          "action": "command",
+          "params": {
+            "command": "RECORDING START",
+            "lineEnd": "none"
+          }
+        },
+        {
+          "id": "recording_stop",
+          "label": "Mini-Pro recording control (STOP)",
+          "action": "command",
+          "params": {
+            "command": "RECORDING STOP",
+            "lineEnd": "none"
+          }
+        },
+        {
+          "id": "streaming_toggle",
+          "label": "Mini-Pro streaming control (TOGGLE)",
+          "action": "command",
+          "params": {
+            "command": "STREAMING TOGGLE",
+            "lineEnd": "none"
+          }
+        },
+        {
+          "id": "streaming_start",
+          "label": "Mini-Pro streaming control (START)",
+          "action": "command",
+          "params": {
+            "command": "STREAMING START",
+            "lineEnd": "none"
+          }
+        },
+        {
+          "id": "streaming_stop",
+          "label": "Mini-Pro streaming control (STOP)",
+          "action": "command",
+          "params": {
+            "command": "STREAMING STOP",
+            "lineEnd": "none"
+          }
+        },
+        {
+          "id": "audio_classic_toggle",
+          "label": "Classic audio inputs control (Input 1 TOGGLE)",
+          "action": "command",
+          "params": {
+            "command": "AUDIO CLASSIC INPUT 1 TOGGLE",
+            "lineEnd": "none"
+          }
+        },
+        {
+          "id": "audio_classic_on",
+          "label": "Classic audio inputs control (Input 1 ON)",
+          "action": "command",
+          "params": {
+            "command": "AUDIO CLASSIC INPUT 1 ON",
+            "lineEnd": "none"
+          }
+        },
+        {
+          "id": "audio_classic_off",
+          "label": "Classic audio inputs control (Input 1 OFF)",
+          "action": "command",
+          "params": {
+            "command": "AUDIO CLASSIC INPUT 1 OFF",
+            "lineEnd": "none"
+          }
+        },
+        {
+          "id": "audio_fairlight_toggle",
+          "label": "Fairlight audio inputs control (Input 1 TOGGLE)",
+          "action": "command",
+          "params": {
+            "command": "AUDIO FAIRLIGHT INPUT 1 TOGGLE",
+            "lineEnd": "none"
+          }
+        },
+        {
+          "id": "audio_fairlight_on",
+          "label": "Fairlight audio inputs control (Input 1 ON)",
+          "action": "command",
+          "params": {
+            "command": "AUDIO FAIRLIGHT INPUT 1 ON",
+            "lineEnd": "none"
+          }
+        },
+        {
+          "id": "audio_fairlight_off",
+          "label": "Fairlight audio inputs control (Input 1 OFF)",
+          "action": "command",
+          "params": {
+            "command": "AUDIO FAIRLIGHT INPUT 1 OFF",
+            "lineEnd": "none"
+          }
+        }
+      ]
+    },
+    {
+      "id": "resolume-arena",
+      "name": "Resolume Arena",
+      "connectionType": "resolume",
+      "protocol": "osc",
+      "shortcuts": [
+        {
+          "id": "layer1_clip1_connect",
+          "label": "Layer 1 Clip 1 Connect",
+          "action": "clip",
+          "params": {
+            "target": "clip",
+            "command": "composition/layers/1/clips/1/connect"
+          }
+        },
+        {
+          "id": "layer1_clip2_connect",
+          "label": "Layer 1 Clip 2 Connect",
+          "action": "clip",
+          "params": {
+            "target": "clip",
+            "command": "composition/layers/1/clips/2/connect"
+          }
+        },
+        {
+          "id": "layer1_clip1_disconnect",
+          "label": "Layer 1 Clip 1 Disconnect",
+          "action": "clip",
+          "params": {
+            "target": "clip",
+            "command": "composition/layers/1/clips/1/disconnect"
+          }
+        },
+        {
+          "id": "layer1_clear",
+          "label": "Layer 1 Clear",
+          "action": "clip",
+          "params": {
+            "target": "clip",
+            "command": "composition/layers/1/clear"
+          }
+        },
+        {
+          "id": "layer2_clip1_connect",
+          "label": "Layer 2 Clip 1 Connect",
+          "action": "clip",
+          "params": {
+            "target": "clip",
+            "command": "composition/layers/2/clips/1/connect"
+          }
+        },
+        {
+          "id": "layer2_clip2_connect",
+          "label": "Layer 2 Clip 2 Connect",
+          "action": "clip",
+          "params": {
+            "target": "clip",
+            "command": "composition/layers/2/clips/2/connect"
+          }
+        },
+        {
+          "id": "layer2_clear",
+          "label": "Layer 2 Clear",
+          "action": "clip",
+          "params": {
+            "target": "clip",
+            "command": "composition/layers/2/clear"
+          }
+        },
+        {
+          "id": "column1_connect",
+          "label": "Column 1 Connect",
+          "action": "clip",
+          "params": {
+            "target": "column",
+            "command": "composition/columns/1/connect"
+          }
+        },
+        {
+          "id": "column2_connect",
+          "label": "Column 2 Connect",
+          "action": "clip",
+          "params": {
+            "target": "column",
+            "command": "composition/columns/2/connect"
+          }
+        },
+        {
+          "id": "clear_all",
+          "label": "Clear All Layers",
+          "action": "clip",
+          "params": {
+            "target": "clip",
+            "command": "composition/layers/clear"
+          }
+        }
+      ]
+    },
+    {
+      "id": "malighting-grandma3",
+      "name": "MA Lighting grandMA3",
+      "connectionType": "grandma3",
+      "protocol": "osc",
+      "shortcuts": [
+        {
+          "id": "cue_1",
+          "label": "Go Cue 1",
+          "action": "cue",
+          "params": {
+            "cue": "1"
+          }
+        },
+        {
+          "id": "cue_2",
+          "label": "Go Cue 2",
+          "action": "cue",
+          "params": {
+            "cue": "2"
+          }
+        },
+        {
+          "id": "go_plus",
+          "label": "Go+",
+          "action": "command",
+          "params": {
+            "command": "Go+"
+          }
+        },
+        {
+          "id": "go_minus",
+          "label": "Go-",
+          "action": "command",
+          "params": {
+            "command": "Go-"
+          }
+        },
+        {
+          "id": "pause",
+          "label": "Pause",
+          "action": "command",
+          "params": {
+            "command": "Pause"
+          }
+        },
+        {
+          "id": "off_sequence",
+          "label": "Off Sequence 1",
+          "action": "command",
+          "params": {
+            "command": "Off Sequence 1"
+          }
+        },
+        {
+          "id": "full",
+          "label": "Full",
+          "action": "command",
+          "params": {
+            "command": "Full"
+          }
+        },
+        {
+          "id": "blackout",
+          "label": "Blackout",
+          "action": "command",
+          "params": {
+            "command": "Blackout"
+          }
+        },
+        {
+          "id": "executor_go",
+          "label": "Executor 101 Go+",
+          "action": "command",
+          "params": {
+            "command": "Go+ Executor 101"
+          }
+        },
+        {
+          "id": "macro_1",
+          "label": "Go Macro 1",
+          "action": "command",
+          "params": {
+            "command": "Go Macro 1"
+          }
+        }
+      ]
+    },
+    {
+      "id": "generic-http",
+      "name": "Generic HTTP",
+      "connectionType": "http_api",
+      "protocol": "http",
+      "shortcuts": [
+        {
+          "id": "get_root",
+          "label": "GET /",
+          "action": "http",
+          "params": {
+            "method": "GET",
+            "path": "/"
+          }
+        },
+        {
+          "id": "get_health",
+          "label": "GET /health",
+          "action": "http",
+          "params": {
+            "method": "GET",
+            "path": "/health"
+          }
+        },
+        {
+          "id": "get_status",
+          "label": "GET /status",
+          "action": "http",
+          "params": {
+            "method": "GET",
+            "path": "/status"
+          }
+        },
+        {
+          "id": "post_trigger",
+          "label": "POST /trigger",
+          "action": "http",
+          "params": {
+            "method": "POST",
+            "path": "/trigger",
+            "bodyText": "{\"value\":1}"
+          }
+        },
+        {
+          "id": "post_cue",
+          "label": "POST /cue",
+          "action": "http",
+          "params": {
+            "method": "POST",
+            "path": "/cue",
+            "bodyText": "{\"cue\":\"1\"}"
+          }
+        },
+        {
+          "id": "put_state_on",
+          "label": "PUT /state on",
+          "action": "http",
+          "params": {
+            "method": "PUT",
+            "path": "/state",
+            "bodyText": "{\"enabled\":true}"
+          }
+        },
+        {
+          "id": "put_state_off",
+          "label": "PUT /state off",
+          "action": "http",
+          "params": {
+            "method": "PUT",
+            "path": "/state",
+            "bodyText": "{\"enabled\":false}"
+          }
+        },
+        {
+          "id": "patch_value",
+          "label": "PATCH /value",
+          "action": "http",
+          "params": {
+            "method": "PATCH",
+            "path": "/value",
+            "bodyText": "{\"value\":50}"
+          }
+        },
+        {
+          "id": "delete_session",
+          "label": "DELETE /session",
+          "action": "http",
+          "params": {
+            "method": "DELETE",
+            "path": "/session"
+          }
+        },
+        {
+          "id": "post_json_headers",
+          "label": "POST /api/command + headers",
+          "action": "http",
+          "params": {
+            "method": "POST",
+            "path": "/api/command",
+            "bodyText": "{\"command\":\"GO\"}",
+            "headersText": "{\"Content-Type\":\"application/json\"}"
+          }
+        }
+      ]
+    },
+    {
+      "id": "rossvideo-rosstalk",
+      "name": "RossVideo RossTalk",
+      "connectionType": "ross_talk",
+      "protocol": "tcp",
+      "shortcuts": [
+        {
+          "id": "cc_1_1",
+          "label": "CC 1:1",
+          "action": "rosstalk",
+          "params": {
+            "rosstalkMode": "raw",
+            "command": "CC 1:1",
+            "lineEnd": "crlf"
+          }
+        },
+        {
+          "id": "cc_1_2",
+          "label": "CC 1:2",
+          "action": "rosstalk",
+          "params": {
+            "rosstalkMode": "raw",
+            "command": "CC 1:2",
+            "lineEnd": "crlf"
+          }
+        },
+        {
+          "id": "take_1_1_1",
+          "label": "TAKE 1:1:1",
+          "action": "rosstalk",
+          "params": {
+            "rosstalkMode": "raw",
+            "command": "TAKE 1:1:1",
+            "lineEnd": "crlf"
+          }
+        },
+        {
+          "id": "seq_1_1",
+          "label": "SEQ 1:1",
+          "action": "rosstalk",
+          "params": {
+            "rosstalkMode": "raw",
+            "command": "SEQ 1:1",
+            "lineEnd": "crlf"
+          }
+        },
+        {
+          "id": "seqo_1",
+          "label": "SEQO 1",
+          "action": "rosstalk",
+          "params": {
+            "rosstalkMode": "raw",
+            "command": "SEQO 1",
+            "lineEnd": "crlf"
+          }
+        },
+        {
+          "id": "clra",
+          "label": "CLRA",
+          "action": "rosstalk",
+          "params": {
+            "rosstalkMode": "raw",
+            "command": "CLRA",
+            "lineEnd": "crlf"
+          }
+        },
+        {
+          "id": "next",
+          "label": "NEXT",
+          "action": "rosstalk",
+          "params": {
+            "rosstalkMode": "raw",
+            "command": "NEXT",
+            "lineEnd": "crlf"
+          }
+        },
+        {
+          "id": "up",
+          "label": "UP",
+          "action": "rosstalk",
+          "params": {
+            "rosstalkMode": "raw",
+            "command": "UP",
+            "lineEnd": "crlf"
+          }
+        },
+        {
+          "id": "down",
+          "label": "DOWN",
+          "action": "rosstalk",
+          "params": {
+            "rosstalkMode": "raw",
+            "command": "DOWN",
+            "lineEnd": "crlf"
+          }
+        },
+        {
+          "id": "read",
+          "label": "READ",
+          "action": "rosstalk",
+          "params": {
+            "rosstalkMode": "raw",
+            "command": "READ",
+            "lineEnd": "crlf"
+          }
+        }
+      ]
+    },
+    {
+      "id": "bmd-videohub",
+      "name": "BMD Videohub",
+      "connectionType": "videohub",
+      "protocol": "tcp",
+      "shortcuts": [
+        {
+          "id": "route_output1_input1",
+          "label": "Route Output 1 -> Input 1",
+          "action": "command",
+          "params": {
+            "command": "VIDEO OUTPUT ROUTING:\n1 1\n\n",
+            "lineEnd": "none"
+          }
+        },
+        {
+          "id": "route_output1_input2",
+          "label": "Route Output 1 -> Input 2",
+          "action": "command",
+          "params": {
+            "command": "VIDEO OUTPUT ROUTING:\n1 2\n\n",
+            "lineEnd": "none"
+          }
+        },
+        {
+          "id": "route_output2_input1",
+          "label": "Route Output 2 -> Input 1",
+          "action": "command",
+          "params": {
+            "command": "VIDEO OUTPUT ROUTING:\n2 1\n\n",
+            "lineEnd": "none"
+          }
+        },
+        {
+          "id": "route_output2_input2",
+          "label": "Route Output 2 -> Input 2",
+          "action": "command",
+          "params": {
+            "command": "VIDEO OUTPUT ROUTING:\n2 2\n\n",
+            "lineEnd": "none"
+          }
+        },
+        {
+          "id": "query_status",
+          "label": "Query Current Routing",
+          "action": "command",
+          "params": {
+            "command": "VIDEO OUTPUT ROUTING:\n\n",
+            "lineEnd": "none"
+          }
+        },
+        {
+          "id": "query_input_labels",
+          "label": "Query Input Labels",
+          "action": "command",
+          "params": {
+            "command": "INPUT LABELS:\n\n",
+            "lineEnd": "none"
+          }
+        },
+        {
+          "id": "query_output_labels",
+          "label": "Query Output Labels",
+          "action": "command",
+          "params": {
+            "command": "OUTPUT LABELS:\n\n",
+            "lineEnd": "none"
+          }
+        },
+        {
+          "id": "ping",
+          "label": "Ping",
+          "action": "command",
+          "params": {
+            "command": "PING:\n\n",
+            "lineEnd": "none"
+          }
+        }
+      ]
+    },
+    {
+      "id": "generic-swp08",
+      "name": "Generic SWP-08",
+      "connectionType": "swp08",
+      "protocol": "tcp",
+      "shortcuts": [
+        {
+          "id": "input_1",
+          "label": "Select Input 1",
+          "action": "command",
+          "params": {
+            "command": "SWP08 INPUT 1",
+            "lineEnd": "crlf"
+          }
+        },
+        {
+          "id": "input_2",
+          "label": "Select Input 2",
+          "action": "command",
+          "params": {
+            "command": "SWP08 INPUT 2",
+            "lineEnd": "crlf"
+          }
+        },
+        {
+          "id": "input_3",
+          "label": "Select Input 3",
+          "action": "command",
+          "params": {
+            "command": "SWP08 INPUT 3",
+            "lineEnd": "crlf"
+          }
+        },
+        {
+          "id": "input_4",
+          "label": "Select Input 4",
+          "action": "command",
+          "params": {
+            "command": "SWP08 INPUT 4",
+            "lineEnd": "crlf"
+          }
+        },
+        {
+          "id": "next",
+          "label": "Next Input",
+          "action": "command",
+          "params": {
+            "command": "SWP08 NEXT",
+            "lineEnd": "crlf"
+          }
+        },
+        {
+          "id": "prev",
+          "label": "Previous Input",
+          "action": "command",
+          "params": {
+            "command": "SWP08 PREV",
+            "lineEnd": "crlf"
+          }
+        },
+        {
+          "id": "take",
+          "label": "Take",
+          "action": "command",
+          "params": {
+            "command": "SWP08 TAKE",
+            "lineEnd": "crlf"
+          }
+        },
+        {
+          "id": "status",
+          "label": "Status",
+          "action": "command",
+          "params": {
+            "command": "SWP08 STATUS",
+            "lineEnd": "crlf"
+          }
+        }
+      ]
+    },
+    {
+      "id": "obs-studio",
+      "name": "OBS Studio",
+      "connectionType": "obs",
+      "protocol": "ws",
+      "shortcuts": [
+        {
+          "id": "start_stream",
+          "label": "Start Stream",
+          "action": "command",
+          "params": {
+            "command": "StartStream"
+          }
+        },
+        {
+          "id": "stop_stream",
+          "label": "Stop Stream",
+          "action": "command",
+          "params": {
+            "command": "StopStream"
+          }
+        },
+        {
+          "id": "toggle_stream",
+          "label": "Toggle Stream",
+          "action": "command",
+          "params": {
+            "command": "ToggleStream"
+          }
+        },
+        {
+          "id": "start_record",
+          "label": "Start Record",
+          "action": "command",
+          "params": {
+            "command": "StartRecord"
+          }
+        },
+        {
+          "id": "stop_record",
+          "label": "Stop Record",
+          "action": "command",
+          "params": {
+            "command": "StopRecord"
+          }
+        },
+        {
+          "id": "pause_record",
+          "label": "Pause Record",
+          "action": "command",
+          "params": {
+            "command": "PauseRecord"
+          }
+        },
+        {
+          "id": "resume_record",
+          "label": "Resume Record",
+          "action": "command",
+          "params": {
+            "command": "ResumeRecord"
+          }
+        },
+        {
+          "id": "set_program_scene_1",
+          "label": "Set Program Scene 1",
+          "action": "command",
+          "params": {
+            "command": "SetCurrentProgramScene {\"sceneName\":\"Scene 1\"}"
+          }
+        },
+        {
+          "id": "set_preview_scene_2",
+          "label": "Set Preview Scene 2",
+          "action": "command",
+          "params": {
+            "command": "SetCurrentPreviewScene {\"sceneName\":\"Scene 2\"}"
+          }
+        },
+        {
+          "id": "studio_mode_on",
+          "label": "Studio Mode On",
+          "action": "command",
+          "params": {
+            "command": "SetStudioModeEnabled {\"studioModeEnabled\":true}"
+          }
+        },
+        {
+          "id": "mic_mute",
+          "label": "Mic Mute",
+          "action": "command",
+          "params": {
+            "command": "SetInputMute {\"inputName\":\"Mic/Aux\",\"inputMuted\":true}"
+          }
+        },
+        {
+          "id": "mic_unmute",
+          "label": "Mic Unmute",
+          "action": "command",
+          "params": {
+            "command": "SetInputMute {\"inputName\":\"Mic/Aux\",\"inputMuted\":false}"
+          }
+        }
+      ]
+    },
+    {
+      "id": "behringer-x32",
+      "name": "Behringer X32",
+      "connectionType": "x32",
+      "protocol": "osc",
+      "shortcuts": [
+        {
+          "id": "ch1_mute",
+          "label": "CH 1 Mute",
+          "action": "osc",
+          "params": {
+            "address": "/ch/01/mix/on",
+            "argsText": "[0]"
+          }
+        },
+        {
+          "id": "ch1_unmute",
+          "label": "CH 1 Unmute",
+          "action": "osc",
+          "params": {
+            "address": "/ch/01/mix/on",
+            "argsText": "[1]"
+          }
+        },
+        {
+          "id": "ch2_mute",
+          "label": "CH 2 Mute",
+          "action": "osc",
+          "params": {
+            "address": "/ch/02/mix/on",
+            "argsText": "[0]"
+          }
+        },
+        {
+          "id": "ch2_unmute",
+          "label": "CH 2 Unmute",
+          "action": "osc",
+          "params": {
+            "address": "/ch/02/mix/on",
+            "argsText": "[1]"
+          }
+        },
+        {
+          "id": "ch1_fader_0_75",
+          "label": "CH 1 Fader 75%",
+          "action": "osc",
+          "params": {
+            "address": "/ch/01/mix/fader",
+            "argsText": "[0.75]"
+          }
+        },
+        {
+          "id": "ch1_fader_0_00",
+          "label": "CH 1 Fader 0%",
+          "action": "osc",
+          "params": {
+            "address": "/ch/01/mix/fader",
+            "argsText": "[0.0]"
+          }
+        },
+        {
+          "id": "main_fader_1_00",
+          "label": "Main LR 100%",
+          "action": "osc",
+          "params": {
+            "address": "/lr/mix/fader",
+            "argsText": "[1.0]"
+          }
+        },
+        {
+          "id": "main_fader_0_70",
+          "label": "Main LR 70%",
+          "action": "osc",
+          "params": {
+            "address": "/lr/mix/fader",
+            "argsText": "[0.7]"
+          }
+        },
+        {
+          "id": "set_ch1_name",
+          "label": "Set CH1 Name",
+          "action": "osc",
+          "params": {
+            "address": "/ch/01/config/name",
+            "argsText": "[\"Vocal 1\"]"
+          }
+        },
+        {
+          "id": "set_ch2_name",
+          "label": "Set CH2 Name",
+          "action": "osc",
+          "params": {
+            "address": "/ch/02/config/name",
+            "argsText": "[\"Vocal 2\"]"
+          }
+        }
+      ]
+    },
+    {
+      "id": "generic-tcp-udp",
+      "name": "Generic TCP/UDP",
+      "shortcuts": [
+        {
+          "id": "tcp_ping",
+          "label": "TCP PING",
+          "protocol": "tcp",
+          "action": "command",
+          "params": {
+            "command": "PING",
+            "lineEnd": "crlf"
+          }
+        },
+        {
+          "id": "tcp_status",
+          "label": "TCP STATUS",
+          "protocol": "tcp",
+          "action": "command",
+          "params": {
+            "command": "STATUS",
+            "lineEnd": "crlf"
+          }
+        },
+        {
+          "id": "tcp_start",
+          "label": "TCP START",
+          "protocol": "tcp",
+          "action": "command",
+          "params": {
+            "command": "START",
+            "lineEnd": "crlf"
+          }
+        },
+        {
+          "id": "tcp_stop",
+          "label": "TCP STOP",
+          "protocol": "tcp",
+          "action": "command",
+          "params": {
+            "command": "STOP",
+            "lineEnd": "crlf"
+          }
+        },
+        {
+          "id": "udp_ping",
+          "label": "UDP PING",
+          "protocol": "udp",
+          "action": "command",
+          "params": {
+            "command": "PING",
+            "lineEnd": "none"
+          }
+        },
+        {
+          "id": "udp_status",
+          "label": "UDP STATUS",
+          "protocol": "udp",
+          "action": "command",
+          "params": {
+            "command": "STATUS",
+            "lineEnd": "none"
+          }
+        },
+        {
+          "id": "udp_fire",
+          "label": "UDP FIRE",
+          "protocol": "udp",
+          "action": "command",
+          "params": {
+            "command": "FIRE",
+            "lineEnd": "none"
+          }
+        },
+        {
+          "id": "udp_reset",
+          "label": "UDP RESET",
+          "protocol": "udp",
+          "action": "command",
+          "params": {
+            "command": "RESET",
+            "lineEnd": "none"
+          }
+        },
+        {
+          "id": "osc_ping",
+          "label": "OSC /ping",
+          "protocol": "osc",
+          "action": "osc",
+          "params": {
+            "address": "/ping",
+            "argsText": "[1]"
+          }
+        },
+        {
+          "id": "osc_trigger",
+          "label": "OSC /trigger/1",
+          "protocol": "osc",
+          "action": "osc",
+          "params": {
+            "address": "/trigger/1",
+            "argsText": "[]"
+          }
+        }
+      ]
+    },
+    {
+      "id": "rossvideo-xpression",
+      "name": "RossVideo XPression",
+      "connectionType": "ross_xpression",
+      "protocol": "tcp",
+      "shortcuts": [
+        {
+          "id": "clra_clear_all_framebuffers",
+          "label": "Clear all framebuffers (CLRA)",
+          "action": "rosstalk",
+          "params": {
+            "rosstalkMode": "raw",
+            "command": "CLRA",
+            "lineEnd": "crlf"
+          }
+        },
+        {
+          "id": "clfb_clear_framebuffer",
+          "label": "Clear framebuffer (CLFB)",
+          "action": "rosstalk",
+          "params": {
+            "rosstalkMode": "raw",
+            "command": "CLFB 0000",
+            "lineEnd": "crlf"
+          }
+        },
+        {
+          "id": "clfb_clear_layer_in_framebuffer",
+          "label": "Clear layer in framebuffer (CLFB)",
+          "action": "rosstalk",
+          "params": {
+            "rosstalkMode": "raw",
+            "command": "CLFB 0000:0",
+            "lineEnd": "crlf"
+          }
+        },
+        {
+          "id": "swap_all_cued_items_to_all_framebuffers",
+          "label": "Load all cued items to all framebuffers (SWAP)",
+          "action": "rosstalk",
+          "params": {
+            "rosstalkMode": "raw",
+            "command": "SWAP",
+            "lineEnd": "crlf"
+          }
+        },
+        {
+          "id": "swap_cued_items_in_framebuffer",
+          "label": "Load cued items in framebuffer (SWAP)",
+          "action": "rosstalk",
+          "params": {
+            "rosstalkMode": "raw",
+            "command": "SWAP 0",
+            "lineEnd": "crlf"
+          }
+        },
+        {
+          "id": "seqi_take_item_to_air_on_layer",
+          "label": "Load take item to air on layer (SEQI)",
+          "action": "rosstalk",
+          "params": {
+            "rosstalkMode": "raw",
+            "command": "SEQI 0000:0",
+            "lineEnd": "crlf"
+          }
+        },
+        {
+          "id": "take_take_item_to_framebuffer_layer",
+          "label": "Load take item to framebuffer layer (TAKE)",
+          "action": "rosstalk",
+          "params": {
+            "rosstalkMode": "raw",
+            "command": "TAKE 0000:0000:0",
+            "lineEnd": "crlf"
+          }
+        },
+        {
+          "id": "down_move_sequencer_focus_next",
+          "label": "Move sequencer focus to next item (DOWN)",
+          "action": "rosstalk",
+          "params": {
+            "rosstalkMode": "raw",
+            "command": "DOWN",
+            "lineEnd": "crlf"
+          }
+        },
+        {
+          "id": "up_move_sequencer_focus_previous",
+          "label": "Move sequencer focus to previous item (UP)",
+          "action": "rosstalk",
+          "params": {
+            "rosstalkMode": "raw",
+            "command": "UP",
+            "lineEnd": "crlf"
+          }
+        },
+        {
+          "id": "cue_ready_item_into_framebuffer_layer",
+          "label": "Ready item into a framebuffer layer (CUE)",
+          "action": "rosstalk",
+          "params": {
+            "rosstalkMode": "raw",
+            "command": "CUE 0000:0000:0",
+            "lineEnd": "crlf"
+          }
+        },
+        {
+          "id": "uncueall_remove_all_cued_items",
+          "label": "Remove all cued items from the cued state (UNCUEALL)",
+          "action": "rosstalk",
+          "params": {
+            "rosstalkMode": "raw",
+            "command": "UNCUEALL",
+            "lineEnd": "crlf"
+          }
+        },
+        {
+          "id": "uncue_remove_take_item_from_cued_state",
+          "label": "Remove take item from the cued state (UNCUE)",
+          "action": "rosstalk",
+          "params": {
+            "rosstalkMode": "raw",
+            "command": "UNCUE 0000",
+            "lineEnd": "crlf"
+          }
+        },
+        {
+          "id": "resume_all_layers_in_framebuffer",
+          "label": "Resume all layers in framebuffer (RESUME)",
+          "action": "rosstalk",
+          "params": {
+            "rosstalkMode": "raw",
+            "command": "RESUME 0000",
+            "lineEnd": "crlf"
+          }
+        },
+        {
+          "id": "resume_layer_in_framebuffer",
+          "label": "Resume layer in framebuffer (RESUME)",
+          "action": "rosstalk",
+          "params": {
+            "rosstalkMode": "raw",
+            "command": "RESUME 0000:0",
+            "lineEnd": "crlf"
+          }
+        },
+        {
+          "id": "upnext_set_preview_take_item",
+          "label": "Set preview to take item (UPNEXT)",
+          "action": "rosstalk",
+          "params": {
+            "rosstalkMode": "raw",
+            "command": "UPNEXT 0000",
+            "lineEnd": "crlf"
+          }
+        },
+        {
+          "id": "focus_set_sequencer_focus_take_item",
+          "label": "Set sequencer focus to take item (FOCUS)",
+          "action": "rosstalk",
+          "params": {
+            "rosstalkMode": "raw",
+            "command": "FOCUS 0000",
+            "lineEnd": "crlf"
+          }
+        },
+        {
+          "id": "layeroff_take_layer_off_air",
+          "label": "Take layer in framebuffer off air (LAYEROFF)",
+          "action": "rosstalk",
+          "params": {
+            "rosstalkMode": "raw",
+            "command": "LAYEROFF 0000:0",
+            "lineEnd": "crlf"
+          }
+        },
+        {
+          "id": "read_take_sequencer_item_to_air",
+          "label": "Take sequencer item to air (READ)",
+          "action": "rosstalk",
+          "params": {
+            "rosstalkMode": "raw",
+            "command": "READ",
+            "lineEnd": "crlf"
+          }
+        },
+        {
+          "id": "next_take_sequencer_item_advance_next",
+          "label": "Take sequencer item to air and advance next (NEXT)",
+          "action": "rosstalk",
+          "params": {
+            "rosstalkMode": "raw",
+            "command": "NEXT",
+            "lineEnd": "crlf"
+          }
+        },
+        {
+          "id": "seqo_take_take_item_off_air",
+          "label": "Take take item off air (SEQO)",
+          "action": "rosstalk",
+          "params": {
+            "rosstalkMode": "raw",
+            "command": "SEQO 0000",
+            "lineEnd": "crlf"
+          }
+        },
+        {
+          "id": "gpi_trigger_simulated_gpi",
+          "label": "Trigger simulated GPI (GPI)",
+          "action": "rosstalk",
+          "params": {
+            "rosstalkMode": "raw",
+            "command": "GPI 0",
+            "lineEnd": "crlf"
+          }
+        },
+        {
+          "id": "custom_send_custom_command",
+          "label": "Send a custom command",
+          "action": "rosstalk",
+          "params": {
+            "rosstalkMode": "raw",
+            "command": "TYPE COMMAND HERE",
+            "lineEnd": "crlf"
+          }
+        }
+      ]
+    }
+  ]
+}
