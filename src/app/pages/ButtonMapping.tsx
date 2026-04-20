@@ -394,10 +394,9 @@ export default function ButtonMapping() {
     const safeCols = Math.max(1, cols);
     const safeRows = Math.max(1, rows);
     if (previewHostWidth <= 0) return 90;
-    const gap = 3;
-    const gridPad = 6;
+    const gap = 2;
     const reserveForControls = 290;
-    const fromWidth = Math.floor((previewHostWidth - gridPad - (safeCols - 1) * gap) / safeCols);
+    const fromWidth = Math.floor((previewHostWidth - (safeCols - 1) * gap) / safeCols);
     const fromHeight =
       previewHostHeight > 0
         ? Math.floor((Math.max(0, previewHostHeight - reserveForControls) - (safeRows - 1) * gap) / safeRows)
@@ -405,7 +404,7 @@ export default function ButtonMapping() {
     const next = Math.min(fromWidth, fromHeight);
     return Math.max(44, Math.min(STREAMDECK_KEY_SIZE, next));
   }, [cols, previewHostHeight, previewHostWidth, rows]);
-  const deckGridWidth = Math.max(1, cols) * deckKeySize + (Math.max(1, cols) - 1) * 3 + 6;
+  const deckGridWidth = Math.max(1, cols) * deckKeySize + (Math.max(1, cols) - 1) * 2;
 
   const syncKeys = useMemo(
     () =>
@@ -712,12 +711,12 @@ export default function ButtonMapping() {
 
               {/* Deck key grid */}
               <div
-                className="grid p-[3px]"
+                className="grid items-stretch p-[2px]"
                 style={{
                   gridTemplateColumns: `repeat(${Math.max(1, cols)}, ${deckKeySize}px)`,
-                  columnGap: "3px",
-                  rowGap: "3px",
-                  backgroundColor: "transparent",
+                  columnGap: "2px",
+                  rowGap: "2px",
+                  backgroundColor: "rgba(15, 23, 42, 0.35)",
                 }}
               >
                 {deckButtons.map((entry) => {
@@ -729,71 +728,43 @@ export default function ButtonMapping() {
                   const keyTextSize = textSizes[key] ?? 10;
                   const style = keyStyles[key] ?? DEFAULT_KEY_STYLE;
                   const customLabel = style.customLabel.trim();
-                  const deckAddress = `${entry.row}/${entry.col}`;
+                  const deckAddress = `${entry.page}/${entry.row}/${entry.col}`;
                   const hasMappedContent = !!(customLabel || mapped?.label || specialLabel);
                   return (
                     <button
                       key={key}
-                      className="size-controlled-button relative overflow-hidden transition-colors"
+                      className="size-controlled-button border px-[6px] py-[4px] overflow-hidden flex flex-col items-stretch text-center transition-colors"
                       style={{
                         width: deckKeySize,
                         height: deckKeySize,
-                        borderRadius: 4,
-                        outline: isSelected
-                          ? "2px solid rgba(139,92,246,0.9)"
-                          : "none",
-                        outlineOffset: "-1px",
-                        border: "none",
-                        backgroundColor: isSelected
-                          ? style.bgColor
+                        borderColor: isSelected
+                          ? "rgba(139, 92, 246, 0.7)"
                           : hasMappedContent
-                            ? style.bgColor
-                            : style.bgColor,
+                            ? "rgba(139, 92, 246, 0.25)"
+                            : "#2c3138",
+                        backgroundColor: style.bgColor,
                         color: style.textColor,
+                        boxShadow: isSelected ? "0 0 0 1px rgba(139,92,246,0.3)" : "none",
                       }}
                       title={`${entry.page}/${entry.row}/${entry.col}`}
                       onClick={() => handleDeckKeyClick(key)}
                     >
-                      {/* Mapped indicator strip — left edge */}
-                      {hasMappedContent && !isSelected && (
-                        <span
-                          className="absolute left-0 top-0 bottom-0 w-[2px]"
-                          style={{ backgroundColor: "rgba(139,92,246,0.55)" }}
-                        />
-                      )}
-
-                      {/* Selected highlight overlay */}
-                      {isSelected && (
-                        <span
-                          className="absolute inset-0 pointer-events-none"
-                          style={{ backgroundColor: "rgba(139,92,246,0.12)" }}
-                        />
-                      )}
-
-                      {/* Address — top-left */}
                       {style.topbarEnabled ? (
                         <span
-                          className="absolute top-[4px] left-[5px] text-[9px] leading-none tabular-nums"
-                          style={{
-                            color: isSelected
-                              ? "rgba(167,139,250,0.7)"
-                              : "rgba(248,250,252,0.28)",
-                            fontFamily: "monospace",
-                          }}
+                          className="block w-full truncate text-[10px] text-center pb-[2px] border-b"
+                          style={{ borderColor: "rgba(139, 92, 246, 0.5)", color: "rgba(248, 250, 252, 0.6)" }}
                         >
                           {deckAddress}
                         </span>
                       ) : null}
-
-                      {/* Centered label */}
                       <span
-                        className="absolute inset-0 flex items-center justify-center px-[6px]"
+                        className="flex-1 flex items-center break-words line-clamp-4 leading-tight"
                         style={{
                           fontSize: keyTextSize,
-                          lineHeight: 1.2,
+                          lineHeight: 1.1,
+                          justifyContent:
+                            style.textAlign === "left" ? "flex-start" : style.textAlign === "right" ? "flex-end" : "center",
                           textAlign: style.textAlign,
-                          paddingTop: style.topbarEnabled ? "12px" : "0",
-                          wordBreak: "break-word",
                         }}
                       >
                         {customLabel || mapped?.label || specialLabel || ""}
