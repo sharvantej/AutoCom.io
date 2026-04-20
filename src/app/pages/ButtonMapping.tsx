@@ -751,7 +751,7 @@ export default function ButtonMapping() {
                     >
                       {style.topbarEnabled ? (
                         <span
-                          className="block w-full truncate text-[10px] text-center pb-[2px] border-b"
+                          className="block w-full truncate text-[10px] text-left pb-[2px] border-b"
                           style={{ borderColor: "rgba(139, 92, 246, 0.5)", color: "rgba(248, 250, 252, 0.6)" }}
                         >
                           {deckAddress}
