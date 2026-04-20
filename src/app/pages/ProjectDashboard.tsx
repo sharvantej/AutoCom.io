@@ -1742,30 +1742,20 @@ export default function ProjectDashboard() {
               )}
               {showTaskWorkspace && editorItem && (
                 <motion.div
-                  className="absolute inset-0 z-[80] flex items-center justify-center p-[10px]"
-                  style={{ backgroundColor: "rgba(3, 7, 18, 0.88)" }}
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ duration: 0.18 * animationDurationScale, ease: [0.16, 1, 0.3, 1] }}
+                  className="absolute top-0 right-0 bottom-0 z-[80] flex flex-col overflow-hidden border-l"
+                  style={{
+                    width: "30%",
+                    minWidth: 320,
+                    backgroundColor: P.surface900,
+                    borderColor: P.surface600,
+                    boxShadow: "-8px 0 40px rgba(0,0,0,0.45)",
+                  }}
+                  initial={{ opacity: 0, x: 24 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ duration: 0.22 * animationDurationScale, ease: [0.16, 1, 0.3, 1] }}
                   onClick={e => e.stopPropagation()}
                   onMouseDown={e => e.stopPropagation()}
                 >
-                  <motion.div
-                    className="relative flex min-h-0 flex-col overflow-hidden border"
-                    style={{
-                      width: "min(1800px, calc(100% - 20px))",
-                      height: "min(1100px, calc(100% - 20px))",
-                      maxWidth: "100%",
-                      maxHeight: "100%",
-                      backgroundColor: P.surface900,
-                      borderColor: P.surface600,
-                      boxShadow: "0 28px 70px rgba(0,0,0,0.42)",
-                      borderRadius: 0,
-                    }}
-                    initial={{ opacity: 0, y: 10, scale: 0.992 }}
-                    animate={{ opacity: 1, y: 0, scale: 1 }}
-                    transition={{ duration: 0.22 * animationDurationScale, ease: [0.16, 1, 0.3, 1] }}
-                  >
                     <div
                       className="shrink-0 flex items-center border-b"
                       style={{
@@ -1781,7 +1771,7 @@ export default function ProjectDashboard() {
                         Edit Task
                       </span>
                       <button
-                        className="ml-auto flex items-center justify-center transition-colors rounded hover:bg-red-500/20"
+                        className="ml-auto flex items-center justify-center transition-colors hover:bg-red-500/20"
                         style={{ width: 28, height: 28, color: "#f9fafb" }}
                         onClick={closeEditorWindow}
                         title="Close task editor"
@@ -2162,7 +2152,6 @@ export default function ProjectDashboard() {
                       </div>
                     </div>
                   </motion.div>
-                </motion.div>
               )}
               {showFloatingCreate && editorItem && (
                 <div
