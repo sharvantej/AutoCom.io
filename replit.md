@@ -34,7 +34,20 @@ All data is persisted to browser localStorage with these keys:
 - `autocom.logs` - application logs
 - `autocom.project.dashboard.{id}` - per-project dashboard layouts
 - `autocom.button-mapping.v1` - Stream Deck key mappings
+- `autocom.button-feedback.v1` - Per-key active state + colors
+- `autocom.page-names.v1` - Button mapping page names
 - `autocom.theme`, `autocom.font`, `autocom.sidebarOpen` - UI preferences
+
+## ProjectDashboard Task List UX (WorkspaceMode)
+- Empty state: icon + "No tasks yet" + "Configure on right, click Add" hint
+- Task rows: colored left-border per connection device type + row number badge (01, 02...)
+- Live button preview strip in editor header (shows label, BG, FG, font size live)
+- `connectionDeviceColor()` helper maps device type → accent color
+
+## AddTaskPanel UX Improvements
+- Connection type badge: colored pill with dot below the Connection dropdown
+- Wait step ms → seconds: "= Xs" display next to Milliseconds input
+- Workspace footer button hierarchy: Apply + Close (purple, primary) > Apply > Close
 
 ## Deployment
 Configured as a static site deployment:

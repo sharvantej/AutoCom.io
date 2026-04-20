@@ -7106,6 +7106,56 @@ export function AddTaskPanel({
             />
           </Field>
 
+          {selectedDevice ? (
+            <div style={{ marginTop: -6, paddingLeft: 2 }}>
+              <span
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: 5,
+                  fontSize: 10,
+                  padding: "2px 7px",
+                  color: (
+                    selectedDevice === "vmix" ? "#86efac" :
+                    selectedDevice.includes("atem") ? "#93c5fd" :
+                    selectedDevice === "obs" ? "#fdba74" :
+                    selectedDevice === "resolume" ? "#f9a8d4" :
+                    selectedDevice.includes("grandma") ? "#d8b4fe" :
+                    selectedDevice.includes("companion") ? "#67e8f9" :
+                    selectedDevice.includes("ross") ? "#fde68a" :
+                    "#94a3b8"
+                  ),
+                  backgroundColor: (
+                    selectedDevice === "vmix" ? "rgba(34,197,94,0.1)" :
+                    selectedDevice.includes("atem") ? "rgba(59,130,246,0.1)" :
+                    selectedDevice === "obs" ? "rgba(249,115,22,0.1)" :
+                    selectedDevice === "resolume" ? "rgba(236,72,153,0.1)" :
+                    selectedDevice.includes("grandma") ? "rgba(168,85,247,0.1)" :
+                    selectedDevice.includes("companion") ? "rgba(6,182,212,0.1)" :
+                    selectedDevice.includes("ross") ? "rgba(234,179,8,0.1)" :
+                    "rgba(148,163,184,0.1)"
+                  ),
+                  border: "1px solid currentColor",
+                  opacity: 0.8,
+                }}
+              >
+                <span style={{
+                  width: 5, height: 5, borderRadius: "50%",
+                  backgroundColor: "currentColor", flexShrink: 0,
+                }} />
+                {selectedDevice === "vmix" ? "vMix" :
+                  selectedDevice.includes("atem") ? "ATEM" :
+                  selectedDevice === "obs" ? "OBS" :
+                  selectedDevice === "resolume" ? "Resolume" :
+                  selectedDevice.includes("grandma") ? "GrandMA" :
+                  selectedDevice.includes("companion") ? "Companion" :
+                  selectedDevice === "ross_talk" ? "RossTalk" :
+                  selectedDevice === "ross_xpression" ? "XPression" :
+                  selectedDevice.toUpperCase()}
+              </span>
+            </div>
+          ) : null}
+
           {conn ? (
             <div className="flex flex-col" style={{ gap: 6 }}>
               <div style={{ fontSize: 12, color: PURPLE_ACCENT_TEXT, paddingLeft: 2 }}>
@@ -7144,12 +7194,19 @@ export function AddTaskPanel({
                 />
               </Field>
               <Field label="Milliseconds">
-                <input
-                  style={INPUT_STYLE}
-                  value={value}
-                  onChange={e => setValue(e.target.value)}
-                  placeholder="500"
-                />
+                <div className="flex items-center gap-[8px]">
+                  <input
+                    style={{ ...INPUT_STYLE, flex: 1 }}
+                    value={value}
+                    onChange={e => setValue(e.target.value)}
+                    placeholder="500"
+                  />
+                  {value && Number.isFinite(Number(value)) && Number(value) > 0 ? (
+                    <span style={{ fontSize: 11, color: P.muted500, flexShrink: 0, minWidth: 36, textAlign: "right" }}>
+                      = {(Number(value) / 1000 % 1 === 0 ? (Number(value) / 1000).toFixed(0) : (Number(value) / 1000).toFixed(2).replace(/0+$/, ""))}s
+                    </span>
+                  ) : null}
+                </div>
               </Field>
             </>
           ) : null}
@@ -9125,6 +9182,22 @@ export function AddTaskPanel({
             </div>
             <div className="flex items-center gap-[6px]">
               <button
+                className={`flex items-center justify-center transition-colors rounded ${ACTION_HOVER_OUTLINE_CLASS}`}
+                data-haptic="strong"
+                style={{
+                  height: PANEL_BUTTON_HEIGHT,
+                  padding: "0 14px",
+                  backgroundColor: "#1e1248",
+                  border: "1px solid #6d28d9",
+                  fontSize: 12,
+                  color: "#ede9fe",
+                  fontWeight: 500,
+                }}
+                onClick={handleApplyAndClose}
+              >
+                Apply + Close
+              </button>
+              <button
                 className={`flex items-center justify-center hover:bg-[rgba(255,255,255,0.05)] transition-colors rounded ${ACTION_HOVER_OUTLINE_CLASS}`}
                 data-haptic="strong"
                 style={{
@@ -9137,22 +9210,7 @@ export function AddTaskPanel({
                 }}
                 onClick={handleSave}
               >
-                Apply Changes
-              </button>
-              <button
-                className={`flex items-center justify-center hover:bg-[rgba(255,255,255,0.05)] transition-colors rounded ${ACTION_HOVER_OUTLINE_CLASS}`}
-                data-haptic="strong"
-                style={{
-                  height: PANEL_BUTTON_HEIGHT,
-                  padding: "0 14px",
-                  backgroundColor: ACTION_APPLY_CLOSE_BG_SOFT,
-                  border: `1px solid ${ACTION_APPLY_CLOSE_BORDER}`,
-                  fontSize: 12,
-                  color: ACTION_CLOSE_TEXT,
-                }}
-                onClick={handleApplyAndClose}
-              >
-                Apply and Close
+                Apply
               </button>
               <button
                 className={`flex items-center justify-center hover:bg-[rgba(255,255,255,0.05)] transition-colors rounded ${ACTION_HOVER_OUTLINE_CLASS}`}
@@ -9163,7 +9221,7 @@ export function AddTaskPanel({
                   backgroundColor: ACTION_CLOSE_BG,
                   border: `1px solid ${ACTION_CLOSE_BORDER}`,
                   fontSize: 12,
-                  color: ACTION_CLOSE_TEXT,
+                  color: P.muted500,
                 }}
                 onClick={onClose}
               >

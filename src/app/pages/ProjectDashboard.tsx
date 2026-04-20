@@ -182,6 +182,18 @@ function taskLabel(t: TaskEntry, connection: Connection | null = null): string {
 function isTaskEnabled(task: TaskEntry): boolean {
   return task.enabled !== false;
 }
+function connectionDeviceColor(device: string): string {
+  const d = String(device ?? "").trim().toLowerCase();
+  if (d === "vmix" || d.includes("vmix")) return "#22c55e";
+  if (d === "atem" || d.includes("atem")) return "#3b82f6";
+  if (d === "obs") return "#f97316";
+  if (d === "resolume") return "#ec4899";
+  if (d.includes("grandma")) return "#a855f7";
+  if (d.includes("companion")) return "#06b6d4";
+  if (d.includes("ross")) return "#eab308";
+  if (d.includes("http") || d.includes("https")) return "#64748b";
+  return "#6366f1";
+}
 function isWaitTask(task: TaskEntry): boolean {
   const params = task.params as unknown;
   if (params && typeof params === "object" && !Array.isArray(params)) {
@@ -1873,6 +1885,28 @@ export default function ProjectDashboard() {
                           />
                         </div>
                       </div>
+                      {/* Live button preview */}
+                      <div className="flex items-center gap-[10px] mt-[12px]">
+                        <span style={{ fontSize: 11, color: P.muted500, flexShrink: 0, whiteSpace: "nowrap" }}>Preview</span>
+                        <div
+                          className="flex-1 flex items-center overflow-hidden"
+                          style={{
+                            height: 34,
+                            backgroundColor: editorItem.bgColor || "#101828",
+                            color: editorItem.fgColor || "#f9fafb",
+                            fontSize: editorItem.fontSize || 14,
+                            justifyContent: editorItem.textAlign === "left" ? "flex-start" : editorItem.textAlign === "right" ? "flex-end" : "center",
+                            paddingLeft: 10,
+                            paddingRight: 10,
+                            border: `1px solid ${P.surface600}`,
+                          }}
+                        >
+                          {editorItem.label
+                            ? <span className="truncate">{editorItem.label}</span>
+                            : <span style={{ color: P.muted500, fontSize: 11, fontStyle: "italic" }}>Button label</span>
+                          }
+                        </div>
+                      </div>
                     </div>
                     <div
                       ref={workspaceSplitHostRef}
@@ -1902,29 +1936,41 @@ export default function ProjectDashboard() {
                           <div className="flex-1 overflow-y-auto app-scrollbar px-4 pb-4">
                             {workspaceTasks.length === 0 ? (
                               <div
-                                className="flex h-[120px] items-center justify-center text-center"
-                                style={{
-                                  color: P.muted500,
-                                  fontSize: 11,
-                                  backgroundColor: P.surface900,
-                                }}
+                                className="flex flex-col items-center justify-center gap-[8px] py-10 text-center"
+                                style={{ color: P.muted500 }}
                               >
-                                No tasks yet.
+                                <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.25" strokeLinecap="round" strokeLinejoin="round">
+                                  <rect x="3" y="4" width="18" height="4" rx="1"/>
+                                  <rect x="3" y="10" width="18" height="4" rx="1"/>
+                                  <rect x="3" y="16" width="12" height="4" rx="1"/>
+                                </svg>
+                                <span style={{ fontSize: 12, color: P.muted500 }}>No tasks yet</span>
+                                <span style={{ fontSize: 11, maxWidth: 148, lineHeight: 1.5 }}>
+                                  Configure a task on the right, then click <strong style={{ color: "#c4b5fd" }}>Add</strong>
+                                </span>
                               </div>
                             ) : (
                               <div className="flex flex-col gap-[8px]">
-                                {workspaceTasks.map((task) => {
+                                {workspaceTasks.map((task, taskIndex) => {
                                   const isSelected = selectedDraftTaskId === task.id;
                                   const isEnabled = isTaskEnabled(task);
                                   const isDragged = draggingTaskId === task.id;
                                   const isDropTarget = Boolean(draggingTaskId) && !isDragged && hoverDropTaskId === task.id;
                                   const resolvedConnection = resolveConnectionForTask(task, connections);
+                                  const accentColor = isWaitTask(task)
+                                    ? "#6b7280"
+                                    : (resolvedConnection
+                                        ? connectionDeviceColor(resolvedConnection.device)
+                                        : "#334155");
                                   return (
                                   <div
                                     key={task.id}
-                                    className="px-3 py-2 cursor-pointer transition-colors"
+                                    className="py-2 cursor-pointer transition-colors overflow-hidden"
                                     style={{
+                                      paddingLeft: 10,
+                                      paddingRight: 12,
                                       backgroundColor: P.surface900,
+                                      borderLeft: `3px solid ${accentColor}`,
                                       boxShadow: isDropTarget
                                         ? "inset 0 0 0 1px rgba(142,81,255,0.95), 0 0 0 1px rgba(142,81,255,0.35)"
                                         : (isSelected ? "inset 0 0 0 1px rgba(142,81,255,0.55)" : "none"),
@@ -1957,6 +2003,19 @@ export default function ProjectDashboard() {
                                     }}
                                   >
                                     <div className="flex items-center gap-2">
+                                      <span
+                                        className="shrink-0 tabular-nums"
+                                        style={{
+                                          fontSize: 10,
+                                          fontWeight: 600,
+                                          width: 18,
+                                          textAlign: "right",
+                                          color: isEnabled ? accentColor : "#475569",
+                                          opacity: 0.85,
+                                        }}
+                                      >
+                                        {String(taskIndex + 1).padStart(2, "0")}
+                                      </span>
                                       <span
                                         className="shrink-0"
                                         style={{ color: isEnabled ? "#94a3b8" : "#64748b", cursor: isDragged ? "grabbing" : "grab" }}
