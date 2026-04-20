@@ -164,7 +164,7 @@ export default function ButtonMapping() {
   const [mappings, setMappings] = useState<MappingRecord>(() => safeReadMappings());
   const [textSizes, setTextSizes] = useState<TextSizeRecord>(() => safeReadTextSizes());
   const [keyStyles, setKeyStyles] = useState<KeyStyleRecord>(() => safeReadKeyStyles());
-  const [textSizeInput, setTextSizeInput] = useState("10");
+  const [textSizeInput, setTextSizeInput] = useState("14");
   const [dragOverKey, setDragOverKey] = useState<string | null>(null);
   const [draggingId, setDraggingId] = useState<string | null>(null);
   const gridHostRef = useRef<HTMLDivElement | null>(null);
@@ -332,7 +332,7 @@ export default function ButtonMapping() {
         address: `${entry.page}/${entry.row}/${entry.col}`,
         label: resolvedLabel, mapped: resolvedLabel.length > 0,
         selected: selectedDeckKey === entry.key,
-        textSize: textSizes[entry.key] ?? 10,
+        textSize: textSizes[entry.key] ?? 14,
         textColor: hexToRgb(style.textColor), bgColor: hexToRgb(style.bgColor),
         textAlign: style.textAlign, topbarEnabled: style.topbarEnabled,
       };
@@ -391,8 +391,8 @@ export default function ButtonMapping() {
   };
 
   useEffect(() => {
-    if (!selectedDeckKey) { setTextSizeInput("10"); return; }
-    setTextSizeInput(String(textSizes[selectedDeckKey] ?? 10));
+    if (!selectedDeckKey) { setTextSizeInput("14"); return; }
+    setTextSizeInput(String(textSizes[selectedDeckKey] ?? 14));
   }, [selectedDeckKey, textSizes]);
 
   const saveSelectedTextSize = () => {
