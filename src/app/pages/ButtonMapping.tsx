@@ -659,9 +659,9 @@ export default function ButtonMapping() {
                         <button
                           className="shrink-0 flex items-center justify-center leading-none transition-opacity"
                           style={{
-                            width: 12,
-                            height: 12,
-                            fontSize: 10,
+                            width: 18,
+                            height: 18,
+                            fontSize: 15,
                             color: "rgba(248,250,252,0.5)",
                             marginLeft: 2,
                           }}
@@ -681,9 +681,9 @@ export default function ButtonMapping() {
                     <button
                       className="absolute top-[3px] right-[4px] flex items-center justify-center leading-none z-10 transition-opacity"
                       style={{
-                        width: 13,
-                        height: 13,
-                        fontSize: 11,
+                        width: 19,
+                        height: 19,
+                        fontSize: 16,
                         color: "rgba(248,250,252,0.45)",
                       }}
                       title="Remove"
