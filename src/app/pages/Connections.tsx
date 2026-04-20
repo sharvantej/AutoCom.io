@@ -2490,7 +2490,7 @@ function ConnectionModal({
               {submitting ? "Saving..." : submitLabel}
             </motion.button>
           </div>
-        </div>, document.body
+        </div>
       </motion.div>
     </motion.div>
   );
