@@ -1158,8 +1158,12 @@ export default function Connections() {
 
           <div className="mt-[16px] flex flex-col gap-[2px]">
             {connections.length === 0 && (
-              <div className="flex items-center px-[12px] text-[12px]" style={{ height: 35, color: t.textMuted }}>
-                No connections found.
+              <div className="flex flex-col items-center justify-center py-[60px] px-[24px] text-center">
+                <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ color: t.textMuted, marginBottom: 16, opacity: 0.5 }}>
+                  <path d="M12 22V12" /><path d="m17 7-5-5-5 5" /><path d="M5 12H2" /><path d="M22 12h-3" /><path d="m7 17 5 5 5-5" /><path d="M12 2v4" />
+                </svg>
+                <span className="text-[14px] mb-[8px]" style={{ color: t.textPrimary }}>No connections yet</span>
+                <span className="text-[13px]" style={{ color: t.textMuted }}>Add a connection to link your devices and control protocols.</span>
               </div>
             )}
 
