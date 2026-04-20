@@ -2522,7 +2522,7 @@ function TaskRow({ task, index, total, onChange, onDelete, onMove, onDuplicate }
           height:          20,
           backgroundColor: "transparent",
           border:          "0.5px solid transparent",
-          borderRadius:    2,
+          borderRadius: 0,
           fontSize:        11,
           color:           isEnabled ? P.muted500 : "#6b7280",
           flexShrink:      0,
@@ -7180,7 +7180,7 @@ export function AddTaskPanel({
                   padding: 12,
                   backgroundColor: P.surface900,
                   border: `0.5px solid ${P.surface700}`,
-                  borderRadius: 4,
+                  borderRadius: 0,
                 }}
               >
 
@@ -7357,7 +7357,7 @@ export function AddTaskPanel({
               )}
 
               <div
-                className="rounded-sm border"
+                className="rounded-none border"
                 style={{
                   borderColor: isRossTalkConnection ? "transparent" : P.surface700,
                   backgroundColor: isRossTalkConnection ? "transparent" : P.surface900,
@@ -7693,7 +7693,7 @@ export function AddTaskPanel({
                 </>
               ) : isRossTalkConnection ? (
                 <div
-                  className="rounded-sm border px-[10px] py-[10px]"
+                  className="rounded-none border px-[10px] py-[10px]"
                   style={{ borderColor: P.surface700, backgroundColor: P.surface900 }}
                 >
                   <div style={{ fontSize: 12, color: P.text50, marginBottom: 10 }}>
@@ -7711,7 +7711,7 @@ export function AddTaskPanel({
                           />
                         </InlineField>
                         <div
-                          className="rounded-sm border px-[10px] py-[8px]"
+                          className="rounded-none border px-[10px] py-[8px]"
                           style={{
                             borderColor: P.surface700,
                             backgroundColor: P.ink950,
@@ -7728,7 +7728,7 @@ export function AddTaskPanel({
                             {ROSS_TALK_CUSTOM_COMMAND_REFERENCE.map((entry) => (
                               <div
                                 key={`${entry.command}-${entry.syntax}`}
-                                className="rounded-sm border px-[8px] py-[6px]"
+                                className="rounded-none border px-[8px] py-[6px]"
                                 style={{ borderColor: P.surface700, backgroundColor: P.surface900 }}
                               >
                                 <div style={{ color: P.text50, fontSize: 11 }}>{entry.command}</div>
@@ -7988,7 +7988,7 @@ export function AddTaskPanel({
                         />
                       </Field>
                       <div
-                        className="rounded-sm border px-[10px] py-[8px]"
+                        className="rounded-none border px-[10px] py-[8px]"
                         style={{
                           borderColor: P.surface700,
                           backgroundColor: P.surface900,
@@ -8004,7 +8004,7 @@ export function AddTaskPanel({
                           {ROSS_XPRESSION_CUSTOM_COMMAND_REFERENCE.map((entry) => (
                             <div
                               key={entry.command + entry.syntax}
-                              className="rounded-sm border px-[8px] py-[6px]"
+                              className="rounded-none border px-[8px] py-[6px]"
                               style={{ borderColor: P.surface700, backgroundColor: P.ink950 }}
                             >
                               <div style={{ color: P.text50, fontSize: 11 }}>
@@ -8083,7 +8083,7 @@ export function AddTaskPanel({
                     </span>
                     <button
                       type="button"
-                      className={`rounded-sm border px-[8px] py-[4px] text-[11px] ${ACTION_HOVER_OUTLINE_CLASS}`}
+                      className={`rounded-none border px-[8px] py-[4px] text-[11px] ${ACTION_HOVER_OUTLINE_CLASS}`}
                       style={{
                         borderColor: P.surface600,
                         backgroundColor: P.ink950,
@@ -8113,7 +8113,7 @@ export function AddTaskPanel({
                             <button
                               key={levelValue}
                               type="button"
-                              className="rounded-sm border px-[8px] py-[4px] text-[11px] transition-colors"
+                              className="rounded-none border px-[8px] py-[4px] text-[11px] transition-colors"
                               style={{
                                 borderColor: checked ? "#8E51FF" : P.surface600,
                                 backgroundColor: checked ? "rgba(142,81,255,0.2)" : P.ink950,
@@ -8222,7 +8222,7 @@ export function AddTaskPanel({
                     </span>
                     <button
                       type="button"
-                      className={`rounded-sm border px-[8px] py-[4px] text-[11px] ${ACTION_HOVER_OUTLINE_CLASS}`}
+                      className={`rounded-none border px-[8px] py-[4px] text-[11px] ${ACTION_HOVER_OUTLINE_CLASS}`}
                       style={{
                         borderColor: P.surface600,
                         backgroundColor: P.ink950,
@@ -8683,7 +8683,7 @@ export function AddTaskPanel({
                   </Field>
                   <div className="flex items-center gap-[8px]">
                     <button
-                      className={`flex items-center justify-center transition-colors rounded ${ACTION_HOVER_OUTLINE_CLASS}`}
+                      className={`flex items-center justify-center transition-colors rounded-none ${ACTION_HOVER_OUTLINE_CLASS}`}
                       style={{
                         height: 30,
                         padding: "0 12px",
@@ -9084,7 +9084,7 @@ export function AddTaskPanel({
                     || funcName === "Bus, Main Stereo, Mono Send level"
                   ) ? (
                     <div
-                      className="rounded-sm border px-[10px] py-[8px]"
+                      className="rounded-none border px-[10px] py-[8px]"
                       style={{
                         borderColor: P.surface700,
                         backgroundColor: P.surface900,
@@ -9144,7 +9144,7 @@ export function AddTaskPanel({
               {showWorkspaceTaskActions ? (
                 <>
                   <button
-                    className={`flex items-center justify-center hover:bg-[rgba(255,255,255,0.05)] transition-colors rounded ${ACTION_HOVER_OUTLINE_CLASS}`}
+                    className={`flex items-center justify-center hover:bg-[rgba(255,255,255,0.05)] transition-colors rounded-none ${ACTION_HOVER_OUTLINE_CLASS}`}
                     data-haptic="strong"
                     style={{
                       height: PANEL_BUTTON_HEIGHT,
@@ -9161,7 +9161,7 @@ export function AddTaskPanel({
                     Add
                   </button>
                   <button
-                    className={`flex items-center justify-center hover:bg-[rgba(255,255,255,0.05)] transition-colors rounded ${ACTION_HOVER_OUTLINE_CLASS}`}
+                    className={`flex items-center justify-center hover:bg-[rgba(255,255,255,0.05)] transition-colors rounded-none ${ACTION_HOVER_OUTLINE_CLASS}`}
                     data-haptic="strong"
                     style={{
                       height: PANEL_BUTTON_HEIGHT,
@@ -9182,7 +9182,7 @@ export function AddTaskPanel({
             </div>
             <div className="flex items-center gap-[6px]">
               <button
-                className={`flex items-center justify-center transition-colors rounded ${ACTION_HOVER_OUTLINE_CLASS}`}
+                className={`flex items-center justify-center transition-colors rounded-none ${ACTION_HOVER_OUTLINE_CLASS}`}
                 data-haptic="strong"
                 style={{
                   height: PANEL_BUTTON_HEIGHT,
@@ -9198,7 +9198,7 @@ export function AddTaskPanel({
                 Apply + Close
               </button>
               <button
-                className={`flex items-center justify-center hover:bg-[rgba(255,255,255,0.05)] transition-colors rounded ${ACTION_HOVER_OUTLINE_CLASS}`}
+                className={`flex items-center justify-center hover:bg-[rgba(255,255,255,0.05)] transition-colors rounded-none ${ACTION_HOVER_OUTLINE_CLASS}`}
                 data-haptic="strong"
                 style={{
                   height: PANEL_BUTTON_HEIGHT,
@@ -9213,7 +9213,7 @@ export function AddTaskPanel({
                 Apply
               </button>
               <button
-                className={`flex items-center justify-center hover:bg-[rgba(255,255,255,0.05)] transition-colors rounded ${ACTION_HOVER_OUTLINE_CLASS}`}
+                className={`flex items-center justify-center hover:bg-[rgba(255,255,255,0.05)] transition-colors rounded-none ${ACTION_HOVER_OUTLINE_CLASS}`}
                 data-haptic="strong"
                 style={{
                   height: PANEL_BUTTON_HEIGHT,
