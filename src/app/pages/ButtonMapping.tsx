@@ -394,8 +394,8 @@ export default function ButtonMapping() {
     const safeCols = Math.max(1, cols);
     const safeRows = Math.max(1, rows);
     if (previewHostWidth <= 0) return 90;
-    const gap = 6;
-    const gridPad = 20;
+    const gap = 3;
+    const gridPad = 6;
     const reserveForControls = 290;
     const fromWidth = Math.floor((previewHostWidth - gridPad - (safeCols - 1) * gap) / safeCols);
     const fromHeight =
@@ -405,7 +405,7 @@ export default function ButtonMapping() {
     const next = Math.min(fromWidth, fromHeight);
     return Math.max(44, Math.min(STREAMDECK_KEY_SIZE, next));
   }, [cols, previewHostHeight, previewHostWidth, rows]);
-  const deckGridWidth = Math.max(1, cols) * deckKeySize + (Math.max(1, cols) - 1) * 6 + 20;
+  const deckGridWidth = Math.max(1, cols) * deckKeySize + (Math.max(1, cols) - 1) * 3 + 6;
 
   const syncKeys = useMemo(
     () =>
@@ -712,13 +712,12 @@ export default function ButtonMapping() {
 
               {/* Deck key grid */}
               <div
-                className="grid rounded-[18px] p-[10px]"
+                className="grid p-[3px]"
                 style={{
                   gridTemplateColumns: `repeat(${Math.max(1, cols)}, ${deckKeySize}px)`,
-                  columnGap: "6px",
-                  rowGap: "6px",
-                  backgroundColor: "#0a0c10",
-                  boxShadow: "inset 0 2px 12px rgba(0,0,0,0.6)",
+                  columnGap: "3px",
+                  rowGap: "3px",
+                  backgroundColor: "transparent",
                 }}
               >
                 {deckButtons.map((entry) => {
@@ -735,30 +734,52 @@ export default function ButtonMapping() {
                   return (
                     <button
                       key={key}
-                      className="size-controlled-button relative overflow-hidden transition-all"
+                      className="size-controlled-button relative overflow-hidden transition-colors"
                       style={{
                         width: deckKeySize,
                         height: deckKeySize,
-                        borderRadius: Math.max(8, Math.round(deckKeySize * 0.18)),
-                        border: isSelected
-                          ? "2px solid rgba(139,92,246,0.85)"
+                        borderRadius: 4,
+                        outline: isSelected
+                          ? "2px solid rgba(139,92,246,0.9)"
+                          : "none",
+                        outlineOffset: "-1px",
+                        border: "none",
+                        backgroundColor: isSelected
+                          ? style.bgColor
                           : hasMappedContent
-                            ? "2px solid rgba(139,92,246,0.3)"
-                            : "2px solid rgba(255,255,255,0.07)",
-                        backgroundColor: style.bgColor,
+                            ? style.bgColor
+                            : style.bgColor,
                         color: style.textColor,
-                        boxShadow: isSelected
-                          ? "0 0 0 3px rgba(139,92,246,0.2), inset 0 1px 0 rgba(255,255,255,0.06), 0 4px 8px rgba(0,0,0,0.5)"
-                          : "inset 0 1px 0 rgba(255,255,255,0.06), 0 4px 8px rgba(0,0,0,0.5)",
                       }}
                       title={`${entry.page}/${entry.row}/${entry.col}`}
                       onClick={() => handleDeckKeyClick(key)}
                     >
-                      {/* Address badge — top-left corner */}
+                      {/* Mapped indicator strip — left edge */}
+                      {hasMappedContent && !isSelected && (
+                        <span
+                          className="absolute left-0 top-0 bottom-0 w-[2px]"
+                          style={{ backgroundColor: "rgba(139,92,246,0.55)" }}
+                        />
+                      )}
+
+                      {/* Selected highlight overlay */}
+                      {isSelected && (
+                        <span
+                          className="absolute inset-0 pointer-events-none"
+                          style={{ backgroundColor: "rgba(139,92,246,0.12)" }}
+                        />
+                      )}
+
+                      {/* Address — top-left */}
                       {style.topbarEnabled ? (
                         <span
-                          className="absolute top-[5px] left-[6px] text-[9px] leading-none font-mono tabular-nums"
-                          style={{ color: "rgba(248,250,252,0.38)" }}
+                          className="absolute top-[4px] left-[5px] text-[9px] leading-none tabular-nums"
+                          style={{
+                            color: isSelected
+                              ? "rgba(167,139,250,0.7)"
+                              : "rgba(248,250,252,0.28)",
+                            fontFamily: "monospace",
+                          }}
                         >
                           {deckAddress}
                         </span>
@@ -766,26 +787,17 @@ export default function ButtonMapping() {
 
                       {/* Centered label */}
                       <span
-                        className="absolute inset-0 flex items-center justify-center px-[8px] break-words line-clamp-4 leading-tight"
+                        className="absolute inset-0 flex items-center justify-center px-[6px]"
                         style={{
                           fontSize: keyTextSize,
-                          lineHeight: 1.15,
+                          lineHeight: 1.2,
                           textAlign: style.textAlign,
-                          paddingTop: style.topbarEnabled ? "14px" : "0",
+                          paddingTop: style.topbarEnabled ? "12px" : "0",
+                          wordBreak: "break-word",
                         }}
                       >
                         {customLabel || mapped?.label || specialLabel || ""}
                       </span>
-
-                      {/* Subtle top gloss */}
-                      <span
-                        className="absolute inset-x-0 top-0 pointer-events-none"
-                        style={{
-                          height: "35%",
-                          borderRadius: `${Math.max(8, Math.round(deckKeySize * 0.18))}px ${Math.max(8, Math.round(deckKeySize * 0.18))}px 60% 60%`,
-                          background: "linear-gradient(to bottom, rgba(255,255,255,0.07) 0%, transparent 100%)",
-                        }}
-                      />
                     </button>
                   );
                 })}
