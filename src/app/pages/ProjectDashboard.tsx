@@ -1760,7 +1760,7 @@ export default function ProjectDashboard() {
                       backgroundColor: P.surface900,
                       borderColor: P.surface600,
                       boxShadow: "0 28px 70px rgba(0,0,0,0.42)",
-                      borderRadius: 8,
+                      borderRadius: 0,
                     }}
                     initial={{ opacity: 0, y: 10, scale: 0.992 }}
                     animate={{ opacity: 1, y: 0, scale: 1 }}
