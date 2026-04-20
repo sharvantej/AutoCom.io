@@ -469,12 +469,12 @@ export default function ButtonMapping() {
       {/* ── LEFT PANEL: Draggable button library ── */}
       <div
         className="flex w-[200px] shrink-0 flex-col border-r h-full"
-        style={{ borderColor: t.topbarBorder, backgroundColor: t.bgSidebar }}
+        style={{ borderColor: t.topbarBorder, backgroundColor: t.bgContent }}
       >
         {/* Header */}
         <div
           className="h-[44px] shrink-0 flex items-center px-3 border-b"
-          style={{ borderColor: t.topbarBorder }}
+          style={{ borderColor: t.topbarBorder, backgroundColor: t.bgContent }}
         >
           <span className="text-[13px] font-semibold" style={{ color: t.textPrimary }}>Buttons</span>
         </div>
@@ -842,7 +842,7 @@ function DraggableChip({
       className="px-2 py-1.5 border text-[12px] truncate select-none transition-all"
       style={{
         borderColor: isDragging ? "rgba(139,92,246,0.7)" : t.inputBorder,
-        backgroundColor: isDragging ? t.navActive : t.rowBg,
+        backgroundColor: isDragging ? t.navActive : t.bgContent,
         color: isDragging ? t.textPrimary : t.textSecondary,
         cursor: "grab",
         opacity: isDragging ? 0.5 : 1,
