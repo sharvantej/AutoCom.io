@@ -473,6 +473,8 @@ export default function ProjectDashboard() {
   const [executingButtonId, setExecutingButtonId] = useState<string | null>(null);
   const [tallyButtonId, setTallyButtonId] = useState<string | null>(null);
   const [dashboardSaveStatus, setDashboardSaveStatus] = useState<DashboardSaveStatus>("idle");
+  const [workspaceWindowPos, setWorkspaceWindowPos] = useState<{ x: number; y: number } | null>(null);
+  const workspaceWindowRef = useRef<HTMLDivElement | null>(null);
   const [workspaceWindowSize, setWorkspaceWindowSize] = useState(() => ({
     width: 994,
     height: 602,
@@ -490,6 +492,7 @@ export default function ProjectDashboard() {
   const dragRef    = useRef<DragState | null>(null);
   const newDragRef = useRef<NewItemDrag | null>(null);
   const editorDragRef = useRef<EditorWindowDrag | null>(null);
+  const workspaceDragRef = useRef<EditorWindowDrag | null>(null);
   const windowResizeRef = useRef<WindowResizeDrag | null>(null);
   const workspaceSplitDragRef = useRef<{ mx0: number; ratio0: number; width0: number } | null>(null);
   const saveStatusResetTimerRef = useRef<number | null>(null);
@@ -626,6 +629,8 @@ export default function ProjectDashboard() {
     setSelectedDraftTaskId(null);
     setEditingDraftTaskId(null);
     windowResizeRef.current = null;
+    workspaceDragRef.current = null;
+    setWorkspaceWindowPos(null);
   }, []);
   const duplicateCanvasItemById = useCallback((itemId: string): string | null => {
     const source = items.find((item) => item.id === itemId);
@@ -1151,6 +1156,18 @@ export default function ProjectDashboard() {
           y: drag.y0 + dragDy,
         }, canvasRef.current));
       }
+      const wdrag = workspaceDragRef.current;
+      if (wdrag) {
+        const dx = e.clientX - wdrag.mx0;
+        const dy = e.clientY - wdrag.my0;
+        const canvas = canvasRef.current;
+        const maxX = canvas ? canvas.clientWidth - 100 : 9999;
+        const maxY = canvas ? canvas.clientHeight - 40 : 9999;
+        setWorkspaceWindowPos({
+          x: Math.max(0, Math.min(maxX, wdrag.x0 + dx)),
+          y: Math.max(0, Math.min(maxY, wdrag.y0 + dy)),
+        });
+      }
       const resize = windowResizeRef.current;
       if (resize) {
         const resizeDx = e.clientX - resize.mx0;
@@ -1181,6 +1198,7 @@ export default function ProjectDashboard() {
     };
     const mu = () => {
       editorDragRef.current = null;
+      workspaceDragRef.current = null;
       windowResizeRef.current = null;
       workspaceSplitDragRef.current = null;
     };
@@ -1742,22 +1760,39 @@ export default function ProjectDashboard() {
               )}
               {showTaskWorkspace && editorItem && (
                 <div
-                  className="absolute inset-0 z-[80] flex items-center justify-center"
-                  style={{ backgroundColor: "rgba(3,7,18,0.82)" }}
+                  className="absolute inset-0 z-[80]"
+                  style={{ backgroundColor: "rgba(3,7,18,0.55)" }}
                   onClick={e => e.stopPropagation()}
                   onMouseDown={e => e.stopPropagation()}
                 >
                 <motion.div
+                  ref={workspaceWindowRef}
                   className="relative flex min-h-0 flex-col overflow-hidden border"
-                  style={{
-                    width: workspaceWindowSize.width,
-                    height: workspaceWindowSize.height,
-                    maxWidth: "calc(100% - 20px)",
-                    maxHeight: "calc(100% - 20px)",
-                    backgroundColor: P.surface900,
-                    borderColor: P.surface600,
-                    boxShadow: "0 24px 64px rgba(0,0,0,0.52)",
-                  }}
+                  style={workspaceWindowPos
+                    ? {
+                        position: "absolute",
+                        left: workspaceWindowPos.x,
+                        top: workspaceWindowPos.y,
+                        width: workspaceWindowSize.width,
+                        height: workspaceWindowSize.height,
+                        backgroundColor: P.surface900,
+                        borderColor: P.surface600,
+                        boxShadow: "0 24px 64px rgba(0,0,0,0.52)",
+                      }
+                    : {
+                        position: "absolute",
+                        left: "50%",
+                        top: "50%",
+                        transform: "translate(-50%, -50%)",
+                        width: workspaceWindowSize.width,
+                        height: workspaceWindowSize.height,
+                        maxWidth: "calc(100% - 20px)",
+                        maxHeight: "calc(100% - 20px)",
+                        backgroundColor: P.surface900,
+                        borderColor: P.surface600,
+                        boxShadow: "0 24px 64px rgba(0,0,0,0.52)",
+                      }
+                  }
                   initial={{ opacity: 0, scale: 0.97 }}
                   animate={{ opacity: 1, scale: 1 }}
                   transition={{ duration: 0.22 * animationDurationScale, ease: [0.16, 1, 0.3, 1] }}
@@ -1765,7 +1800,7 @@ export default function ProjectDashboard() {
                   onMouseDown={e => e.stopPropagation()}
                 >
                     <div
-                      className="shrink-0 flex items-center border-b"
+                      className="shrink-0 flex items-center border-b select-none"
                       style={{
                         height: 44,
                         paddingLeft: 18,
@@ -1773,6 +1808,19 @@ export default function ProjectDashboard() {
                         borderColor: P.surface600,
                         backgroundColor: P.surface800,
                         color: P.text50,
+                        cursor: "move",
+                      }}
+                      onMouseDown={(e) => {
+                        e.stopPropagation();
+                        const win = workspaceWindowRef.current;
+                        const canvas = canvasRef.current;
+                        if (!win || !canvas) return;
+                        const wr = win.getBoundingClientRect();
+                        const cr = canvas.getBoundingClientRect();
+                        const x0 = wr.left - cr.left;
+                        const y0 = wr.top - cr.top;
+                        setWorkspaceWindowPos({ x: x0, y: y0 });
+                        workspaceDragRef.current = { mx0: e.clientX, my0: e.clientY, x0, y0 };
                       }}
                     >
                       <span style={{ fontSize: 16, fontWeight: 600 }}>
