@@ -36,8 +36,6 @@ const KEY_STYLE_STORAGE_KEY = "autocom.button-style.v1";
 const STREAMDECK_DIRECT_SYNC_KEY = "autocom.streamdeck.directSync.v1";
 const STREAMDECK_SELECTED_SERIAL_KEY = "autocom.streamdeck.selectedSerial.v1";
 const STREAMDECK_ACTIVE_PAGE_KEY = "autocom.streamdeck.activePage.v1";
-const STREAMDECK_ROWS_KEY = "autocom.streamdeck.rows.v1";
-const STREAMDECK_COLS_KEY = "autocom.streamdeck.cols.v1";
 const STREAMDECK_KEY_SIZE = 120;
 const SPECIAL_MAPPING_PREFIX = "__special__:";
 const SPECIAL_MAPPING_PAGE_NEXT = `${SPECIAL_MAPPING_PREFIX}page_next`;
@@ -155,20 +153,6 @@ function readActivePage(): number {
   return Number.isFinite(parsed) ? Math.max(1, parsed) : 1;
 }
 
-function readStoredRows(): number {
-  if (typeof window === "undefined") return 4;
-  const raw = window.localStorage.getItem(STREAMDECK_ROWS_KEY);
-  const parsed = Number.parseInt(raw ?? "4", 10);
-  return Number.isFinite(parsed) ? Math.max(1, Math.min(8, parsed)) : 4;
-}
-
-function readStoredCols(): number {
-  if (typeof window === "undefined") return 8;
-  const raw = window.localStorage.getItem(STREAMDECK_COLS_KEY);
-  const parsed = Number.parseInt(raw ?? "8", 10);
-  return Number.isFinite(parsed) ? Math.max(1, Math.min(16, parsed)) : 8;
-}
-
 function createDeckAddresses(page: number, rows: number, cols: number): DeckAddress[] {
   const out: DeckAddress[] = [];
   for (let row = 1; row <= rows; row += 1) {
@@ -211,8 +195,8 @@ function isStreamDeckTransientDisconnectError(error: unknown): boolean {
 export default function ButtonMapping() {
   const t = useTheme();
   const { projects } = useAppContext();
-  const [rows, setRows] = useState(() => readStoredRows());
-  const [cols, setCols] = useState(() => readStoredCols());
+  const [rows, setRows] = useState(4);
+  const [cols, setCols] = useState(8);
   const [totalPages, setTotalPages] = useState(1);
   const [activePage, setActivePage] = useState(() => readActivePage());
   const [buttons, setButtons] = useState<DashboardButtonEntry[]>([]);
@@ -235,17 +219,6 @@ export default function ButtonMapping() {
     () => deckDevices.find((device) => device.serialNumber === selectedDeckSerial) ?? null,
     [deckDevices, selectedDeckSerial],
   );
-
-  // Persist manual rows/cols (web mode)
-  useEffect(() => {
-    if (selectedDevice) return;
-    window.localStorage.setItem(STREAMDECK_ROWS_KEY, String(rows));
-  }, [rows, selectedDevice]);
-
-  useEffect(() => {
-    if (selectedDevice) return;
-    window.localStorage.setItem(STREAMDECK_COLS_KEY, String(cols));
-  }, [cols, selectedDevice]);
 
   useEffect(() => {
     let disposed = false;
@@ -565,15 +538,7 @@ export default function ButtonMapping() {
     return () => window.clearTimeout(timerId);
   }, [directSyncEnabled, selectedDevice, syncKeys]);
 
-  const webMode = !isTauri() || !selectedDevice;
-
   // Stepper helpers
-  const stepRows = (delta: number) => {
-    setRows((prev) => Math.max(1, Math.min(8, prev + delta)));
-  };
-  const stepCols = (delta: number) => {
-    setCols((prev) => Math.max(1, Math.min(16, prev + delta)));
-  };
   const stepPages = (delta: number) => {
     setTotalPages((prev) => Math.max(1, prev + delta));
   };
@@ -710,46 +675,6 @@ export default function ButtonMapping() {
             Stream Deck Preview
           </div>
           <div className="flex flex-wrap items-center gap-3 text-[12px]" style={{ color: t.textSecondary }}>
-
-            {/* Rows (web mode only) */}
-            {webMode && (
-              <div className="flex items-center gap-1">
-                <span style={{ color: t.textSecondary }}>Rows</span>
-                <button
-                  className="w-[22px] h-[24px] border flex items-center justify-center text-[13px] leading-none"
-                  style={stepperBtn(rows > 1)}
-                  disabled={rows <= 1}
-                  onClick={() => stepRows(-1)}
-                >−</button>
-                <span className="w-[20px] text-center" style={{ color: t.textPrimary }}>{rows}</span>
-                <button
-                  className="w-[22px] h-[24px] border flex items-center justify-center text-[13px] leading-none"
-                  style={stepperBtn(rows < 8)}
-                  disabled={rows >= 8}
-                  onClick={() => stepRows(1)}
-                >+</button>
-              </div>
-            )}
-
-            {/* Cols (web mode only) */}
-            {webMode && (
-              <div className="flex items-center gap-1">
-                <span style={{ color: t.textSecondary }}>Cols</span>
-                <button
-                  className="w-[22px] h-[24px] border flex items-center justify-center text-[13px] leading-none"
-                  style={stepperBtn(cols > 1)}
-                  disabled={cols <= 1}
-                  onClick={() => stepCols(-1)}
-                >−</button>
-                <span className="w-[20px] text-center" style={{ color: t.textPrimary }}>{cols}</span>
-                <button
-                  className="w-[22px] h-[24px] border flex items-center justify-center text-[13px] leading-none"
-                  style={stepperBtn(cols < 16)}
-                  disabled={cols >= 16}
-                  onClick={() => stepCols(1)}
-                >+</button>
-              </div>
-            )}
 
             {/* Pages */}
             <div className="flex items-center gap-1">
