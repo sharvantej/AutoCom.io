@@ -2121,14 +2121,14 @@ export default function ProjectDashboard() {
                           </div>
                           {workspaceTaskActions ? (
                             <div
-                              className="shrink-0 border-t px-4 py-3"
+                              className="shrink-0 border-t px-4 py-[12px]"
                               style={{ borderColor: P.surface600, backgroundColor: P.surface900 }}
                             >
                               <button
                                 className="w-full flex items-center justify-center transition-colors"
                                 data-haptic="strong"
                                 style={{
-                                  height: 28,
+                                  height: 32,
                                   backgroundColor: workspaceTaskActions.canTest ? P.surface800 : P.surface700,
                                   border: `1px solid ${workspaceTaskActions.canTest ? P.surface600 : "transparent"}`,
                                   fontSize: 12,
