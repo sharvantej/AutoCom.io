@@ -47,7 +47,7 @@ It supports many transport protocols with low-latency Rust backend and a modern 
 - Tauri prerequisites:
   - Windows: Visual Studio Build Tools, C++ toolchain, WebView2 SDK
   - macOS: Xcode Command Line Tools
-  - Linux: `libwebkit2gtk-4.1-dev build-essential curl wget file libxdo-dev libssl-dev libayatana-appindicator3-dev librsvg2-dev`
+  - Linux: `libwebkit2gtk-4.1-dev build-essential curl wget file libxdo-dev libssl-dev libayatana-appindicator3-dev librsvg2-dev libudev-dev`
 
 ## 🛠️ Install
 
