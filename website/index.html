@@ -125,11 +125,37 @@
 
       <section id="download" class="container section">
         <h2>Download</h2>
-        <div class="download-box">
-          <p>Recommended for Windows users</p>
-          <a class="btn btn-primary" id="setupDownloadBtn" href="#">Autocom_2.0.0_x64-setup.exe</a>
-          <a class="btn btn-secondary" id="portableDownloadBtn" href="#">Autocom.exe</a>
-          <small>Version 2.0.0 • Windows x64</small>
+        <p class="download-intro">
+          Direct downloads from the release — no GitHub page in between, files start
+          right away. <span id="versionLabel">v2.0.0-alpha</span>
+        </p>
+        <div class="download-grid">
+          <article class="download-card" id="platform-windows">
+            <h3>Windows</h3>
+            <p>Installer (recommended) or a single portable .exe</p>
+            <div class="download-card-actions">
+              <a class="btn btn-primary" id="setupDownloadBtn" href="#">Download Installer</a>
+              <a class="btn btn-secondary" id="portableDownloadBtn" href="#">Portable .exe</a>
+            </div>
+            <small>x64 • .exe</small>
+          </article>
+          <article class="download-card" id="platform-macos">
+            <h3>macOS</h3>
+            <p>Disk image, Apple Silicon</p>
+            <div class="download-card-actions">
+              <a class="btn btn-primary" id="dmgDownloadBtn" href="#">Download .dmg</a>
+            </div>
+            <small>aarch64 • .dmg</small>
+          </article>
+          <article class="download-card" id="platform-linux">
+            <h3>Linux</h3>
+            <p>AppImage (runs anywhere) or a native .deb package</p>
+            <div class="download-card-actions">
+              <a class="btn btn-primary" id="appimageDownloadBtn" href="#">Download AppImage</a>
+              <a class="btn btn-secondary" id="debDownloadBtn" href="#">.deb package</a>
+            </div>
+            <small>x86_64 • AppImage / .deb</small>
+          </article>
         </div>
       </section>
 
