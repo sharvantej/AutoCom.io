@@ -2,7 +2,7 @@
 
 ![AutoCom Logo](public/autocom-title.ico)
 
-[![Release](https://img.shields.io/github/v/release/sharvantej/auto?label=v2.0.0-alpha&include_prereleases&color=blue)](https://github.com/sharvantej/auto/releases/latest)
+[![Release](https://img.shields.io/github/v/release/sharvantej/AutoCom.io?label=v2.0.0-alpha&include_prereleases&color=blue)](https://github.com/sharvantej/AutoCom.io/releases/latest)
 [![License](https://img.shields.io/badge/license-UNLICENSED-red.svg)](#license)
 
 ## 🚀 Overview
