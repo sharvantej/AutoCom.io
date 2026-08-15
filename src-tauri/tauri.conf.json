@@ -32,7 +32,7 @@
       "endpoints": [
         "https://github.com/sharvantej/AutoCom.io/releases/latest/download/latest.json"
       ],
-      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDdBRDc3Q0YwMUU1REUzMzUKUldRMTQxMGU4SHpYZXJWMzF3bUI5SmQrbXZjRzdmVm9ESVlpcjQ1dkYvNWJHa2FQZWlTVjdvTHgK"
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IEZBRUM2RDU5NzVFOEM1NTAKUldSUXhlaDFXVzNzK3RST1RtWk11K0hwamJDNDV5aDdXT0VlOUhRcldFNUhIWXpCenN2ZU5JSmIK"
     }
   },
   "bundle": {
