@@ -2,15 +2,22 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import { useAppContext, useTheme } from "../context/AppContext";
 import { loadDashboardLayout } from "../services/runtimeState";
+import { projectDisplayName } from "../services/projectFile";
 import { isTauri } from "../services/tauri";
-import { listStreamDeckDevices, syncStreamDeckSurface, type StreamDeckDevice } from "../services/streamdeck";
+import { subscribeStreamDeckDevices, syncStreamDeckSurface, type StreamDeckDevice } from "../services/streamdeck";
 
 type DashboardButtonEntry = {
   id: string;
-  projectId: number;
   projectName: string;
   label: string;
 };
+
+/// Encodes a (project path, button id) pair into an opaque mapping key.
+/// A `:`-delimited string isn't safe once the project side is a real
+/// filesystem path — Windows paths (`C:\Users\...`) contain `:` themselves.
+function encodeButtonMappingId(projectPath: string, buttonId: string): string {
+  return JSON.stringify([projectPath, buttonId]);
+}
 
 type DeckAddress = {
   page: number;
@@ -75,7 +82,7 @@ function safeReadMappings(): MappingRecord {
 }
 function safeWriteMappings(next: MappingRecord): void {
   if (typeof window === "undefined") return;
-  try { window.localStorage.setItem(MAPPING_STORAGE_KEY, JSON.stringify(next)); } catch {}
+  try { window.localStorage.setItem(MAPPING_STORAGE_KEY, JSON.stringify(next)); } catch { /* storage unavailable */ }
 }
 function safeReadTextSizes(): TextSizeRecord {
   if (typeof window === "undefined") return {};
@@ -89,7 +96,7 @@ function safeReadTextSizes(): TextSizeRecord {
 }
 function safeWriteTextSizes(next: TextSizeRecord): void {
   if (typeof window === "undefined") return;
-  try { window.localStorage.setItem(TEXT_SIZE_STORAGE_KEY, JSON.stringify(next)); } catch {}
+  try { window.localStorage.setItem(TEXT_SIZE_STORAGE_KEY, JSON.stringify(next)); } catch { /* storage unavailable */ }
 }
 function safeReadKeyStyles(): KeyStyleRecord {
   if (typeof window === "undefined") return {};
@@ -110,7 +117,7 @@ function safeReadKeyStyles(): KeyStyleRecord {
 }
 function safeWriteKeyStyles(next: KeyStyleRecord): void {
   if (typeof window === "undefined") return;
-  try { window.localStorage.setItem(KEY_STYLE_STORAGE_KEY, JSON.stringify(next)); } catch {}
+  try { window.localStorage.setItem(KEY_STYLE_STORAGE_KEY, JSON.stringify(next)); } catch { /* storage unavailable */ }
 }
 function safeReadFeedbacks(): FeedbackRecord {
   if (typeof window === "undefined") return {};
@@ -124,7 +131,7 @@ function safeReadFeedbacks(): FeedbackRecord {
 }
 function safeWriteFeedbacks(next: FeedbackRecord): void {
   if (typeof window === "undefined") return;
-  try { window.localStorage.setItem(FEEDBACK_STORAGE_KEY, JSON.stringify(next)); } catch {}
+  try { window.localStorage.setItem(FEEDBACK_STORAGE_KEY, JSON.stringify(next)); } catch { /* storage unavailable */ }
 }
 function safeReadPageNames(): PageNamesRecord {
   if (typeof window === "undefined") return {};
@@ -138,7 +145,7 @@ function safeReadPageNames(): PageNamesRecord {
 }
 function safeWritePageNames(next: PageNamesRecord): void {
   if (typeof window === "undefined") return;
-  try { window.localStorage.setItem(PAGE_NAMES_STORAGE_KEY, JSON.stringify(next)); } catch {}
+  try { window.localStorage.setItem(PAGE_NAMES_STORAGE_KEY, JSON.stringify(next)); } catch { /* storage unavailable */ }
 }
 
 function hexToRgb(hex: string): [number, number, number] {
@@ -195,7 +202,8 @@ function isStreamDeckTransientDisconnectError(error: unknown): boolean {
 
 export default function ButtonMapping() {
   const t = useTheme();
-  const { projects } = useAppContext();
+  const tauriRuntime = isTauri();
+  const { activeProjectPath } = useAppContext();
   const [rows, setRows] = useState(4);
   const [cols, setCols] = useState(8);
   const [totalPages, setTotalPages] = useState(1);
@@ -209,6 +217,7 @@ export default function ButtonMapping() {
   const [textSizeInput, setTextSizeInput] = useState("14");
   const [dragOverKey, setDragOverKey] = useState<string | null>(null);
   const [draggingId, setDraggingId] = useState<string | null>(null);
+  const dragSourceIdRef = useRef<string | null>(null);
   const gridHostRef = useRef<HTMLDivElement | null>(null);
   const [gridHostWidth, setGridHostWidth] = useState(0);
   const [gridHostHeight, setGridHostHeight] = useState(0);
@@ -233,25 +242,25 @@ export default function ButtonMapping() {
   useEffect(() => {
     let disposed = false;
     const fetchButtons = async (silent = false) => {
+      if (!activeProjectPath) {
+        setButtons([]);
+        return;
+      }
       if (!silent) setLoadingButtons(true);
       try {
         const next: DashboardButtonEntry[] = [];
-        for (const project of projects) {
-          try {
-            const layout = await loadDashboardLayout<Record<string, unknown>>(String(project.id));
-            layout.forEach((item, index) => {
-              const type = typeof item?.type === "string" ? item.type.toLowerCase() : "";
-              if (type !== "button") return;
-              const itemId = typeof item.id === "string" && item.id.trim() ? item.id.trim() : `btn-${index + 1}`;
-              const label = normalizeButtonLabel(item.label, `Button ${index + 1}`);
-              next.push({ id: `${project.id}:${itemId}`, projectId: project.id, projectName: project.name, label });
-            });
-          } catch {}
-        }
-        next.sort((a, b) => {
-          if (a.projectName !== b.projectName) return a.projectName.localeCompare(b.projectName);
-          return a.label.localeCompare(b.label);
-        });
+        const projectName = projectDisplayName(activeProjectPath);
+        try {
+          const layout = await loadDashboardLayout<Record<string, unknown>>(activeProjectPath);
+          layout.forEach((item, index) => {
+            const type = typeof item?.type === "string" ? item.type.toLowerCase() : "";
+            if (type !== "button") return;
+            const itemId = typeof item.id === "string" && item.id.trim() ? item.id.trim() : `btn-${index + 1}`;
+            const label = normalizeButtonLabel(item.label, `Button ${index + 1}`);
+            next.push({ id: encodeButtonMappingId(activeProjectPath, itemId), projectName, label });
+          });
+        } catch { /* malformed or unreadable project layout */ }
+        next.sort((a, b) => a.label.localeCompare(b.label));
         if (!disposed) setButtons(next);
       } finally {
         if (!silent && !disposed) setLoadingButtons(false);
@@ -269,7 +278,7 @@ export default function ButtonMapping() {
       refreshTimers.forEach((id) => window.clearTimeout(id));
       window.removeEventListener("focus", onFocus);
     };
-  }, [projects]);
+  }, [activeProjectPath]);
 
   const buttonById = useMemo(() => {
     const map = new Map<string, DashboardButtonEntry>();
@@ -289,33 +298,21 @@ export default function ButtonMapping() {
   );
 
   useEffect(() => {
-    let disposed = false;
     if (!isTauri()) return;
-    const loadDevices = async () => {
-      try {
-        const devices = await listStreamDeckDevices();
-        if (disposed) return;
-        setDeckDevices(devices);
-        const hasSerial = devices.some((d) => d.serialNumber === selectedDeckSerial);
+    return subscribeStreamDeckDevices((devices) => {
+      setDeckDevices(devices);
+      setSelectedDeckSerial((current) => {
+        const hasSerial = devices.some((d) => d.serialNumber === current);
         if (devices.length > 0 && !hasSerial) {
           const fallback = devices[0].serialNumber || "";
-          setSelectedDeckSerial(fallback);
           window.localStorage.setItem(STREAMDECK_SELECTED_SERIAL_KEY, fallback);
           window.dispatchEvent(new CustomEvent("autocom:streamdeck-controls-changed"));
+          return fallback;
         }
-      } catch (error) {
-        if (disposed) return;
-        setDeckDevices([]);
-        setSyncState("error");
-        setSyncError(error instanceof Error ? error.message : "Failed to detect Stream Deck devices.");
-      }
-    };
-    void loadDevices();
-    const pollId = window.setInterval(() => void loadDevices(), 2000);
-    const onFocus = () => void loadDevices();
-    window.addEventListener("focus", onFocus);
-    return () => { disposed = true; window.clearInterval(pollId); window.removeEventListener("focus", onFocus); };
-  }, [selectedDeckSerial]);
+        return current;
+      });
+    });
+  }, []);
 
   useEffect(() => {
     const sync = () => { setDirectSyncEnabled(readDirectSyncEnabled()); setSelectedDeckSerial(readSelectedSerial()); };
@@ -476,25 +473,80 @@ export default function ButtonMapping() {
 
   // Drag handlers for button chips
   const handleDragStart = (e: React.DragEvent, buttonId: string) => {
-    e.dataTransfer.setData("text/plain", buttonId);
-    e.dataTransfer.effectAllowed = "copy";
+    dragSourceIdRef.current = buttonId;
+    try {
+      e.dataTransfer?.setData("text/plain", buttonId);
+      e.dataTransfer?.setData("application/x-autocom-button-id", buttonId);
+      if (e.dataTransfer) e.dataTransfer.effectAllowed = "copy";
+    } catch {
+      // Some runtimes can throw on dataTransfer writes; we fall back to draggingId state.
+    }
     setDraggingId(buttonId);
   };
-  const handleDragEnd = () => setDraggingId(null);
+  const handleDragEnd = () => {
+    // WebView runtimes can fire dragend before drop; defer clear one tick.
+    window.setTimeout(() => {
+      setDraggingId(null);
+      dragSourceIdRef.current = null;
+      setDragOverKey(null);
+    }, 0);
+  };
+  const handleChipPointerDown = (buttonId: string) => {
+    dragSourceIdRef.current = buttonId;
+    setDraggingId(buttonId);
+  };
 
   // Drop handlers for deck keys
   const handleDragOver = (e: React.DragEvent, key: string) => {
     e.preventDefault();
-    e.dataTransfer.dropEffect = "copy";
+    try {
+      if (e.dataTransfer) e.dataTransfer.dropEffect = "copy";
+    } catch {
+      // Ignore runtimes that reject dropEffect changes.
+    }
     setDragOverKey(key);
   };
-  const handleDragLeave = () => setDragOverKey(null);
+  const handleDragLeave = (key: string) =>
+    setDragOverKey((prev) => (prev === key ? null : prev));
   const handleDrop = (e: React.DragEvent, key: string) => {
     e.preventDefault();
     setDragOverKey(null);
-    const buttonId = e.dataTransfer.getData("text/plain");
+    let buttonId = "";
+    try {
+      buttonId =
+        e.dataTransfer?.getData("application/x-autocom-button-id")
+        || e.dataTransfer?.getData("text/plain")
+        || "";
+    } catch {
+      buttonId = "";
+    }
+    if (!buttonId) {
+      buttonId = dragSourceIdRef.current || draggingId || "";
+    }
     if (buttonId) applyDrop(key, buttonId);
+    setDraggingId(null);
+    dragSourceIdRef.current = null;
   };
+  const handleKeyPointerUp = (e: React.PointerEvent, key: string) => {
+    if (!draggingId) return;
+    e.preventDefault();
+    e.stopPropagation();
+    applyDrop(key, draggingId);
+    setDragOverKey(null);
+    setDraggingId(null);
+    dragSourceIdRef.current = null;
+  };
+
+  useEffect(() => {
+    const clearPointerDrag = () => {
+      if (!draggingId) return;
+      setDraggingId(null);
+      setDragOverKey(null);
+      dragSourceIdRef.current = null;
+    };
+    window.addEventListener("pointerup", clearPointerDrag);
+    return () => window.removeEventListener("pointerup", clearPointerDrag);
+  }, [draggingId]);
 
   useEffect(() => {
     if (!selectedDeckKey) { setTextSizeInput("14"); return; }
@@ -562,8 +614,8 @@ export default function ButtonMapping() {
   }, [buttons]);
 
   const systemButtons: DashboardButtonEntry[] = [
-    { id: SPECIAL_MAPPING_PAGE_PREVIOUS, projectId: -1, projectName: "System", label: "Page Previous" },
-    { id: SPECIAL_MAPPING_PAGE_NEXT,     projectId: -1, projectName: "System", label: "Page Next"     },
+    { id: SPECIAL_MAPPING_PAGE_PREVIOUS, projectName: "System", label: "Page Previous" },
+    { id: SPECIAL_MAPPING_PAGE_NEXT,     projectName: "System", label: "Page Next"     },
   ];
 
   return (
@@ -602,8 +654,10 @@ export default function ButtonMapping() {
                   isDragging={draggingId === btn.id}
                   highlighted
                   t={t}
+                  enableNativeDrag={!tauriRuntime}
                   onDragStart={handleDragStart}
                   onDragEnd={handleDragEnd}
+                  onPointerDown={handleChipPointerDown}
                 />
               ))}
             </div>
@@ -628,8 +682,10 @@ export default function ButtonMapping() {
                       btn={btn}
                       isDragging={draggingId === btn.id}
                       t={t}
+                      enableNativeDrag={!tauriRuntime}
                       onDragStart={handleDragStart}
                       onDragEnd={handleDragEnd}
+                      onPointerDown={handleChipPointerDown}
                     />
                   ))}
                 </div>
@@ -641,16 +697,6 @@ export default function ButtonMapping() {
 
       {/* ── RIGHT AREA: Grid + Inspector ── */}
       <div className="flex flex-1 min-w-0 flex-col h-full">
-
-        {/* Top header */}
-        <div
-          className="flex h-[44px] shrink-0 items-center border-b px-4"
-          style={{ borderColor: t.topbarBorder }}
-        >
-          <span className="text-[15px] font-semibold tracking-[0.01em]" style={{ color: t.textPrimary }}>
-            Stream Deck
-          </span>
-        </div>
 
         {/* Sync error */}
         {syncState === "error" && syncError && (
@@ -731,8 +777,15 @@ export default function ButtonMapping() {
                   title={deckAddress}
                   onClick={() => setSelectedDeckKey(isSelected ? null : key)}
                   onDragOver={(e) => handleDragOver(e, key)}
-                  onDragLeave={handleDragLeave}
+                  onDragLeave={() => handleDragLeave(key)}
                   onDrop={(e) => handleDrop(e, key)}
+                  onPointerEnter={() => {
+                    if (draggingId) setDragOverKey(key);
+                  }}
+                  onPointerLeave={() => {
+                    if (dragOverKey === key) setDragOverKey(null);
+                  }}
+                  onPointerUp={(e) => handleKeyPointerUp(e, key)}
                 >
                   {/* Topbar: address left, × right */}
                   {style.topbarEnabled && (
@@ -1195,21 +1248,26 @@ function DraggableChip({
   isDragging,
   highlighted = false,
   t,
+  enableNativeDrag,
   onDragStart,
   onDragEnd,
+  onPointerDown,
 }: {
   btn: DashboardButtonEntry;
   isDragging: boolean;
   highlighted?: boolean;
   t: ReturnType<typeof useTheme>;
+  enableNativeDrag: boolean;
   onDragStart: (e: React.DragEvent, id: string) => void;
   onDragEnd: () => void;
+  onPointerDown: (id: string) => void;
 }) {
   return (
     <div
-      draggable
+      draggable={enableNativeDrag}
       onDragStart={(e) => onDragStart(e, btn.id)}
       onDragEnd={onDragEnd}
+      onPointerDown={() => onPointerDown(btn.id)}
       className="px-2 py-1.5 border text-[12px] truncate select-none transition-all"
       style={{
         borderColor: isDragging ? "rgba(139,92,246,0.7)" : highlighted ? t.topbarBorder : t.inputBorder,

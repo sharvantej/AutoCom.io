@@ -1,4 +1,5 @@
 import { useRef, useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import { Download } from "lucide-react";
 import { motion } from "motion/react";
 import { useAppContext, useTheme } from "../context/AppContext";
@@ -14,6 +15,11 @@ export default function Logs() {
   const scrollRef = useRef<HTMLDivElement>(null);
   const searchRef = useRef<HTMLInputElement>(null);
   const [query, setQuery] = useState("");
+  const [topBarRightSlot, setTopBarRightSlot] = useState<HTMLElement | null>(null);
+
+  useEffect(() => {
+    setTopBarRightSlot(document.getElementById("layout-topbar-right-slot"));
+  }, []);
 
   const visibleLogs = logs.filter(l => l.timestamp > logsClearedAt);
   const filteredLogs = query.trim()
@@ -65,46 +71,46 @@ export default function Logs() {
       className="flex flex-col flex-1 overflow-hidden page-pop"
       style={{ backgroundColor: t.bgContent, paddingTop: 16 }}
     >
-      {/* ── Header row ──────────────────────────────────────────────────── */}
-      <div className="flex items-center justify-between shrink-0 px-[16px]" style={{ marginBottom: 12 }}>
-        <span className="text-[16px]" style={{ color: t.textPrimary }}>Live logs</span>
-
-        <div className="flex items-center" style={{ gap: 15 }}>
-          <input
-            ref={searchRef}
-            type="text"
-            value={query}
-            placeholder="Search logs"
-            className="px-[10px] text-[14px] outline-none"
-            style={{
-              height: 35,
-              width: 200,
-              backgroundColor: t.rowBg,
-              border: `1px solid ${t.topbarBorder}`,
-              color: t.textPrimary,
-            }}
-            onChange={(event) => setQuery(event.target.value)}
-          />
-          <motion.button
-            className="flex items-center justify-center text-[14px] hover:bg-[var(--row-hover)] transition-colors"
-            style={{ height: 35, width: 116, backgroundColor: t.rowBg, color: t.deleteHover }}
-            onClick={handleClear}
-            whileTap={{ scale: 0.96 }} transition={{ duration: 0.1 }}
-          >
-            Clear Logs
-          </motion.button>
-
-          <motion.button
-            className="flex items-center justify-center gap-[8px] text-[14px] hover:bg-[var(--row-hover)] transition-colors"
-            style={{ height: 35, width: 141, backgroundColor: t.rowBg, color: t.textPrimary }}
-            onClick={handleExport}
-            whileTap={{ scale: 0.96 }} transition={{ duration: 0.1 }}
-          >
-            <Download size={16} />
-            <span>Export Logs</span>
-          </motion.button>
-        </div>
-      </div>
+      {topBarRightSlot
+        ? createPortal(
+            <div className="flex items-center gap-3 text-[12px]" style={{ color: t.textPrimary }}>
+              <input
+                ref={searchRef}
+                type="text"
+                value={query}
+                placeholder="Search logs"
+                className="outline-none"
+                style={{
+                  height: 24,
+                  width: 160,
+                  padding: "0 8px",
+                  backgroundColor: t.bgSidebar,
+                  border: `1px solid ${t.topbarBorder}`,
+                  color: t.textPrimary,
+                }}
+                onChange={(event) => setQuery(event.target.value)}
+              />
+              <motion.button
+                className="flex items-center justify-center transition-colors hover:bg-[var(--row-hover)]"
+                style={{ height: 24, padding: "0 10px", border: `1px solid ${t.topbarBorder}`, backgroundColor: t.bgSidebar, color: t.deleteHover }}
+                onClick={handleClear}
+                whileTap={{ scale: 0.96 }} transition={{ duration: 0.1 }}
+              >
+                Clear Logs
+              </motion.button>
+              <motion.button
+                className="flex items-center justify-center gap-[6px] transition-colors hover:bg-[var(--row-hover)]"
+                style={{ height: 24, padding: "0 10px", border: `1px solid ${t.topbarBorder}`, backgroundColor: t.bgSidebar, color: t.textPrimary }}
+                onClick={handleExport}
+                whileTap={{ scale: 0.96 }} transition={{ duration: 0.1 }}
+              >
+                <Download size={13} />
+                <span>Export Logs</span>
+              </motion.button>
+            </div>,
+            topBarRightSlot,
+          )
+        : null}
 
       {/* ── Log area ─────────────────────────────────────────────────────── */}
       <div

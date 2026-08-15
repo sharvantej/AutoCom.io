@@ -1,7 +1,12 @@
 import { useState } from "react";
+import { useLocation, useNavigate } from "react-router";
+import { motion } from "motion/react";
 import { Maximize, Minus, Square, X } from "lucide-react";
-import { getCurrentWindow } from "@tauri-apps/api/window";
-import { useTheme } from "../context/AppContext";
+import { getCurrentWindow, type Window as TauriWindow } from "@tauri-apps/api/window";
+import { useAppContext, useTheme, type AppTheme } from "../context/AppContext";
+import { isTauri, tauriInvoke } from "../services/tauri";
+import { DASHBOARD_LABEL, NAV_ITEMS } from "../navItems";
+import FileMenu from "./FileMenu";
 
 const TITLE_STRIP_H = 35;
 const CONTROL_W = 40;
@@ -10,8 +15,42 @@ const LOGO_SIZE = 14;
 const CONTROL_HOVER = "rgba(255,255,255,0.08)";
 const CLOSE_HOVER = "#e81123";
 
+// ── Nav tabs ─────────────────────────────────────────────────────────────────
+// Rendered right in the title-bar row (Windows-11-style — File Explorer/
+// Terminal/Notepad all put their tab strip in the title bar itself, not a
+// separate row below it). Tabs are plain text — no icons, no underline; the
+// active page is identified by its heading in that page's own top bar
+// instead (see Layout.tsx), so all tabs share identical typography here.
+
+function NavTab({
+  label,
+  active,
+  onClick,
+  t,
+}: {
+  label: string;
+  active?: boolean;
+  onClick: () => void;
+  t: AppTheme;
+}) {
+  return (
+    <motion.button
+      className="nav-tab relative flex items-center h-full px-[14px] transition-colors shrink-0"
+      style={{
+        backgroundColor: active ? t.navActive : undefined,
+        color: active ? t.textPrimary : t.textMuted,
+      }}
+      onClick={onClick}
+      whileTap={{ scale: 0.97 }}
+      transition={{ duration: 0.08 }}
+    >
+      <span className="text-[12px] whitespace-nowrap">{label}</span>
+    </motion.button>
+  );
+}
+
 // Helper for window actions (Minimize/Maximize/Close)
-async function winAction(action: (win: any) => Promise<void>) {
+async function winAction(action: (win: TauriWindow) => Promise<void>) {
   try {
     const win = getCurrentWindow();
     await action(win);
@@ -27,6 +66,34 @@ export default function WindowStrip({ isFullscreen, onToggleFullscreen }: Window
   const t = useTheme();
   const [logoIndex, setLogoIndex] = useState(0);
   const logoSources = ["/autocom-title.png", "/autocom-title.ico"] as const;
+  const navigate = useNavigate();
+  const location = useLocation();
+  const { activeProjectPath } = useAppContext();
+
+  const isProjectDashboardRoute = location.pathname.startsWith("/project/");
+  const isDashboardActive = location.pathname === "/" || isProjectDashboardRoute;
+  const dashboardPath = activeProjectPath !== null
+    ? `/project/${encodeURIComponent(activeProjectPath)}`
+    : "/";
+  const isActive = (path: string) => location.pathname === path;
+
+  const handleMinimize = async () => {
+    try {
+      const win = getCurrentWindow();
+      if (!isTauri()) {
+        await win.minimize();
+        return;
+      }
+      const closeToTray = await tauriInvoke<boolean>("get_close_to_tray");
+      if (closeToTray) {
+        await win.hide();
+        return;
+      }
+      await win.minimize();
+    } catch (e) {
+      console.error(e);
+    }
+  };
 
   const baseControlStyle = {
     width: CONTROL_W,
@@ -46,10 +113,11 @@ export default function WindowStrip({ isFullscreen, onToggleFullscreen }: Window
         pointerEvents: "auto",
       }}
     >
-      <div className="h-full flex-1 min-w-0 flex items-center px-[6px]" data-tauri-drag-region>
+      <div className="h-full flex-1 min-w-0 flex items-center">
         <div
-          className="h-full flex items-center justify-center shrink-0"
+          className="h-full flex items-center justify-center shrink-0 pl-[6px]"
           style={{ width: LOGO_BOX }}
+          data-tauri-drag-region
         >
           {logoIndex < logoSources.length && (
             <img
@@ -61,15 +129,32 @@ export default function WindowStrip({ isFullscreen, onToggleFullscreen }: Window
             />
           )}
         </div>
-        <span
-          className="text-[13px] font-semibold tracking-wide pl-2 truncate"
-          style={{
-            color: t.textPrimary,
-            fontFamily: "'JetBrains Mono', monospace",
-          }}
-        >
-          Autocom
-        </span>
+
+        {/* Menu bar + nav tabs — deliberately outside the drag-region
+            siblings so buttons/dropdowns/tabs stay clickable instead of
+            being swallowed by window-drag handling. */}
+        <div className="h-full flex items-center shrink-0">
+          <FileMenu />
+        </div>
+        <div className="h-full flex items-stretch overflow-x-auto shrink min-w-0">
+          <NavTab
+            label={DASHBOARD_LABEL}
+            active={isDashboardActive}
+            onClick={() => navigate(dashboardPath)}
+            t={t}
+          />
+          {NAV_ITEMS.map((item) => (
+            <NavTab
+              key={item.path}
+              label={item.label}
+              active={isActive(item.path)}
+              onClick={() => navigate(item.path)}
+              t={t}
+            />
+          ))}
+        </div>
+
+        <div className="h-full flex-1 min-w-0" data-tauri-drag-region />
       </div>
 
       <div className="h-full flex items-stretch border-l" style={{ borderColor: t.topbarBorder }}>
@@ -92,7 +177,7 @@ export default function WindowStrip({ isFullscreen, onToggleFullscreen }: Window
           onMouseDown={e => { e.preventDefault(); }}
           onMouseEnter={e => { e.currentTarget.style.backgroundColor = CONTROL_HOVER; }}
           onMouseLeave={e => { e.currentTarget.style.backgroundColor = "transparent"; }}
-          onClick={() => winAction(w => w.minimize())}
+          onClick={handleMinimize}
           title="Minimize"
         >
           <Minus size={12} color={t.textPrimary} />

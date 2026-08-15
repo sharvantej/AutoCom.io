@@ -1,18 +1,33 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import {
   Sun, Moon, Check,
   GitBranch, PackageOpen, Hash,
-  Trash2, Database, AlertTriangle,
+  Trash2, Database, AlertTriangle, Copy, FileText, RotateCcw,
 } from "lucide-react";
 import { useAppContext, useTheme } from "../context/AppContext";
 import { setMotionSpeed, type MotionSpeed } from "../services/motion";
-import { isTauri } from "../services/tauri";
+import { isTauri, tauriInvoke } from "../services/tauri";
+import {
+  SHORTCUT_DEFS,
+  getShortcutBinding,
+  setShortcutBinding,
+  resetShortcutBinding,
+  isShortcutCustomized,
+  bindingFromEvent,
+  formatBinding,
+  type ShortcutId,
+  type ShortcutBinding,
+} from "../services/shortcuts";
 import type { ThemeMode, FontMode } from "../types";
 import pkg from "../../../package.json";
+import { check as checkForUpdate, type Update } from "@tauri-apps/plugin-updater";
+import { relaunch } from "@tauri-apps/plugin-process";
 
 const APP_VERSION = `v${pkg.version}`;
 type TabId = "general" | "shortcuts" | "about";
+type NativeCloseBehavior = "tray" | "quit";
+const NATIVE_CLOSE_BEHAVIOR_KEY = "settings.native.closeBehavior";
 const TABS: { id: TabId; label: string }[] = [
   { id: "general",   label: "General"   },
   { id: "shortcuts", label: "Shortcuts" },
@@ -192,21 +207,96 @@ function getStorageItemCount(): number {
   }
 }
 
+function readNativeCloseBehavior(): NativeCloseBehavior {
+  try {
+    const raw = localStorage.getItem(NATIVE_CLOSE_BEHAVIOR_KEY);
+    return raw === "quit" ? "quit" : "tray";
+  } catch {
+    return "tray";
+  }
+}
+
 // ── General tab ───────────────────────────────────────────────────────────────
 
 function GeneralTab({
-  t, theme, setTheme, font, setFont, sidebarOpen, setSidebarOpen,
+  t, theme, setTheme, font, setFont,
 }: {
   t: T;
   theme: ThemeMode;
   setTheme: React.Dispatch<React.SetStateAction<ThemeMode>>;
   font: FontMode;
   setFont: React.Dispatch<React.SetStateAction<FontMode>>;
-  sidebarOpen: boolean;
-  setSidebarOpen: React.Dispatch<React.SetStateAction<boolean>>;
 }) {
   const monoFont = "'JetBrains Mono', monospace";
   const sansFont = "'Inter', sans-serif";
+  const isDesktop = isTauri();
+  const [closeBehavior, setCloseBehavior] = useState<NativeCloseBehavior>(() => readNativeCloseBehavior());
+  const [launchAtLogin, setLaunchAtLogin] = useState<"on" | "off">("off");
+  const [startMinimized, setStartMinimized] = useState<"on" | "off">("off");
+
+  useEffect(() => {
+    if (!isDesktop) return;
+    let cancelled = false;
+
+    const syncFromRuntime = async () => {
+      try {
+        const closeToTray = await tauriInvoke<boolean>("get_close_to_tray");
+        if (cancelled) return;
+        const behavior: NativeCloseBehavior = closeToTray ? "tray" : "quit";
+        setCloseBehavior(behavior);
+        localStorage.setItem(NATIVE_CLOSE_BEHAVIOR_KEY, behavior);
+
+        const startOnLogin = await tauriInvoke<boolean>("get_launch_at_login");
+        if (cancelled) return;
+        setLaunchAtLogin(startOnLogin ? "on" : "off");
+
+        const minimizeOnStartup = await tauriInvoke<boolean>("get_start_minimized");
+        if (cancelled) return;
+        setStartMinimized(minimizeOnStartup ? "on" : "off");
+      } catch (error) {
+        console.error("Failed to read native desktop settings:", error);
+      }
+    };
+
+    void syncFromRuntime();
+    return () => { cancelled = true; };
+  }, [isDesktop]);
+
+  const handleCloseBehaviorChange = useCallback(async (next: NativeCloseBehavior) => {
+    setCloseBehavior(next);
+    try {
+      localStorage.setItem(NATIVE_CLOSE_BEHAVIOR_KEY, next);
+    } catch {
+      // ignore storage issues
+    }
+
+    if (!isDesktop) return;
+    try {
+      await tauriInvoke("set_close_to_tray", { enabled: next === "tray" });
+    } catch (error) {
+      console.error("Failed to update native close behavior:", error);
+    }
+  }, [isDesktop]);
+
+  const handleLaunchAtLoginChange = useCallback(async (next: "on" | "off") => {
+    setLaunchAtLogin(next);
+    if (!isDesktop) return;
+    try {
+      await tauriInvoke("set_launch_at_login", { enabled: next === "on" });
+    } catch (error) {
+      console.error("Failed to update launch-at-login setting:", error);
+    }
+  }, [isDesktop]);
+
+  const handleStartMinimizedChange = useCallback(async (next: "on" | "off") => {
+    setStartMinimized(next);
+    if (!isDesktop) return;
+    try {
+      await tauriInvoke("set_start_minimized", { enabled: next === "on" });
+    } catch (error) {
+      console.error("Failed to update start-minimized setting:", error);
+    }
+  }, [isDesktop]);
 
   return (
     <div className="grid grid-cols-1 xl:grid-cols-2 gap-[12px]">
@@ -333,19 +423,58 @@ function GeneralTab({
             0123456789 &nbsp;!@#$%^&amp;
           </div>
         </div>
-        <div style={{ borderTop: `1px solid ${t.divider}` }}>
-          <Row label="Sidebar on launch" t={t} last>
-            <Seg
-              options={[
-                { value: "expanded",  label: "Expanded"  },
-                { value: "collapsed", label: "Collapsed" },
-              ]}
-              value={sidebarOpen ? "expanded" : "collapsed"}
-              onChange={(v) => setSidebarOpen(v === "expanded")}
+        {isDesktop && (
+          <div style={{ borderTop: `1px solid ${t.divider}` }}>
+            <Row
+              label="Close button action"
+              sublabel="Tray keeps Autocom running in background; Quit exits immediately."
               t={t}
-            />
-          </Row>
-        </div>
+              last={false}
+            >
+              <Seg
+                options={[
+                  { value: "tray" as NativeCloseBehavior, label: "To tray" },
+                  { value: "quit" as NativeCloseBehavior, label: "Quit" },
+                ]}
+                value={closeBehavior}
+                onChange={(next) => { void handleCloseBehaviorChange(next); }}
+                t={t}
+              />
+            </Row>
+            <Row
+              label="Launch at login"
+              sublabel="Start Autocom automatically when you sign in to Windows."
+              t={t}
+              last={false}
+            >
+              <Seg
+                options={[
+                  { value: "on" as const, label: "On" },
+                  { value: "off" as const, label: "Off" },
+                ]}
+                value={launchAtLogin}
+                onChange={(next) => { void handleLaunchAtLoginChange(next); }}
+                t={t}
+              />
+            </Row>
+            <Row
+              label="Start minimized"
+              sublabel="Open directly to system tray instead of showing the main window."
+              t={t}
+              last
+            >
+              <Seg
+                options={[
+                  { value: "on" as const, label: "On" },
+                  { value: "off" as const, label: "Off" },
+                ]}
+                value={startMinimized}
+                onChange={(next) => { void handleStartMinimizedChange(next); }}
+                t={t}
+              />
+            </Row>
+          </div>
+        )}
       </Card>
 
       {/* Editor — Canvas */}
@@ -559,60 +688,292 @@ function DataTab({ t }: { t: T }) {
 
 // ── Shortcuts tab ─────────────────────────────────────────────────────────────
 
+function bindingsEqual(a: ShortcutBinding, b: ShortcutBinding): boolean {
+  return a.key === b.key && Boolean(a.mod) === Boolean(b.mod)
+    && Boolean(a.shift) === Boolean(b.shift) && Boolean(a.alt) === Boolean(b.alt);
+}
+
+function ShortcutRecordButton({
+  def, binding, recording, onStartRecording, t,
+}: {
+  def: { id: ShortcutId; action: string };
+  binding: ShortcutBinding;
+  recording: boolean;
+  onStartRecording: (id: ShortcutId) => void;
+  t: T;
+}) {
+  return (
+    <button
+      type="button"
+      className="flex items-center justify-center px-[8px] transition-colors"
+      style={{
+        height: 26,
+        border: `1px solid ${recording ? "#8b5cf6" : "transparent"}`,
+        backgroundColor: recording ? "rgba(139,92,246,0.12)" : "transparent",
+      }}
+      onClick={() => onStartRecording(def.id)}
+      title={`Click, then press a new key combination for "${def.action}"`}
+    >
+      {recording ? (
+        <span className="text-[11px]" style={{ color: "#8b5cf6" }}>Press keys…</span>
+      ) : (
+        <Kbd keys={formatBinding(binding)} t={t} />
+      )}
+    </button>
+  );
+}
+
 function ShortcutsTab({ t }: { t: T }) {
-  const groups: { title: string; items: { action: string; keys: string[] }[] }[] = [
-    {
-      title: "Dashboard Editor",
-      items: [
-        { action: "Enter / exit edit mode", keys: ["G"]        },
-        { action: "Select tool",            keys: ["S"]        },
-        { action: "Move tool",              keys: ["M"]        },
-        { action: "Resize tool",            keys: ["R"]        },
-        { action: "Label tool",             keys: ["L"]        },
-        { action: "Button tool",            keys: ["B"]        },
-        { action: "Undo",                   keys: ["Ctrl", "Z"] },
-        { action: "Redo",                   keys: ["Ctrl", "Shift", "Z"] },
-        { action: "Save dashboard",         keys: ["Ctrl", "S"] },
-        { action: "Cancel / close",         keys: ["Esc"]      },
-      ],
-    },
-    {
-      title: "Global",
-      items: [
-        { action: "Quick project jump",     keys: ["Ctrl", "K"]         },
-        { action: "New connection",         keys: ["Ctrl", "N"]         },
-        { action: "Search logs",            keys: ["Ctrl", "F"]         },
-        { action: "Clear logs",             keys: ["Ctrl", "Backspace"] },
-        { action: "Toggle fullscreen",      keys: ["F11"]               },
-        { action: "Toggle sidebar",         keys: ["Ctrl", "B"]         },
-      ],
-    },
-  ];
+  const [bindings, setBindings] = useState<Record<ShortcutId, ShortcutBinding>>(() => {
+    const map = {} as Record<ShortcutId, ShortcutBinding>;
+    SHORTCUT_DEFS.forEach((def) => { map[def.id] = getShortcutBinding(def.id); });
+    return map;
+  });
+  const [recordingId, setRecordingId] = useState<ShortcutId | null>(null);
+
+  useEffect(() => {
+    if (!recordingId) return;
+    const onKeyDown = (event: KeyboardEvent) => {
+      event.preventDefault();
+      event.stopPropagation();
+      if (event.key === "Escape") {
+        setRecordingId(null);
+        return;
+      }
+      const binding = bindingFromEvent(event);
+      if (!binding) return; // bare modifier press — keep listening
+      setShortcutBinding(recordingId, binding);
+      setBindings((prev) => ({ ...prev, [recordingId]: binding }));
+      setRecordingId(null);
+    };
+    window.addEventListener("keydown", onKeyDown, true);
+    return () => window.removeEventListener("keydown", onKeyDown, true);
+  }, [recordingId]);
+
+  const handleReset = (id: ShortcutId) => {
+    resetShortcutBinding(id);
+    const def = SHORTCUT_DEFS.find((d) => d.id === id);
+    if (def) setBindings((prev) => ({ ...prev, [id]: def.defaultBinding }));
+  };
+
+  const groupTitles = Array.from(new Set(SHORTCUT_DEFS.map((def) => def.group)));
 
   return (
     <div className="grid grid-cols-1 xl:grid-cols-2 gap-[12px]">
-      {groups.map((group) => (
-        <Card key={group.title} title={group.title} t={t}>
-          {group.items.map((item, i) => (
-            <div
-              key={item.action}
-              className="flex items-center justify-between px-[16px]"
-              style={{
-                height: 42,
-                borderBottom: i < group.items.length - 1 ? `1px solid ${t.divider}` : "none",
-              }}
-            >
-              <span className="text-[13px]" style={{ color: t.textSecondary }}>{item.action}</span>
-              <Kbd keys={item.keys} t={t} />
-            </div>
-          ))}
-        </Card>
-      ))}
+      {groupTitles.map((groupTitle) => {
+        const defs = SHORTCUT_DEFS.filter((def) => def.group === groupTitle);
+        return (
+          <Card key={groupTitle} title={groupTitle} t={t}>
+            {defs.map((def, i) => {
+              const binding = bindings[def.id];
+              const customized = isShortcutCustomized(def.id) || !bindingsEqual(binding, def.defaultBinding);
+              return (
+                <div
+                  key={def.id}
+                  className="flex items-center justify-between px-[16px]"
+                  style={{
+                    height: 42,
+                    borderBottom: i < defs.length - 1 ? `1px solid ${t.divider}` : "none",
+                  }}
+                >
+                  <span className="text-[13px]" style={{ color: t.textSecondary }}>{def.action}</span>
+                  <div className="flex items-center gap-[6px]">
+                    {customized && (
+                      <button
+                        type="button"
+                        className="flex items-center justify-center transition-colors"
+                        style={{ width: 22, height: 22, color: t.textMuted }}
+                        title="Reset to default"
+                        onClick={() => handleReset(def.id)}
+                      >
+                        <RotateCcw size={12} />
+                      </button>
+                    )}
+                    <ShortcutRecordButton
+                      def={def}
+                      binding={binding}
+                      recording={recordingId === def.id}
+                      onStartRecording={setRecordingId}
+                      t={t}
+                    />
+                  </div>
+                </div>
+              );
+            })}
+          </Card>
+        );
+      })}
     </div>
   );
 }
 
 // ── About tab ─────────────────────────────────────────────────────────────────
+
+type UpdateStatus = "idle" | "checking" | "up-to-date" | "available" | "downloading" | "ready" | "error";
+
+function UpdateCard({ t }: { t: T }) {
+  const isDesktop = isTauri();
+  const [status, setStatus] = useState<UpdateStatus>("idle");
+  const [pendingUpdate, setPendingUpdate] = useState<Update | null>(null);
+  const [progressPct, setProgressPct] = useState<number | null>(null);
+  const [errorText, setErrorText] = useState("");
+
+  const handleCheck = useCallback(async () => {
+    setStatus("checking");
+    setErrorText("");
+    try {
+      const update = await checkForUpdate();
+      if (update) {
+        setPendingUpdate(update);
+        setStatus("available");
+      } else {
+        setPendingUpdate(null);
+        setStatus("up-to-date");
+      }
+    } catch (error) {
+      setErrorText(error instanceof Error ? error.message : "Update check failed.");
+      setStatus("error");
+    }
+  }, []);
+
+  const handleInstall = useCallback(async () => {
+    if (!pendingUpdate) return;
+    setStatus("downloading");
+    setErrorText("");
+    let totalBytes = 0;
+    let downloadedBytes = 0;
+    try {
+      await pendingUpdate.download((event) => {
+        if (event.event === "Started") {
+          totalBytes = event.data.contentLength ?? 0;
+        } else if (event.event === "Progress") {
+          downloadedBytes += event.data.chunkLength;
+          setProgressPct(totalBytes > 0 ? Math.min(100, Math.round((downloadedBytes / totalBytes) * 100)) : null);
+        }
+      });
+      await pendingUpdate.install();
+      setStatus("ready");
+    } catch (error) {
+      setErrorText(error instanceof Error ? error.message : "Update install failed.");
+      setStatus("error");
+    }
+  }, [pendingUpdate]);
+
+  useEffect(() => {
+    if (!isDesktop) return;
+    void handleCheck();
+  }, [isDesktop, handleCheck]);
+
+  return (
+    <Card title="Updates" t={t}>
+      <div className="px-[16px] py-[14px] flex flex-col gap-[10px]">
+        {!isDesktop ? (
+          <p className="text-[12px] leading-[1.65]" style={{ color: t.textSecondary }}>
+            Update checks only run in the desktop app.
+          </p>
+        ) : (
+          <>
+            <div className="flex items-center justify-between gap-[10px]">
+              <span className="text-[12px]" style={{ color: t.textSecondary }}>
+                {status === "idle" && "—"}
+                {status === "checking" && "Checking for updates…"}
+                {status === "up-to-date" && "You're on the latest version."}
+                {status === "available" && pendingUpdate && `Version ${pendingUpdate.version} is available.`}
+                {status === "downloading" && (progressPct != null ? `Downloading… ${progressPct}%` : "Downloading…")}
+                {status === "ready" && "Update installed — restart to apply."}
+                {status === "error" && (errorText || "Update check failed.")}
+              </span>
+              {status !== "downloading" && status !== "ready" && (
+                <button
+                  className="flex items-center gap-[6px] px-[12px] text-[12px] border shrink-0 transition-colors"
+                  style={{ height: 30, backgroundColor: t.inputBg, borderColor: t.inputBorder, color: t.textMuted }}
+                  onClick={() => { void handleCheck(); }}
+                  disabled={status === "checking"}
+                >
+                  Check Again
+                </button>
+              )}
+            </div>
+            {status === "available" && (
+              <button
+                className="flex items-center gap-[7px] px-[12px] text-[12px] border w-fit transition-colors"
+                style={{ height: 30, backgroundColor: "rgba(94,234,212,0.1)", borderColor: t.toggleColor, color: t.toggleColor }}
+                onClick={() => { void handleInstall(); }}
+              >
+                Download &amp; Install
+              </button>
+            )}
+            {status === "ready" && (
+              <button
+                className="flex items-center gap-[7px] px-[12px] text-[12px] border w-fit transition-colors"
+                style={{ height: 30, backgroundColor: "rgba(94,234,212,0.1)", borderColor: t.toggleColor, color: t.toggleColor }}
+                onClick={() => { void relaunch(); }}
+              >
+                Restart Now
+              </button>
+            )}
+          </>
+        )}
+      </div>
+    </Card>
+  );
+}
+
+function DiagnosticsCard({ t }: { t: T }) {
+  const isDesktop = isTauri();
+  const [logDir, setLogDir] = useState<string | null>(null);
+  const [logDirError, setLogDirError] = useState(false);
+  const [copied, setCopied] = useState(false);
+
+  useEffect(() => {
+    if (!isDesktop) return;
+    let cancelled = false;
+    tauriInvoke<string>("get_log_dir")
+      .then((dir) => { if (!cancelled) setLogDir(dir); })
+      .catch(() => { if (!cancelled) setLogDirError(true); });
+    return () => { cancelled = true; };
+  }, [isDesktop]);
+
+  const handleCopy = useCallback(() => {
+    if (!logDir) return;
+    navigator.clipboard.writeText(logDir).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1500);
+    }).catch(() => {});
+  }, [logDir]);
+
+  return (
+    <Card title="Diagnostics" t={t}>
+      <div className="px-[16px] py-[14px] flex flex-col gap-[10px]">
+        <p className="text-[12px] leading-[1.65]" style={{ color: t.textSecondary }}>
+          {isDesktop
+            ? "Autocom writes structured logs here — include them when reporting a bug or a device that misbehaved mid-show."
+            : "Diagnostic logs are only written by the desktop app, not the web build."}
+        </p>
+        {isDesktop && (
+          <div className="flex items-center gap-[8px]">
+            <div className="flex items-center gap-[8px] flex-1 min-w-0 px-[10px]"
+              style={{ height: 32, backgroundColor: t.inputBg, border: `1px solid ${t.inputBorder}` }}>
+              <FileText size={12} style={{ color: t.textMuted, flexShrink: 0 }} />
+              <span className="text-[11px] truncate" style={{ color: t.textMuted }}>
+                {logDirError ? "Unavailable" : (logDir ?? "Loading…")}
+              </span>
+            </div>
+            <button
+              className="flex items-center gap-[6px] px-[12px] text-[12px] border shrink-0 transition-colors"
+              style={{ height: 32, backgroundColor: t.inputBg, borderColor: t.inputBorder, color: t.textMuted }}
+              onClick={handleCopy}
+              disabled={!logDir}
+            >
+              {copied ? <Check size={12} /> : <Copy size={12} />}
+              {copied ? "Copied" : "Copy Path"}
+            </button>
+          </div>
+        )}
+      </div>
+    </Card>
+  );
+}
 
 function AboutTab({ t }: { t: T }) {
   const isDesktop = isTauri();
@@ -700,6 +1061,9 @@ function AboutTab({ t }: { t: T }) {
         ))}
       </Card>
 
+      <UpdateCard t={t} />
+      <DiagnosticsCard t={t} />
+
     </div>
   );
 }
@@ -707,7 +1071,7 @@ function AboutTab({ t }: { t: T }) {
 // ── Main ──────────────────────────────────────────────────────────────────────
 
 export default function Settings() {
-  const { theme, setTheme, font, setFont, sidebarOpen, setSidebarOpen } = useAppContext();
+  const { theme, setTheme, font, setFont } = useAppContext();
   const t = useTheme();
   const [activeTab, setActiveTab] = useState<TabId>("general");
 
@@ -775,8 +1139,6 @@ export default function Settings() {
                     setTheme={setTheme}
                     font={font}
                     setFont={setFont}
-                    sidebarOpen={sidebarOpen}
-                    setSidebarOpen={setSidebarOpen}
                   />
                   <DataTab t={t} />
                 </div>

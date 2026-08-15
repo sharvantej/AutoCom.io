@@ -1,6 +1,5 @@
 import {
   useState,
-  useRef,
   useEffect,
   useMemo,
   useCallback,
@@ -193,14 +192,17 @@ function getDefaultPort(type: DeviceType): string {
   return DEFAULT_PORT_BY_TYPE[type] ?? "";
 }
 
-function getConnectionTypeReferenceLabel(device: string): string {
-  const normalized = normalizeDeviceType(device);
-  const fullLabel = DEVICE_LABELS[normalized] ?? device;
-  const splitIndex = fullLabel.indexOf(":");
-  if (splitIndex >= 0) {
-    return fullLabel.slice(splitIndex + 1).trim();
+const IPV4_PATTERN = /^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$/;
+const HOSTNAME_PATTERN = /^[a-zA-Z0-9]([a-zA-Z0-9-]{0,62})(\.[a-zA-Z0-9]([a-zA-Z0-9-]{0,62}))*$/;
+
+function isValidHost(value: string): boolean {
+  const trimmed = value.trim();
+  if (!trimmed) return false;
+  const ipv4Match = trimmed.match(IPV4_PATTERN);
+  if (ipv4Match) {
+    return ipv4Match.slice(1).every((octet) => Number(octet) <= 255);
   }
-  return fullLabel.trim() || "Unknown";
+  return HOSTNAME_PATTERN.test(trimmed);
 }
 
 const VIDEOHUB_COUNT_MAX = 288;
@@ -890,7 +892,12 @@ function getGenericTcpConnectionFields(form: FormState) {
   };
 }
 
-function getCompanionRemoteConnectionFields(form: FormState) {
+function getCompanionRemoteConnectionFields(form: FormState): {
+  companionDeviceId: string | undefined;
+  companionColumns: number | undefined;
+  companionRows: number | undefined;
+  companionBitmapResolution: "low" | "high" | undefined;
+} {
   if (form.device !== "companion_remote") {
     return {
       companionDeviceId: undefined,
@@ -1154,10 +1161,6 @@ export default function Connections() {
             >
               Add Connection
             </motion.button>
-          </div>
-
-          <div style={{ marginTop: 16 }}>
-            <span className="text-[14px]" style={{ color: t.projectsHeading }}>Connections</span>
           </div>
 
           <div style={{ marginTop: 16, backgroundColor: t.rowBg }}>
@@ -1474,14 +1477,14 @@ function ConnectionModal({
   const resolvedPort = form.port.trim() || getDefaultPort(form.device);
   const resolvedIp = form.ip.trim() || parseBonjourHostIp(form.bonjourHost);
   const hasRequiredFields = Boolean(hasSelectedDevice && form.name.trim() && resolvedIp && resolvedPort);
-  const canSubmit = hasRequiredFields && !submitting && hasSelectedDevice;
   const showRequiredValidation = submitAttempted || (!hasRequiredFields && Boolean(errorMessage));
   const nameInvalid = showRequiredValidation && !form.name.trim();
-  const hostInvalid = showRequiredValidation && !resolvedIp;
+  const hostFormatInvalid = Boolean(resolvedIp) && !isValidHost(resolvedIp);
+  const hostInvalid = (showRequiredValidation && !resolvedIp) || hostFormatInvalid;
   const portInvalid = showRequiredValidation && !resolvedPort && showPortField;
   const missingRequiredLabels = [
     nameInvalid ? "Name" : null,
-    hostInvalid ? ui.labels.host : null,
+    showRequiredValidation && !resolvedIp ? ui.labels.host : null,
     portInvalid ? ui.labels.port : null,
   ].filter(Boolean) as string[];
 
@@ -1493,7 +1496,7 @@ function ConnectionModal({
 
   const handleSubmitClick = () => {
     setSubmitAttempted(true);
-    if (!hasRequiredFields || submitting) return;
+    if (!hasRequiredFields || hostFormatInvalid || submitting) return;
     void onSubmit();
   };
 
@@ -1655,6 +1658,9 @@ function ConnectionModal({
                   maxLength={10}
                   onChange={updateInput("name")}
                 />
+                <span className="text-[10px]" style={{ color: t.textMuted }}>
+                  {form.name.length}/10 characters
+                </span>
               </div>
 
               {isAtem && (
@@ -1790,6 +1796,11 @@ function ConnectionModal({
                         value={form.ip}
                         onChange={updateInput("ip")}
                       />
+                      {hostFormatInvalid ? (
+                        <span className="text-[10px]" style={{ color: P.muted500 }}>
+                          Enter a valid IP address or hostname.
+                        </span>
+                      ) : null}
                     </div>
                   )}
                 </div>
@@ -1806,6 +1817,11 @@ function ConnectionModal({
                       value={form.ip}
                       onChange={updateInput("ip")}
                     />
+                    {hostFormatInvalid ? (
+                      <span className="text-[10px]" style={{ color: P.muted500 }}>
+                        Enter a valid IP address or hostname.
+                      </span>
+                    ) : null}
                   </div>
                   {showInlineFadeFramerate && (
                     <div className="flex flex-col gap-[6px] shrink-0" style={{ width: "40%" }}>

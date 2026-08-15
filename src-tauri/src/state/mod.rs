@@ -15,10 +15,13 @@ pub(crate) struct RunState {
 }
 
 pub(crate) struct AppState {
+  /// Default starting folder for the native New/Open project dialogs —
+  /// no longer an enforced storage location now that projects are plain
+  /// files the user picks/saves anywhere via the OS file picker.
   pub(crate) project_store_dir: PathBuf,
-  pub(crate) connections_path: PathBuf,
   pub(crate) logs_path: PathBuf,
   pub(crate) show_path: PathBuf,
+  pub(crate) active_project_path: PathBuf,
   pub(crate) show_lock: Mutex<bool>,
   pub(crate) run: Mutex<RunState>,
   pub(crate) device_status: Arc<Mutex<HashMap<String, Value>>>,
@@ -27,7 +30,7 @@ pub(crate) struct AppState {
 
 #[derive(Clone)]
 pub(crate) struct StatusRuntime {
-  pub(crate) connections_path: PathBuf,
+  pub(crate) active_project_path: PathBuf,
   pub(crate) device_status: Arc<Mutex<HashMap<String, Value>>>,
   pub(crate) status_check_in_flight: Arc<Mutex<bool>>,
 }
@@ -47,105 +50,42 @@ pub(crate) fn read_json(path: &PathBuf, fallback: Value) -> Value {
 }
 
 pub(crate) fn write_json(path: &PathBuf, data: &Value) -> Result<(), String> {
-  fs::create_dir_all(path.parent().ok_or("Invalid file path")?).map_err(|e| e.to_string())?;
-  fs::write(
-    path,
-    serde_json::to_string_pretty(data).map_err(|e| e.to_string())?,
-  )
-  .map_err(|e| e.to_string())
+  let dir = path.parent().ok_or("Invalid file path")?;
+  fs::create_dir_all(dir).map_err(|e| e.to_string())?;
+  let body = serde_json::to_string_pretty(data).map_err(|e| e.to_string())?;
+  write_atomic(path, body.as_bytes())
 }
 
-fn default_connections() -> Value {
-  json!({
-    "Resolume Arena": {
-      "host":"127.0.0.1",
-      "port":7000,
-      "type":"resolume",
-      "protocol":"osc",
-      "enabled":true,
-      "healthCheck":{"protocol":"tcp","port":8080}
-    },
-    "grandMA3": {
-      "host":"127.0.0.1",
-      "port":8000,
-      "type":"grandma3",
-      "protocol":"osc",
-      "oscPrefix":"/cmd",
-      "enabled":true
-    },
-    "vMix": {
-      "host":"127.0.0.1",
-      "port":8099,
-      "type":"vmix",
-      "protocol":"tcp",
-      "enabled":true
-    },
-    "ATEM Switcher": {
-      "host":"127.0.0.1",
-      "port":9910,
-      "type":"atem",
-      "protocol":"udp",
-      "enabled":true
-    },
-    "OBS": {
-      "host":"127.0.0.1",
-      "port":4455,
-      "type":"obs",
-      "protocol":"ws",
-      "enabled":true,
-      "password":""
-    },
-    "HTTP API": {
-      "host":"127.0.0.1",
-      "port":80,
-      "type":"http_api",
-      "protocol":"http",
-      "path":"/",
-      "enabled":true
-    },
-    "Audio Mixer": {
-      "host":"127.0.0.1",
-      "port":9000,
-      "type":"audio_mixer",
-      "protocol":"osc",
-      "enabled":true
-    },
-    "Ross Switcher (RossTalk)": {
-      "host":"127.0.0.1",
-      "port":7788,
-      "type":"ross_talk",
-      "protocol":"tcp",
-      "enabled":true,
-      "model":"carbonite",
-      "keepAlive":false
-    },
-    "Ross XPression": {
-      "host":"127.0.0.1",
-      "port":7789,
-      "type":"ross_xpression",
-      "protocol":"tcp",
-      "enabled":true
-    },
-    "Artnet DMX": {
-      "host":"127.0.0.1",
-      "port":6454,
-      "type":"artnet_dmx",
-      "protocol":"artnet",
-      "enabled":true
-    }
-  })
+/// Writes to a sibling temp file and renames it into place, so a crash or power
+/// loss mid-write can't leave `path` truncated or partially written.
+pub(crate) fn write_atomic(path: &PathBuf, bytes: &[u8]) -> Result<(), String> {
+  let dir = path.parent().ok_or("Invalid file path")?;
+  let file_name = path
+    .file_name()
+    .and_then(|n| n.to_str())
+    .ok_or("Invalid file name")?;
+  let tmp_path = dir.join(format!(".{}.{}.tmp", file_name, now_ms()));
+  fs::write(&tmp_path, bytes).map_err(|e| e.to_string())?;
+  let result = fs::rename(&tmp_path, path).map_err(|e| e.to_string());
+  if result.is_err() {
+    let _ = fs::remove_file(&tmp_path);
+  }
+  result
 }
 
 pub(crate) fn ensure_files(state: &AppState) -> Result<(), String> {
   fs::create_dir_all(&state.project_store_dir).map_err(|e| e.to_string())?;
-  if !state.connections_path.exists() {
-    write_json(&state.connections_path, &default_connections())?;
-  }
   if !state.logs_path.exists() {
     write_json(&state.logs_path, &json!([]))?;
   }
   if !state.show_path.exists() {
     write_json(&state.show_path, &json!({"cues":{}}))?;
+  }
+  if !state.active_project_path.exists() {
+    write_json(
+      &state.active_project_path,
+      &json!({"activeProjectPath": null, "recentProjectPaths": []}),
+    )?;
   }
   Ok(())
 }

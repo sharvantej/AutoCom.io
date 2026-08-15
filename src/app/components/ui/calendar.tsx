@@ -60,9 +60,11 @@ function Calendar({
         ...classNames,
       }}
       components={{
+        // eslint-disable-next-line react/prop-types
         IconLeft: ({ className, ...props }) => (
           <ChevronLeft className={cn("size-4", className)} {...props} />
         ),
+        // eslint-disable-next-line react/prop-types
         IconRight: ({ className, ...props }) => (
           <ChevronRight className={cn("size-4", className)} {...props} />
         ),

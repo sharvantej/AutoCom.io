@@ -1124,6 +1124,7 @@ function buildGenericManualRow(task: TaskEntry, connection: Connection): Record<
     deviceName: connection.name,
     deviceType: connection.device,
     protocol,
+    params: {} as Record<string, unknown>,
   };
 
   if (isVmixConnection(connection)) {
@@ -1243,9 +1244,10 @@ function buildGenericManualRow(task: TaskEntry, connection: Connection): Record<
     row.lineEnd = "none";
   }
   // Mirror into params for transports that read there.
-  row.params.command = row.command;
+  const rowParams = row.params as Record<string, unknown>;
+  rowParams.command = row.command;
   if (protocol === "tcp") {
-    row.params.lineEnd = "none";
+    rowParams.lineEnd = "none";
   }
   return row;
 }

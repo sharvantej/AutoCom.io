@@ -68,7 +68,7 @@ function collectBuildArtifacts() {
     copied.push(
       ...copyMatchingFiles(
         path.join(BUNDLE_DIR, "nsis"),
-        (name) => name.toLowerCase().endsWith(".exe"),
+        (name) => /\.exe(\.sig)?$/i.test(name),
         outputDir,
       ),
     );
@@ -82,7 +82,7 @@ function collectBuildArtifacts() {
     copied.push(
       ...copyMatchingFiles(
         path.join(BUNDLE_DIR, "dmg"),
-        (name) => name.toLowerCase().endsWith(".dmg"),
+        (name) => /\.dmg(\.sig)?$/i.test(name),
         outputDir,
       ),
     );
@@ -92,7 +92,7 @@ function collectBuildArtifacts() {
     copied.push(
       ...copyMatchingFiles(
         path.join(BUNDLE_DIR, "appimage"),
-        (name) => name.toLowerCase().endsWith(".appimage"),
+        (name) => /\.appimage(\.sig)?$/i.test(name),
         outputDir,
       ),
     );

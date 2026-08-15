@@ -1,16 +1,16 @@
-import React, { createContext, useContext, useEffect, useState } from "react";
-import type { Connection, FontMode, LogEntry, Project, ThemeMode } from "../types";
+import React, { createContext, useContext, useEffect, useRef, useState } from "react";
+import type { Connection, FontMode, LogEntry, ThemeMode } from "../types";
 import {
+  loadActiveProject,
   loadConnections,
   loadLogs,
-  loadProjects,
+  saveActiveProject,
   saveConnections,
   saveLogs,
-  saveProjects,
 } from "../services/runtimeState";
 import { isTauri } from "../services/tauri";
 
-export type { Connection, LogEntry, Project, TaskEntry } from "../types";
+export type { Connection, LogEntry, TaskEntry } from "../types";
 
 export type AppTheme = {
   bgOuter:             string;
@@ -118,10 +118,12 @@ export const lightTheme: AppTheme = {
 };
 
 type AppContextValue = {
-  projects:         Project[];
-  setProjects:      React.Dispatch<React.SetStateAction<Project[]>>;
   connections:      Connection[];
   setConnections:   React.Dispatch<React.SetStateAction<Connection[]>>;
+  activeProjectPath:     string | null;
+  setActiveProjectPath:  React.Dispatch<React.SetStateAction<string | null>>;
+  recentProjectPaths:    string[];
+  setRecentProjectPaths: React.Dispatch<React.SetStateAction<string[]>>;
   logs:             LogEntry[];
   setLogs:          React.Dispatch<React.SetStateAction<LogEntry[]>>;
   logsClearedAt:    number;
@@ -130,20 +132,19 @@ type AppContextValue = {
   setTheme:         React.Dispatch<React.SetStateAction<ThemeMode>>;
   font:             FontMode;
   setFont:          React.Dispatch<React.SetStateAction<FontMode>>;
-  sidebarOpen:      boolean;
-  setSidebarOpen:   React.Dispatch<React.SetStateAction<boolean>>;
+  runtimeLoaded:    boolean;
 };
 
 const AppContext = createContext<AppContextValue | null>(null);
 
 const STORAGE_KEYS = {
-  projects:      "autocom.projects",
   connections:   "autocom.connections",
+  activeProjectPath:  "autocom.activeProjectPath",
+  recentProjectPaths: "autocom.recentProjectPaths",
   logs:          "autocom.logs",
   logsClearedAt: "autocom.logsClearedAt",
   theme:         "autocom.theme",
   font:          "autocom.font",
-  sidebarOpen:   "autocom.sidebarOpen",
 } as const;
 
 const MAX_LOGS = 500;
@@ -168,18 +169,50 @@ function writeStoredValue<T>(key: string, value: T) {
   }
 }
 
+function computeRecentProjectPaths(current: string[], path: string | null): string[] {
+  if (path === null) return current;
+  return [path, ...current.filter((existing) => existing !== path)].slice(0, 8);
+}
+
+/// Non-Tauri (browser) fallback: connections are scoped per-project, mirroring
+/// how the Tauri backend now stores them inside each project's own XML file
+/// instead of one shared global file. This browser-mode path is a local dev
+/// convenience only — real projects (Tauri mode) live entirely as files on
+/// disk the user picks via native dialogs, not in any app-managed storage.
+function connectionsStorageKey(projectPath: string | null): string | null {
+  return projectPath === null ? null : `${STORAGE_KEYS.connections}.${projectPath}`;
+}
+
+function readStoredConnectionsForProject(projectPath: string | null): Connection[] {
+  const key = connectionsStorageKey(projectPath);
+  if (!key) return [];
+  return readStoredValue<Connection[]>(key, []);
+}
+
+function writeStoredConnectionsForProject(projectPath: string | null, connections: Connection[]) {
+  const key = connectionsStorageKey(projectPath);
+  if (!key) return;
+  writeStoredValue(key, connections);
+}
+
 export function AppProvider({ children }: { children: React.ReactNode }) {
   const tauriRuntime = isTauri();
 
-  const [projects, setProjects] = useState<Project[]>(() =>
+  const [activeProjectPath, setActiveProjectPath] = useState<string | null>(() =>
     tauriRuntime
-      ? []
-      : readStoredValue<Project[]>(STORAGE_KEYS.projects, []),
+      ? null
+      : readStoredValue<string | null>(STORAGE_KEYS.activeProjectPath, null),
   );
   const [connections, setConnections] = useState<Connection[]>(() =>
+    tauriRuntime ? [] : readStoredConnectionsForProject(
+      readStoredValue<string | null>(STORAGE_KEYS.activeProjectPath, null),
+    ),
+  );
+  const lastConnectionsProjectPathRef = useRef<string | null>(activeProjectPath);
+  const [recentProjectPaths, setRecentProjectPaths] = useState<string[]>(() =>
     tauriRuntime
       ? []
-      : readStoredValue<Connection[]>(STORAGE_KEYS.connections, []),
+      : readStoredValue<string[]>(STORAGE_KEYS.recentProjectPaths, []),
   );
   const [logs, setLogs] = useState<LogEntry[]>(() =>
     tauriRuntime
@@ -195,9 +228,6 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const [font, setFont] = useState<FontMode>(() =>
     readStoredValue<FontMode>(STORAGE_KEYS.font, "mono"),
   );
-  const [sidebarOpen, setSidebarOpen] = useState<boolean>(() =>
-    readStoredValue<boolean>(STORAGE_KEYS.sidebarOpen, true),
-  );
   const [runtimeLoaded, setRuntimeLoaded] = useState<boolean>(() => !tauriRuntime);
 
   useEffect(() => {
@@ -210,21 +240,32 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
     void (async () => {
       try {
-        const [nextProjects, nextConnections, nextLogs] = await Promise.all([
-          loadProjects(),
-          loadConnections(),
-          loadLogs(),
-        ]);
+        const [nextConnections, nextLogs, nextActiveProject] =
+          await Promise.all([
+            loadConnections(),
+            loadLogs(),
+            loadActiveProject(),
+          ]);
         if (cancelled) return;
-        setProjects(nextProjects);
         setConnections(nextConnections);
         setLogs(nextLogs.slice(0, MAX_LOGS));
+        setActiveProjectPath(nextActiveProject.activeProjectPath);
+        setRecentProjectPaths(nextActiveProject.recentProjectPaths);
+        lastConnectionsProjectPathRef.current = nextActiveProject.activeProjectPath;
       } catch (error) {
         console.error("Failed to load runtime state from Tauri backend:", error);
         if (cancelled) return;
-        setProjects(readStoredValue<Project[]>(STORAGE_KEYS.projects, []));
-        setConnections(readStoredValue<Connection[]>(STORAGE_KEYS.connections, []));
+        const fallbackActiveProjectPath = readStoredValue<string | null>(
+          STORAGE_KEYS.activeProjectPath,
+          null,
+        );
+        setConnections(readStoredConnectionsForProject(fallbackActiveProjectPath));
         setLogs(readStoredValue<LogEntry[]>(STORAGE_KEYS.logs, []).slice(0, MAX_LOGS));
+        setActiveProjectPath(fallbackActiveProjectPath);
+        setRecentProjectPaths(
+          readStoredValue<string[]>(STORAGE_KEYS.recentProjectPaths, []),
+        );
+        lastConnectionsProjectPathRef.current = fallbackActiveProjectPath;
       } finally {
         if (!cancelled) setRuntimeLoaded(true);
       }
@@ -238,24 +279,56 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (!runtimeLoaded) return;
     if (!tauriRuntime) {
-      writeStoredValue(STORAGE_KEYS.projects, projects);
-      return;
-    }
-    void saveProjects(projects).catch((error) => {
-      console.error("Failed to save projects to Tauri backend:", error);
-    });
-  }, [projects, runtimeLoaded, tauriRuntime]);
-
-  useEffect(() => {
-    if (!runtimeLoaded) return;
-    if (!tauriRuntime) {
-      writeStoredValue(STORAGE_KEYS.connections, connections);
+      writeStoredConnectionsForProject(activeProjectPath, connections);
       return;
     }
     void saveConnections(connections).catch((error) => {
       console.error("Failed to save connections to Tauri backend:", error);
     });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [connections, runtimeLoaded, tauriRuntime]);
+
+  // Connections are scoped to whichever project is active (backend resolves
+  // `/api/connections` against it transparently; the browser fallback keys
+  // localStorage by project path) — reload them whenever the active project
+  // changes. Skips the very first run after each load, since the initial
+  // Promise.all load (or the fallback branch above) already fetched the
+  // right project's connections.
+  useEffect(() => {
+    if (!runtimeLoaded) return;
+    if (lastConnectionsProjectPathRef.current === activeProjectPath) return;
+    lastConnectionsProjectPathRef.current = activeProjectPath;
+    if (!tauriRuntime) {
+      setConnections(readStoredConnectionsForProject(activeProjectPath));
+      return;
+    }
+    void loadConnections()
+      .then((next) => setConnections(next))
+      .catch((error) => {
+        console.error("Failed to load connections for active project:", error);
+      });
+  }, [activeProjectPath, runtimeLoaded, tauriRuntime]);
+
+  useEffect(() => {
+    if (!runtimeLoaded) return;
+    if (!tauriRuntime) {
+      writeStoredValue(STORAGE_KEYS.activeProjectPath, activeProjectPath);
+      setRecentProjectPaths((prev) => {
+        const next = computeRecentProjectPaths(prev, activeProjectPath);
+        writeStoredValue(STORAGE_KEYS.recentProjectPaths, next);
+        return next;
+      });
+      return;
+    }
+    void saveActiveProject(activeProjectPath)
+      .then((state) => {
+        setRecentProjectPaths(state.recentProjectPaths);
+      })
+      .catch((error) => {
+        console.error("Failed to save active project to Tauri backend:", error);
+      });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeProjectPath, runtimeLoaded, tauriRuntime]);
 
   useEffect(() => {
     if (!runtimeLoaded) return;
@@ -286,16 +359,14 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     writeStoredValue(STORAGE_KEYS.font, font);
   }, [font]);
 
-  useEffect(() => {
-    writeStoredValue(STORAGE_KEYS.sidebarOpen, sidebarOpen);
-  }, [sidebarOpen]);
-
   return (
     <AppContext.Provider value={{
-      projects,
-      setProjects,
       connections,
       setConnections,
+      activeProjectPath,
+      setActiveProjectPath,
+      recentProjectPaths,
+      setRecentProjectPaths,
       logs,
       setLogs,
       logsClearedAt,
@@ -304,8 +375,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       setTheme,
       font,
       setFont,
-      sidebarOpen,
-      setSidebarOpen,
+      runtimeLoaded,
     }}>
       {children}
     </AppContext.Provider>

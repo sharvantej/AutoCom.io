@@ -3,7 +3,7 @@ import { createBrowserRouter, Outlet } from "react-router";
 import { AppProvider } from "./context/AppContext";
 
 const importLayout = () => import("./Layout");
-const importProjects = () => import("./pages/Projects");
+const importProjectLauncher = () => import("./pages/ProjectLauncher");
 const importConnections = () => import("./pages/Connections");
 const importButtonMapping = () => import("./pages/ButtonMapping");
 const importLogs = () => import("./pages/Logs");
@@ -12,7 +12,7 @@ const importUserGuide = () => import("./pages/UserGuide");
 const importProjectDashboard = () => import("./pages/ProjectDashboard");
 
 const Layout = lazy(importLayout);
-const Projects = lazy(importProjects);
+const ProjectLauncher = lazy(importProjectLauncher);
 const Connections = lazy(importConnections);
 const ButtonMapping = lazy(importButtonMapping);
 const Logs = lazy(importLogs);
@@ -26,7 +26,7 @@ export function preloadRouteChunks(): Promise<unknown[]> {
   if (!preloadPromise) {
     preloadPromise = Promise.allSettled([
       importLayout(),
-      importProjects(),
+      importProjectLauncher(),
       importConnections(),
       importButtonMapping(),
       importLogs(),
@@ -67,7 +67,7 @@ export const router = createBrowserRouter([
         path: "/",
         Component: Layout,
         children: [
-          { index: true,              Component: Projects         },
+          { index: true,              Component: ProjectLauncher  },
           { path: "project/:id",      Component: ProjectDashboard },
           { path: "connections",      Component: Connections      },
           { path: "button-mapping",   Component: ButtonMapping    },

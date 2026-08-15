@@ -2,7 +2,6 @@ use quick_xml::de::from_str as from_xml_str;
 use quick_xml::se::to_string as to_xml_string;
 use serde::{Deserialize, Serialize};
 use serde_json::{Value, json};
-use std::collections::{HashMap, HashSet};
 use std::fs;
 use std::path::PathBuf;
 use tauri::State;
@@ -13,8 +12,11 @@ use crate::show::{
   Protocol, ProtocolInput, RossTalkState, WsCommandState, conn_map, dmx_frame_from_input,
   exec_sequence, http_req, run_step, s, send_osc, send_tcp, send_udp,
 };
-use crate::state::{AppState, ensure_files, now_ms, read_json, write_json};
+use crate::state::{AppState, ensure_files, now_ms, read_json, write_atomic, write_json};
 use crate::state::status::{refresh_status_for_request, status_body};
+
+/// Caps logs.json so a long-running show can't grow it unbounded; oldest entries drop first.
+const MAX_LOG_ENTRIES: usize = 2000;
 
 #[derive(Debug, Clone, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -37,28 +39,25 @@ struct VideohubLabelsRequest {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename = "autocomProject")]
 struct ProjectXmlFile {
-  id: i64,
   name: String,
   #[serde(rename = "layoutItemsJson", default)]
   layout_items_json: String,
+  #[serde(rename = "connectionsJson", default)]
+  connections_json: String,
 }
 
 fn default_project_layout() -> Value {
   json!({ "items": [] })
 }
 
-fn parse_project_id(value: &Value) -> Option<i64> {
-  if let Some(id) = value.as_i64() {
-    return Some(id);
-  }
-  if let Some(id) = value.as_u64() {
-    return i64::try_from(id).ok();
-  }
-  value.as_str().and_then(|raw| raw.trim().parse::<i64>().ok())
-}
-
-fn project_file_path(project_store_dir: &PathBuf, project_id: i64) -> PathBuf {
-  project_store_dir.join(format!("{project_id}.xml"))
+/// Display title for a project file when none is stored yet — derived from
+/// the file's stem so a freshly-picked path always has a sensible name.
+fn project_name_from_path(path: &PathBuf) -> String {
+  path
+    .file_stem()
+    .and_then(|s| s.to_str())
+    .map(|s| s.to_string())
+    .unwrap_or_else(|| "Untitled Project".to_string())
 }
 
 fn read_project_xml_file(path: &PathBuf) -> Option<ProjectXmlFile> {
@@ -71,31 +70,19 @@ fn write_project_xml_file(path: &PathBuf, project: &ProjectXmlFile) -> Result<()
     .map_err(|e| e.to_string())?;
   let xml_body = to_xml_string(project).map_err(|e| e.to_string())?;
   let xml = format!("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n{xml_body}\n");
-  fs::write(path, xml).map_err(|e| e.to_string())
+  write_atomic(path, xml.as_bytes())
 }
 
-fn list_project_xml_files(project_store_dir: &PathBuf) -> Result<Vec<(PathBuf, ProjectXmlFile)>, String> {
-  if !project_store_dir.exists() {
-    return Ok(Vec::new());
-  }
-  let mut items: Vec<(PathBuf, ProjectXmlFile)> = Vec::new();
-  for entry in fs::read_dir(project_store_dir).map_err(|e| e.to_string())? {
-    let Ok(entry) = entry else { continue };
-    let path = entry.path();
-    let is_xml = path
-      .extension()
-      .and_then(|ext| ext.to_str())
-      .map(|ext| ext.eq_ignore_ascii_case("xml"))
-      .unwrap_or(false);
-    if !is_xml {
-      continue;
-    }
-    if let Some(project) = read_project_xml_file(&path) {
-      items.push((path, project));
-    }
-  }
-  items.sort_by(|(_, a), (_, b)| a.id.cmp(&b.id));
-  Ok(items)
+/// Writes a blank project file at `path` — called right when the user picks
+/// a location via the "New Project" native save dialog, so the file is
+/// valid to open again the instant it's created.
+pub(crate) fn create_blank_project_file(path: &PathBuf) -> Result<(), String> {
+  let project = ProjectXmlFile {
+    name: project_name_from_path(path),
+    layout_items_json: "[]".to_string(),
+    connections_json: "{}".to_string(),
+  };
+  write_project_xml_file(path, &project)
 }
 
 fn decode_layout_items_from_text(text: &str) -> Vec<Value> {
@@ -114,71 +101,86 @@ fn encode_layout_items_to_text(layout_body: &Value) -> String {
   serde_json::to_string(&items).unwrap_or_else(|_| "[]".to_string())
 }
 
-fn load_project_layout(state: &AppState, project_id: i64) -> Value {
-  let file_path = project_file_path(&state.project_store_dir, project_id);
-  let Some(project) = read_project_xml_file(&file_path) else {
+fn decode_connections_from_text(text: &str) -> Value {
+  if text.trim().is_empty() {
+    return json!({});
+  }
+  serde_json::from_str::<Value>(text).unwrap_or_else(|_| json!({}))
+}
+
+fn encode_connections_to_text(connections: &Value) -> String {
+  serde_json::to_string(connections).unwrap_or_else(|_| "{}".to_string())
+}
+
+/// Resolves whichever project is currently open (single-active-project model,
+/// tracked in `active_project.json` via the `/api/active-project` routes).
+pub(crate) fn resolve_active_project_path(state: &AppState) -> Option<PathBuf> {
+  resolve_active_project_path_from(&state.active_project_path)
+}
+
+fn resolve_active_project_path_from(active_project_path: &PathBuf) -> Option<PathBuf> {
+  let current = read_json(
+    active_project_path,
+    json!({"activeProjectPath": null, "recentProjectPaths": []}),
+  );
+  current
+    .get("activeProjectPath")
+    .and_then(Value::as_str)
+    .filter(|s| !s.trim().is_empty())
+    .map(PathBuf::from)
+}
+
+/// Reads or defaults a project's XML file at `path`, filling in whichever
+/// existing content (name/layout/connections) is already there.
+fn read_or_default_project(path: &PathBuf) -> ProjectXmlFile {
+  read_project_xml_file(path).unwrap_or_else(|| ProjectXmlFile {
+    name: project_name_from_path(path),
+    layout_items_json: "[]".to_string(),
+    connections_json: "{}".to_string(),
+  })
+}
+
+fn load_project_connections_at_path(path: &PathBuf) -> Value {
+  let Some(project) = read_project_xml_file(path) else {
+    return json!({});
+  };
+  decode_connections_from_text(&project.connections_json)
+}
+
+fn save_project_connections_at_path(path: &PathBuf, connections: Value) -> Result<(), String> {
+  let mut project = read_or_default_project(path);
+  project.connections_json = encode_connections_to_text(&connections);
+  write_project_xml_file(path, &project)
+}
+
+/// Loads the connections of whichever project is currently active. With no
+/// active project there is no meaningful connections context, so this
+/// returns an empty set rather than falling back to any global file.
+fn load_active_connections(state: &AppState) -> Value {
+  load_connections_for_paths(&state.active_project_path)
+}
+
+/// Raw-path variant of `load_active_connections`, reusable from the
+/// background status-polling loop (`state::status::StatusRuntime`), which
+/// only carries a cloned `PathBuf` rather than a full `&AppState`.
+pub(crate) fn load_connections_for_paths(active_project_path: &PathBuf) -> Value {
+  match resolve_active_project_path_from(active_project_path) {
+    Some(project_path) => load_project_connections_at_path(&project_path),
+    None => json!({}),
+  }
+}
+
+fn load_project_layout_at_path(path: &PathBuf) -> Value {
+  let Some(project) = read_project_xml_file(path) else {
     return default_project_layout();
   };
   json!({ "items": decode_layout_items_from_text(&project.layout_items_json) })
 }
 
-fn save_project_layout(state: &AppState, project_id: i64, layout: Value) -> Result<(), String> {
-  let file_path = project_file_path(&state.project_store_dir, project_id);
-  let mut project = read_project_xml_file(&file_path).unwrap_or(ProjectXmlFile {
-    id: project_id,
-    name: format!("Project {project_id}"),
-    layout_items_json: "[]".to_string(),
-  });
+fn save_project_layout_at_path(path: &PathBuf, layout: Value) -> Result<(), String> {
+  let mut project = read_or_default_project(path);
   project.layout_items_json = encode_layout_items_to_text(&layout);
-  write_project_xml_file(&file_path, &project)
-}
-
-fn projects_from_payload(body: Option<Value>) -> Vec<(i64, String)> {
-  let Some(Value::Array(entries)) = body else {
-    return Vec::new();
-  };
-  let mut projects = Vec::new();
-  for entry in entries {
-    let Some(obj) = entry.as_object() else { continue };
-    let Some(id_value) = obj.get("id") else { continue };
-    let Some(id) = parse_project_id(id_value) else { continue };
-    let Some(name) = obj.get("name").and_then(Value::as_str) else { continue };
-    projects.push((id, name.to_string()));
-  }
-  projects
-}
-
-fn sync_projects_xml_files(state: &AppState, projects: Vec<(i64, String)>) -> Result<(), String> {
-  fs::create_dir_all(&state.project_store_dir).map_err(|e| e.to_string())?;
-  let existing = list_project_xml_files(&state.project_store_dir)?;
-  let mut existing_layout_by_id: HashMap<i64, String> = HashMap::new();
-  let mut existing_path_by_id: HashMap<i64, PathBuf> = HashMap::new();
-  for (path, project) in existing {
-    existing_layout_by_id.insert(project.id, project.layout_items_json);
-    existing_path_by_id.insert(project.id, path);
-  }
-
-  let mut keep_ids: HashSet<i64> = HashSet::new();
-  for (id, name) in projects {
-    keep_ids.insert(id);
-    let layout_items_json = existing_layout_by_id
-      .remove(&id)
-      .unwrap_or_else(|| "[]".to_string());
-    let file_path = project_file_path(&state.project_store_dir, id);
-    let project = ProjectXmlFile {
-      id,
-      name,
-      layout_items_json,
-    };
-    write_project_xml_file(&file_path, &project)?;
-  }
-
-  for (id, path) in existing_path_by_id {
-    if !keep_ids.contains(&id) {
-      let _ = fs::remove_file(path);
-    }
-  }
-  Ok(())
+  write_project_xml_file(path, &project)
 }
 
 fn is_button_item(item: &Value) -> bool {
@@ -218,15 +220,13 @@ fn find_button_by_id_in_layout(layout: &Value, button_id: &str) -> Option<Value>
   None
 }
 
+/// Looks up a button within whichever project is currently active — there's
+/// no registry of other projects to search across anymore, so this only
+/// ever matches a button belonging to the open project.
 fn find_button_by_id(state: &AppState, button_id: &str) -> Option<Value> {
-  let files = list_project_xml_files(&state.project_store_dir).ok()?;
-  for (_, project) in files {
-    let layout = json!({ "items": decode_layout_items_from_text(&project.layout_items_json) });
-    if let Some(button) = find_button_by_id_in_layout(&layout, button_id) {
-      return Some(button);
-    }
-  }
-  None
+  let project_path = resolve_active_project_path(state)?;
+  let layout = load_project_layout_at_path(&project_path);
+  find_button_by_id_in_layout(&layout, button_id)
 }
 
 #[tauri::command]
@@ -327,6 +327,24 @@ pub(crate) async fn api_request(
   state: State<'_, AppState>,
   rosstalk_state: State<'_, RossTalkState>,
 ) -> Result<ApiResponse, String> {
+  let result = api_request_inner(method.clone(), path.clone(), body, state, rosstalk_state).await;
+  match &result {
+    Err(e) => log::error!("api_request {method} {path} failed: {e}"),
+    Ok(res) if res.status >= 400 => {
+      log::warn!("api_request {method} {path} returned status {}", res.status)
+    }
+    Ok(_) => {}
+  }
+  result
+}
+
+async fn api_request_inner(
+  method: String,
+  path: String,
+  body: Option<Value>,
+  state: State<'_, AppState>,
+  rosstalk_state: State<'_, RossTalkState>,
+) -> Result<ApiResponse, String> {
   ensure_files(&state)?;
   let m = method.to_uppercase();
   let parts = path.trim_matches('/').split('/').collect::<Vec<_>>();
@@ -339,27 +357,6 @@ pub(crate) async fn api_request(
       events,
     });
   }
-  if m == "GET" && path == "/api/projects" {
-    let files = list_project_xml_files(&state.project_store_dir)?;
-    let projects = files
-      .into_iter()
-      .map(|(_, project)| json!({ "id": project.id, "name": project.name }))
-      .collect::<Vec<Value>>();
-    return Ok(ApiResponse {
-      status: 200,
-      body: Value::Array(projects),
-      events,
-    });
-  }
-  if m == "POST" && path == "/api/projects" {
-    let projects = projects_from_payload(body);
-    sync_projects_xml_files(&state, projects)?;
-    return Ok(ApiResponse {
-      status: 200,
-      body: json!({"success":true}),
-      events,
-    });
-  }
   if m == "GET" && path == "/api/logs" {
     return Ok(ApiResponse {
       status: 200,
@@ -368,7 +365,15 @@ pub(crate) async fn api_request(
     });
   }
   if m == "POST" && path == "/api/logs" {
-    write_json(&state.logs_path, &body.unwrap_or_else(|| json!([])))?;
+    let mut entries = match body.unwrap_or_else(|| json!([])) {
+      Value::Array(entries) => entries,
+      _ => Vec::new(),
+    };
+    if entries.len() > MAX_LOG_ENTRIES {
+      let drop_count = entries.len() - MAX_LOG_ENTRIES;
+      entries.drain(0..drop_count);
+    }
+    write_json(&state.logs_path, &Value::Array(entries))?;
     return Ok(ApiResponse {
       status: 200,
       body: json!({"success":true}),
@@ -376,15 +381,25 @@ pub(crate) async fn api_request(
     });
   }
   if m == "GET" && path == "/api/layout" {
-    let files = list_project_xml_files(&state.project_store_dir)?;
-    let fallback = files
-      .into_iter()
-      .next()
-      .map(|(_, project)| json!({ "items": decode_layout_items_from_text(&project.layout_items_json) }))
-      .unwrap_or_else(default_project_layout);
+    // Path travels in the request body (not the URL) since a real
+    // filesystem path is full of `/` and would break the `parts.split('/')`
+    // route matcher used everywhere else in this handler.
+    let Some(project_path) = body
+      .as_ref()
+      .and_then(|b| b.get("path"))
+      .and_then(Value::as_str)
+      .filter(|s| !s.trim().is_empty())
+      .map(PathBuf::from)
+    else {
+      return Ok(ApiResponse {
+        status: 400,
+        body: json!({"error":"Missing project path"}),
+        events,
+      });
+    };
     return Ok(ApiResponse {
       status: 200,
-      body: fallback,
+      body: load_project_layout_at_path(&project_path),
       events,
     });
   }
@@ -396,30 +411,22 @@ pub(crate) async fn api_request(
         events,
       });
     }
-    return Ok(ApiResponse {
-      status: 200,
-      body: json!({"success":true}),
-      events,
-    });
-  }
-  if m == "GET" && parts.len() == 3 && parts[0] == "api" && parts[1] == "layout" {
-    let project_id = parts[2].parse::<i64>().unwrap_or(0);
-    return Ok(ApiResponse {
-      status: 200,
-      body: load_project_layout(&state, project_id),
-      events,
-    });
-  }
-  if m == "POST" && parts.len() == 3 && parts[0] == "api" && parts[1] == "layout" {
-    if *state.show_lock.lock().map_err(|e| e.to_string())? {
+    let payload = body.unwrap_or_else(|| json!({}));
+    let Some(project_path) = payload
+      .get("path")
+      .and_then(Value::as_str)
+      .filter(|s| !s.trim().is_empty())
+      .map(PathBuf::from)
+    else {
       return Ok(ApiResponse {
-        status: 403,
-        body: json!({"error":"Show is locked. Cannot save layout."}),
+        status: 400,
+        body: json!({"error":"Missing project path"}),
         events,
       });
-    }
-    let project_id = parts[2].parse::<i64>().unwrap_or(0);
-    save_project_layout(&state, project_id, body.unwrap_or_else(default_project_layout))?;
+    };
+    let layout = payload.get("items").cloned().map(|items| json!({"items": items}))
+      .unwrap_or_else(default_project_layout);
+    save_project_layout_at_path(&project_path, layout)?;
     return Ok(ApiResponse {
       status: 200,
       body: json!({"success":true}),
@@ -427,18 +434,75 @@ pub(crate) async fn api_request(
     });
   }
   if m == "GET" && path == "/api/connections" {
+    // An explicit path in the body reads a specific (possibly non-active)
+    // project's connections — needed by Stream Deck button execution, whose
+    // mappings reference whichever project they were created in, not
+    // necessarily whatever's active right now. Omitting it resolves the
+    // active project, same as before.
+    let explicit_path = body
+      .as_ref()
+      .and_then(|b| b.get("path"))
+      .and_then(Value::as_str)
+      .filter(|s| !s.trim().is_empty())
+      .map(PathBuf::from);
+    let body = match explicit_path {
+      Some(project_path) => load_project_connections_at_path(&project_path),
+      None => load_active_connections(&state),
+    };
     return Ok(ApiResponse {
       status: 200,
-      body: read_json(&state.connections_path, json!({})),
+      body,
       events,
     });
   }
   if m == "POST" && path == "/api/connections" {
-    write_json(&state.connections_path, &body.unwrap_or_else(|| json!({})))?;
+    let Some(project_path) = resolve_active_project_path(&state) else {
+      return Ok(ApiResponse {
+        status: 400,
+        body: json!({"error":"No active project to save connections into."}),
+        events,
+      });
+    };
+    save_project_connections_at_path(&project_path, body.unwrap_or_else(|| json!({})))?;
     refresh_status_for_request(&state, Some(&mut events)).await;
     return Ok(ApiResponse {
       status: 200,
       body: json!({"success":true}),
+      events,
+    });
+  }
+  if m == "GET" && path == "/api/active-project" {
+    return Ok(ApiResponse {
+      status: 200,
+      body: read_json(
+        &state.active_project_path,
+        json!({"activeProjectPath": null, "recentProjectPaths": []}),
+      ),
+      events,
+    });
+  }
+  if m == "POST" && path == "/api/active-project" {
+    let payload = body.unwrap_or_else(|| json!({}));
+    let project_path = payload.get("activeProjectPath").cloned().unwrap_or(Value::Null);
+    let current = read_json(
+      &state.active_project_path,
+      json!({"activeProjectPath": null, "recentProjectPaths": []}),
+    );
+    let mut recent: Vec<Value> = current
+      .get("recentProjectPaths")
+      .and_then(|v| v.as_array())
+      .cloned()
+      .unwrap_or_default();
+    if let Some(p) = project_path.as_str().filter(|s| !s.trim().is_empty()) {
+      recent.retain(|v| v.as_str() != Some(p));
+      recent.insert(0, json!(p));
+      recent.truncate(8);
+    }
+    let next = json!({"activeProjectPath": project_path, "recentProjectPaths": recent});
+    write_json(&state.active_project_path, &next)?;
+    return Ok(ApiResponse {
+      status: 200,
+      body: next,
       events,
     });
   }
@@ -614,7 +678,7 @@ pub(crate) async fn api_request(
         events,
       });
     }
-    let conns = conn_map(&read_json(&state.connections_path, json!({})));
+    let conns = conn_map(&load_active_connections(&state));
     match exec_sequence(&rows, &conns, &mut events, rosstalk_state.inner()).await {
       Ok(results) => {
         return Ok(ApiResponse {
@@ -642,7 +706,7 @@ pub(crate) async fn api_request(
       });
     }
     let id = parts[2];
-    let conns = conn_map(&read_json(&state.connections_path, json!({})));
+    let conns = conn_map(&load_active_connections(&state));
     let btn = find_button_by_id(&state, id);
     let Some(btn) = btn else {
       return Ok(ApiResponse {
@@ -701,7 +765,7 @@ pub(crate) async fn api_request(
       r.started_at = Some(now_ms());
     }
     let show = read_json(&state.show_path, json!({"cues":{}}));
-    let conns = conn_map(&read_json(&state.connections_path, json!({})));
+    let conns = conn_map(&load_active_connections(&state));
     let res = if let Some(tl) = show
       .get("cues")
       .and_then(Value::as_object)

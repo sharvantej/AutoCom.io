@@ -9,8 +9,9 @@ use tauri::Emitter;
 use tokio::net::{TcpStream, UdpSocket};
 
 use crate::ApiEvent;
+use crate::api::load_connections_for_paths;
 use crate::show::{Protocol, conn_map, infer_protocol};
-use crate::state::{AppState, StatusRuntime, read_json};
+use crate::state::{AppState, StatusRuntime};
 
 // Keep probes responsive but avoid false "offline" results on slower hosts/VMs.
 const TCP_PROBE_TIMEOUT_MS: u64 = 900;
@@ -283,8 +284,8 @@ async fn check_connection_status(conn: &Map<String, Value>) -> Value {
   })
 }
 
-async fn collect_device_statuses(connections_path: &PathBuf) -> HashMap<String, Value> {
-  let raw = read_json(connections_path, json!({}));
+async fn collect_device_statuses(active_project_path: &PathBuf) -> HashMap<String, Value> {
+  let raw = load_connections_for_paths(active_project_path);
   let conns = conn_map(&raw);
   let mut out = HashMap::new();
   let mut jobs = stream::iter(
@@ -301,7 +302,7 @@ async fn collect_device_statuses(connections_path: &PathBuf) -> HashMap<String, 
 }
 
 async fn refresh_status_cache(
-  connections_path: &PathBuf,
+  active_project_path: &PathBuf,
   cache: &Arc<Mutex<HashMap<String, Value>>>,
   in_flight: &Arc<Mutex<bool>>,
 ) -> Option<HashMap<String, Value>> {
@@ -315,7 +316,7 @@ async fn refresh_status_cache(
     Err(_) => return None,
   };
 
-  let updated = collect_device_statuses(connections_path).await;
+  let updated = collect_device_statuses(active_project_path).await;
   let changed = match cache.lock() {
     Ok(mut status) => {
       let changed = *status != updated;
@@ -349,7 +350,7 @@ fn emit_status_event(events: &mut Vec<ApiEvent>, statuses: HashMap<String, Value
 
 pub(crate) async fn refresh_status_for_request(state: &AppState, events: Option<&mut Vec<ApiEvent>>) {
   let changed = refresh_status_cache(
-    &state.connections_path,
+    &state.active_project_path,
     &state.device_status,
     &state.status_check_in_flight,
   )
@@ -369,7 +370,7 @@ pub(crate) fn start_status_loop(app: tauri::AppHandle, runtime: StatusRuntime) {
     tokio::time::sleep(Duration::from_millis(STATUS_BOOTSTRAP_DELAY_MS)).await;
     loop {
       if let Some(statuses) = refresh_status_cache(
-        &runtime.connections_path,
+        &runtime.active_project_path,
         &runtime.device_status,
         &runtime.status_check_in_flight,
       )

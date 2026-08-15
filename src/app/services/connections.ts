@@ -454,7 +454,7 @@ export function parseBackendConnectionsPayload(raw: unknown): Connection[] {
           toNumberOrUndefined(entry.rows) ??
           toNumberOrUndefined(entry.numberOfRows) ??
           toNumberOrUndefined(entry.rowCount),
-        companionBitmapResolution:
+        companionBitmapResolution: (
           String(
             toOptionalString(entry.companionBitmapResolution) ??
             toOptionalString(entry.bitmapResolution) ??
@@ -469,7 +469,8 @@ export function parseBackendConnectionsPayload(raw: unknown): Connection[] {
               "",
             ).trim().toLowerCase() === "low"
               ? "low"
-              : undefined,
+              : undefined
+        ) as "low" | "high" | undefined,
         rossTalkModel:
           normalizeRossTalkModel(entry.rossTalkModel) ??
           normalizeRossTalkModel(entry.model),

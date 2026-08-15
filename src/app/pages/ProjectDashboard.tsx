@@ -7,6 +7,7 @@ import { useAppContext, useTheme, type AppTheme } from "../context/AppContext";
 import type { Connection, TaskEntry } from "../types";
 import { compileDashboardRows } from "../services/dashboardTasks";
 import { publishDashboardEditMode } from "../services/dashboardEditorMode";
+import { publishDashboardUnsavedChanges } from "../services/dashboardSaveState";
 import { readMotionScale } from "../services/motion";
 import { isTauri, tauriInvoke } from "../services/tauri";
 import {
@@ -15,6 +16,7 @@ import {
   type RuntimeApiResponse,
 } from "../services/runtimeState";
 import { createEntityId } from "../services/ids";
+import { matchesShortcut } from "../services/shortcuts";
 import svgPaths from "../assets/generated/project-dashboard-svg";
 import { AddTaskPanel, type WorkspaceTaskActions } from "../components/AddTaskPanel";
 import { APP_THEME_PALETTE } from "../styles/palette";
@@ -301,18 +303,6 @@ function isTextEntryTarget(target: EventTarget | null): boolean {
   const tag = target.tagName;
   return tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT";
 }
-function hasSuccessfulExecutionResult(results: unknown): boolean {
-  if (!Array.isArray(results)) return false;
-  return results.some((entry) => {
-    if (!entry || typeof entry !== "object") return false;
-    const payload = entry as Record<string, unknown>;
-    if (payload.ok === true && payload.skipped !== true) return true;
-    if (Array.isArray(payload.results)) {
-      return hasSuccessfulExecutionResult(payload.results);
-    }
-    return false;
-  });
-}
 // ── SVG icon ──────────────────────────────────────────────────────────────────
 function Icon({ d, size = 16 }: { d: string | string[]; size?: number }) {
   const paths = Array.isArray(d) ? d : [d];
@@ -378,6 +368,27 @@ function clampWorkspaceSplitRatio(ratio: number, hostWidth: number): number {
   if (maxRatio < minRatio) return 0.5;
   return Math.min(Math.max(ratio, minRatio), maxRatio);
 }
+function buildCenteredWorkspaceWindowPos(size: { width: number; height: number }): { x: number; y: number } {
+  if (typeof window === "undefined") {
+    return { x: 0, y: 0 };
+  }
+  return {
+    x: Math.max(0, Math.round((window.innerWidth - size.width) / 2)),
+    y: Math.max(0, Math.round((window.innerHeight - size.height) / 2)),
+  };
+}
+function clampWorkspaceWindowPos(
+  pos: { x: number; y: number },
+  size: { width: number; height: number },
+): { x: number; y: number } {
+  if (typeof window === "undefined") return pos;
+  const maxX = Math.max(0, window.innerWidth - size.width);
+  const maxY = Math.max(0, window.innerHeight - size.height);
+  return {
+    x: Math.max(0, Math.min(maxX, pos.x)),
+    y: Math.max(0, Math.min(maxY, pos.y)),
+  };
+}
 function getEditorWindowSize(
   type: CanvasItem["type"],
   mode: EditorWindowMode,
@@ -438,8 +449,8 @@ function buildEditorWindowRect(
 // ── Main component ────────────────────────────────────────────────────────────
 export default function ProjectDashboard() {
   const { id: routeProjectId } = useParams();
-  const projectId = routeProjectId ?? "default";
-  const { connections, setLogs, theme } = useAppContext();
+  const projectId = routeProjectId ? decodeURIComponent(routeProjectId) : "default";
+  const { connections, setLogs, theme, setActiveProjectPath } = useAppContext();
   const t         = useTheme();
   const patternId = useId().replace(/:/g, "");
   const [gridSize] = useState(() => readDashboardGridSize());
@@ -457,6 +468,13 @@ export default function ProjectDashboard() {
   const [itemsProjectKey, setItemsProjectKey] = useState(() =>
     isTauri() ? "" : projectId,
   );
+  const lastSyncedProjectPathRef = useRef<string | null>(null);
+  useEffect(() => {
+    if (!routeProjectId) return;
+    if (lastSyncedProjectPathRef.current === projectId) return;
+    lastSyncedProjectPathRef.current = projectId;
+    setActiveProjectPath(projectId);
+  }, [projectId, routeProjectId, setActiveProjectPath]);
   const [selId, setSelId] = useState<string | null>(null);
   const [editorItemId, setEditorItemId] = useState<string | null>(null);
   const [editorMode, setEditorMode] = useState<EditorWindowMode>("edit");
@@ -474,12 +492,13 @@ export default function ProjectDashboard() {
   const [tallyButtonId, setTallyButtonId] = useState<string | null>(null);
   const [dashboardSaveStatus, setDashboardSaveStatus] = useState<DashboardSaveStatus>("idle");
   const [workspaceWindowPos, setWorkspaceWindowPos] = useState<{ x: number; y: number } | null>(null);
+  const workspaceWindowSavedPosRef = useRef<{ x: number; y: number } | null>(null);
   const workspaceWindowRef = useRef<HTMLDivElement | null>(null);
   const [workspaceWindowSize, setWorkspaceWindowSize] = useState(() => ({
     width: 994,
     height: 602,
   }));
-  const [workspaceSplitRatio, setWorkspaceSplitRatio] = useState(0.5);
+  const [, setWorkspaceSplitRatio] = useState(0.5);
   const [workspaceTaskActions, setWorkspaceTaskActions] = useState<WorkspaceTaskActions | null>(null);
   const [editorRect, setEditorRect] = useState<EditorWindowRect>(() => ({
     x: 96,
@@ -490,12 +509,19 @@ export default function ProjectDashboard() {
   const [ctxMenu, setCtxMenu] = useState<{ sx:number; sy:number } | null>(null);
   // Drag
   const dragRef    = useRef<DragState | null>(null);
+  // Snapshot of items at the start of a move/resize drag — live drag frames
+  // mutate `items` directly (bypassing applyItemsUpdate) so the canvas
+  // doesn't push an undo entry per pixel; this is committed as a single
+  // undo entry once the drag actually ends (see the `mu` handler below).
+  const dragStartItemsRef = useRef<CanvasItem[] | null>(null);
   const newDragRef = useRef<NewItemDrag | null>(null);
   const editorDragRef = useRef<EditorWindowDrag | null>(null);
   const workspaceDragRef = useRef<EditorWindowDrag | null>(null);
   const windowResizeRef = useRef<WindowResizeDrag | null>(null);
   const workspaceSplitDragRef = useRef<{ mx0: number; ratio0: number; width0: number } | null>(null);
+  const prevAddTaskOpenRef = useRef(false);
   const saveStatusResetTimerRef = useRef<number | null>(null);
+  const autoSaveDebounceRef = useRef<number | null>(null);
   const connectionsRef = useRef(connections);
   const canvasRef  = useRef<HTMLDivElement>(null);
   const workspaceSplitHostRef = useRef<HTMLDivElement>(null);
@@ -523,14 +549,22 @@ export default function ProjectDashboard() {
       ...prev,
     ].slice(0, 500));
   }, [setLogs]);
+  // Clears the undo stack — called once the dashboard is actually persisted
+  // (auto-save or explicit) so Ctrl+Z can't step back past the last saved
+  // state, and so the unsaved-changes star clears in lockstep.
+  const markDashboardSaved = useCallback(() => {
+    setUndoStack([]);
+  }, []);
   const persistDashboardState = useCallback((layoutProjectId: string, nextItems: CanvasItem[]) => {
-    void persistCanvasItems(layoutProjectId, nextItems).catch((error) => {
+    void persistCanvasItems(layoutProjectId, nextItems).then(() => {
+      markDashboardSaved();
+    }).catch((error) => {
       appendDashboardLog(
         `Dashboard/${layoutProjectId}`,
         error instanceof Error ? error.message : "Failed to save dashboard layout.",
       );
     });
-  }, [appendDashboardLog]);
+  }, [appendDashboardLog, markDashboardSaved]);
   const normalizeTasksForConnections = useCallback((tasks: TaskEntry[]): TaskEntry[] => {
     if (!tasks.length) return tasks;
     const deduped = ensureUniqueTaskIds(tasks);
@@ -569,6 +603,14 @@ export default function ProjectDashboard() {
       })),
     }))
   ), []);
+  const pushUndoSnapshot = useCallback((previousItems: CanvasItem[]) => {
+    setUndoStack((history) => {
+      const trimmed = history.length >= DASHBOARD_UNDO_LIMIT
+        ? history.slice(history.length - (DASHBOARD_UNDO_LIMIT - 1))
+        : history;
+      return [...trimmed, cloneCanvasItems(previousItems)];
+    });
+  }, [cloneCanvasItems]);
   const applyItemsUpdate = useCallback((updater: (previousItems: CanvasItem[]) => CanvasItem[]) => {
     setItems((previousItems) => {
       const nextItems = updater(previousItems);
@@ -583,15 +625,10 @@ export default function ProjectDashboard() {
         }
       }
       if (!changed) return previousItems;
-      setUndoStack((history) => {
-        const trimmed = history.length >= DASHBOARD_UNDO_LIMIT
-          ? history.slice(history.length - (DASHBOARD_UNDO_LIMIT - 1))
-          : history;
-        return [...trimmed, cloneCanvasItems(previousItems)];
-      });
+      pushUndoSnapshot(previousItems);
       return nextItems;
     });
-  }, [cloneCanvasItems]);
+  }, [pushUndoSnapshot]);
   const performUndo = useCallback(() => {
     setUndoStack((history) => {
       if (!history.length) return history;
@@ -600,6 +637,14 @@ export default function ProjectDashboard() {
       return history.slice(0, -1);
     });
   }, [cloneCanvasItems]);
+  // Undo history is intentionally bounded by the last save: successfully
+  // persisting the dashboard (auto-save or explicit) clears the stack, so
+  // Ctrl+Z can only step back through changes made since that save — not
+  // past it — and the "unsaved changes" signal below is exactly "is there
+  // anything left to undo".
+  useEffect(() => {
+    publishDashboardUnsavedChanges(undoStack.length > 0);
+  }, [undoStack]);
   const openEditorWindow = useCallback((item: CanvasItem, options?: {
     tab?: RightTab;
     addTask?: boolean;
@@ -614,12 +659,20 @@ export default function ProjectDashboard() {
     setEditorMode(mode);
     setRightTab(options?.tab ?? "attributes");
     setAddTaskOpen(shouldOpenTaskWorkspace);
+    if (shouldOpenTaskWorkspace) {
+      const restored = workspaceWindowSavedPosRef.current;
+      setWorkspaceWindowPos(
+        restored
+          ? clampWorkspaceWindowPos(restored, workspaceWindowSize)
+          : buildCenteredWorkspaceWindowPos(workspaceWindowSize),
+      );
+    }
     setTaskDraft(normalizedTasks);
     setSelectedDraftTaskId(normalizedTasks[0]?.id ?? null);
     setEditingDraftTaskId(normalizedTasks[0]?.id ?? null);
     setEditorRect(buildEditorWindowRect(item, canvasRef.current, mode));
     setCtxMenu(null);
-  }, [normalizeTasksForConnections]);
+  }, [normalizeTasksForConnections, workspaceWindowSize]);
   const closeEditorWindow = useCallback(() => {
     setPanelOpen(false);
     setAddTaskOpen(false);
@@ -827,10 +880,16 @@ export default function ProjectDashboard() {
         if (clamped.width === previous.width && clamped.height === previous.height) return previous;
         return clamped;
       });
+      setWorkspaceWindowPos((previous) => {
+        if (!previous) return previous;
+        const clamped = clampWorkspaceWindowPos(previous, workspaceWindowSize);
+        workspaceWindowSavedPosRef.current = clamped;
+        return clamped;
+      });
     };
     window.addEventListener("resize", onResize);
     return () => window.removeEventListener("resize", onResize);
-  }, [panelOpen]);
+  }, [panelOpen, workspaceWindowSize]);
   useEffect(() => {
     if (!editorItem) {
       setTaskDraft([]);
@@ -849,6 +908,18 @@ export default function ProjectDashboard() {
     });
   }, [addTaskOpen, editorItem, panelOpen]);
   useEffect(() => {
+    const wasOpen = prevAddTaskOpenRef.current;
+    if (addTaskOpen && !wasOpen) {
+      const restored = workspaceWindowSavedPosRef.current;
+      setWorkspaceWindowPos(
+        restored
+          ? clampWorkspaceWindowPos(restored, workspaceWindowSize)
+          : buildCenteredWorkspaceWindowPos(workspaceWindowSize),
+      );
+    }
+    prevAddTaskOpenRef.current = addTaskOpen;
+  }, [addTaskOpen, workspaceWindowSize]);
+  useEffect(() => {
     const activeTasks = addTaskOpen ? taskDraft : (editorItem?.tasks ?? []);
     if (!activeTasks.length) {
       setSelectedDraftTaskId(null);
@@ -862,45 +933,64 @@ export default function ProjectDashboard() {
       setEditingDraftTaskId(activeTasks[0]?.id ?? null);
     }
   }, [addTaskOpen, editorItem, editingDraftTaskId, selectedDraftTaskId, taskDraft]);
-  // Persist canvas changes for the current project.
+  useEffect(() => {
+    const onSaveRequest = (event: Event) => {
+      const detail =
+        event instanceof CustomEvent
+          ? (event.detail as { shiftKey?: boolean } | undefined)
+          : undefined;
+      void (async () => {
+        const saved = await saveDashboardNow();
+        if (saved && detail?.shiftKey && panelOpen) {
+          closeEditorWindow();
+        }
+      })();
+    };
+    window.addEventListener("autocom:save-request", onSaveRequest as EventListener);
+    return () => window.removeEventListener("autocom:save-request", onSaveRequest as EventListener);
+  }, [closeEditorWindow, panelOpen, saveDashboardNow]);
+  // Persist canvas changes for the current project. Debounced so a drag or
+  // resize gesture (which can update `items` dozens of times a second) doesn't
+  // hit disk/IPC on every pixel and stutter the canvas.
   useEffect(() => {
     if (itemsProjectKey !== projectId) return;
-    if (!autoSaveEnabled) {
-      pendingLayoutRef.current = { projectId, items };
-      return;
+    pendingLayoutRef.current = { projectId, items };
+    if (!autoSaveEnabled) return;
+    if (autoSaveDebounceRef.current !== null) {
+      window.clearTimeout(autoSaveDebounceRef.current);
     }
-    pendingLayoutRef.current = null;
-    persistDashboardState(projectId, items);
+    autoSaveDebounceRef.current = window.setTimeout(() => {
+      autoSaveDebounceRef.current = null;
+      pendingLayoutRef.current = null;
+      persistDashboardState(projectId, items);
+    }, 500);
   }, [autoSaveEnabled, items, itemsProjectKey, persistDashboardState, projectId]);
+
+  useEffect(() => {
+    return () => {
+      if (autoSaveDebounceRef.current !== null) {
+        window.clearTimeout(autoSaveDebounceRef.current);
+        autoSaveDebounceRef.current = null;
+      }
+    };
+  }, []);
   // Keyboard shortcuts and accessibility flow.
   useEffect(() => {
     const fn = (e: KeyboardEvent) => {
       const key = e.key;
-      const lowerKey = key.toLowerCase();
-      const hasCommand = e.metaKey || e.ctrlKey;
-      if (hasCommand && lowerKey === "s") {
-        e.preventDefault();
-        void (async () => {
-          const saved = await saveDashboardNow();
-          if (saved && e.shiftKey && panelOpen) {
-            closeEditorWindow();
-          }
-        })();
-        return;
-      }
-      if (hasCommand && lowerKey === "z" && !e.shiftKey) {
+      if (matchesShortcut("dashboard.undo", e)) {
         if (isTextEntryTarget(e.target)) return;
         e.preventDefault();
         performUndo();
         return;
       }
       if (isTextEntryTarget(e.target)) return;
-      if (!hasCommand && !e.altKey && lowerKey === "g") {
+      if (matchesShortcut("dashboard.editMode", e)) {
         e.preventDefault();
         setDashboardEditModeState(!editMode);
         return;
       }
-      if (key === "Escape") {
+      if (matchesShortcut("dashboard.cancel", e)) {
         e.preventDefault();
         if (addTaskOpen) {
           if (editorItem?.type === "button" && editorMode === "edit") {
@@ -918,12 +1008,12 @@ export default function ProjectDashboard() {
         return;
       }
       if (!editMode) return;
-      if (!panelOpen && !hasCommand && !e.altKey) {
-        if (lowerKey === "v") { setTool("select"); return; }
-        if (lowerKey === "m") { setTool("move"); return; }
-        if (lowerKey === "r") { setTool("resize"); return; }
-        if (lowerKey === "b") { setTool("button"); return; }
-        if (lowerKey === "l") { setTool("label"); return; }
+      if (!panelOpen) {
+        if (matchesShortcut("dashboard.toolSelect", e)) { setTool("select"); return; }
+        if (matchesShortcut("dashboard.toolMove", e)) { setTool("move"); return; }
+        if (matchesShortcut("dashboard.toolResize", e)) { setTool("resize"); return; }
+        if (matchesShortcut("dashboard.toolButton", e)) { setTool("button"); return; }
+        if (matchesShortcut("dashboard.toolLabel", e)) { setTool("label"); return; }
       }
       if (!panelOpen && key === "Tab") {
         if (!items.length) return;
@@ -935,7 +1025,7 @@ export default function ProjectDashboard() {
         setSelId(items[nextIndex]?.id ?? null);
         return;
       }
-      if (hasCommand && lowerKey === "d" && selId && !panelOpen) {
+      if ((e.metaKey || e.ctrlKey) && key.toLowerCase() === "d" && selId && !panelOpen) {
         e.preventDefault();
         duplicateCanvasItemById(selId);
         return;
@@ -1123,6 +1213,25 @@ export default function ProjectDashboard() {
     };
     const mu = () => {
       dragRef.current = null;
+      const dragStartItems = dragStartItemsRef.current;
+      if (dragStartItems) {
+        dragStartItemsRef.current = null;
+        setItems((currentItems) => {
+          let changed = currentItems.length !== dragStartItems.length;
+          if (!changed) {
+            for (let i = 0; i < currentItems.length; i += 1) {
+              const before = dragStartItems[i];
+              const after = currentItems[i];
+              if (before.x !== after.x || before.y !== after.y || before.w !== after.w || before.h !== after.h) {
+                changed = true;
+                break;
+              }
+            }
+          }
+          if (changed) pushUndoSnapshot(dragStartItems);
+          return currentItems;
+        });
+      }
       if (newDragRef.current && canvasRef.current) {
         const nd = newDragRef.current;
         newDragRef.current = null;
@@ -1143,7 +1252,7 @@ export default function ProjectDashboard() {
       window.removeEventListener("mousemove", mm);
       window.removeEventListener("mouseup", mu);
     };
-  }, [gridSize, snap]);
+  }, [gridSize, snap, pushUndoSnapshot]);
   useEffect(() => {
     const mm = (e: MouseEvent) => {
       const drag = editorDragRef.current;
@@ -1160,13 +1269,12 @@ export default function ProjectDashboard() {
       if (wdrag) {
         const dx = e.clientX - wdrag.mx0;
         const dy = e.clientY - wdrag.my0;
-        const canvas = canvasRef.current;
-        const maxX = canvas ? canvas.clientWidth - 100 : 9999;
-        const maxY = canvas ? canvas.clientHeight - 40 : 9999;
-        setWorkspaceWindowPos({
-          x: Math.max(0, Math.min(maxX, wdrag.x0 + dx)),
-          y: Math.max(0, Math.min(maxY, wdrag.y0 + dy)),
-        });
+        const nextPos = clampWorkspaceWindowPos(
+          { x: wdrag.x0 + dx, y: wdrag.y0 + dy },
+          workspaceWindowSize,
+        );
+        workspaceWindowSavedPosRef.current = nextPos;
+        setWorkspaceWindowPos(nextPos);
       }
       const resize = windowResizeRef.current;
       if (resize) {
@@ -1179,7 +1287,7 @@ export default function ProjectDashboard() {
             height: Math.max(FLOATING_EDITOR_MIN_HEIGHT, resize.height0 + resizeDy),
           }, canvasRef.current));
         } else {
-          setWorkspaceWindowSize((previous) => clampWorkspaceWindowSize({
+          setWorkspaceWindowSize((_previous) => clampWorkspaceWindowSize({
             width: Math.max(WORKSPACE_WINDOW_MIN_WIDTH, resize.width0 + resizeDx),
             height: Math.max(WORKSPACE_WINDOW_MIN_HEIGHT, resize.height0 + resizeDy),
           }, canvasRef.current));
@@ -1208,7 +1316,7 @@ export default function ProjectDashboard() {
       window.removeEventListener("mousemove", mm);
       window.removeEventListener("mouseup", mu);
     };
-  }, []);
+  }, [workspaceWindowSize]);
   // ── Helpers ──────────────────────────────────────────────────────────────────
   const finishCreate = useCallback((
     type: "button" | "label",
@@ -1259,6 +1367,7 @@ export default function ProjectDashboard() {
     try {
       await persistCanvasItems(projectId, items);
       pendingLayoutRef.current = null;
+      markDashboardSaved();
       setTransientSaveStatus("saved", 1800);
       return true;
     } catch (error) {
@@ -1302,18 +1411,6 @@ export default function ProjectDashboard() {
       height0: workspaceWindowSize.height,
     };
   }, [editorRect.height, editorRect.width, workspaceWindowSize.height, workspaceWindowSize.width]);
-  const startWorkspaceSplitResize = useCallback((event: React.MouseEvent) => {
-    event.preventDefault();
-    event.stopPropagation();
-    const hostWidth = workspaceSplitHostRef.current?.clientWidth ?? workspaceWindowSize.width;
-    const availableWidth = Math.max(1, hostWidth - WORKSPACE_SPLITTER_WIDTH);
-    const normalizedRatio = clampWorkspaceSplitRatio(workspaceSplitRatio, hostWidth);
-    workspaceSplitDragRef.current = {
-      mx0: event.clientX,
-      ratio0: normalizedRatio,
-      width0: availableWidth,
-    };
-  }, [workspaceSplitRatio, workspaceWindowSize.width]);
   const deleteCurrentEditorItem = useCallback(() => {
     if (!editorItemId) return;
     applyItemsUpdate((prev) => prev.filter((i) => i.id !== editorItemId));
@@ -1353,8 +1450,14 @@ export default function ProjectDashboard() {
     } else if (!editingDraftTaskId || !normalizedTasks.some((task) => task.id === editingDraftTaskId)) {
       setEditingDraftTaskId(selectedDraftTaskId);
     }
+    const restored = workspaceWindowSavedPosRef.current;
+    setWorkspaceWindowPos(
+      restored
+        ? clampWorkspaceWindowPos(restored, workspaceWindowSize)
+        : buildCenteredWorkspaceWindowPos(workspaceWindowSize),
+    );
     setAddTaskOpen(true);
-  }, [editingDraftTaskId, editorItem, normalizeTasksForConnections, selectedDraftTaskId]);
+  }, [editingDraftTaskId, editorItem, normalizeTasksForConnections, selectedDraftTaskId, workspaceWindowSize]);
   const reorderDraftTaskByDrop = useCallback((sourceTaskId: string, targetTaskId: string) => {
     if (!sourceTaskId || !targetTaskId || sourceTaskId === targetTaskId) return;
     setTaskDraft((prevTasks) => {
@@ -1447,6 +1550,14 @@ export default function ProjectDashboard() {
   if (!editMode) {
     return (
       <div className="relative flex flex-1 min-h-0 flex-col overflow-hidden page-pop" style={{ backgroundColor: t.bgOuter }}>
+        {topBarSlot && items.length === 0
+          ? createPortal(
+              <span className="text-[12px]" style={{ color: t.textMuted }}>
+                Press G to edit dashboard
+              </span>,
+              topBarSlot,
+            )
+          : null}
         {items.map(item => {
           const sharedStyle = {
             left: item.x,
@@ -1469,7 +1580,11 @@ export default function ProjectDashboard() {
             return (
               <button
                 key={item.id}
-                className="absolute flex items-center justify-center overflow-hidden transition-opacity"
+                className={`absolute flex items-center justify-center overflow-hidden transition-all duration-150 ${
+                  hasRunnableTasks && !isRunning && !isTallied
+                    ? "hover:brightness-125 active:brightness-90 hover:shadow-[0_0_0_1px_rgba(142,81,255,0.45),0_0_14px_rgba(142,81,255,0.22)]"
+                    : ""
+                }`}
                 style={{
                   ...sharedStyle,
                   backgroundColor: isRunning
@@ -1484,7 +1599,7 @@ export default function ProjectDashboard() {
                     ? "0 0 0 1px rgba(239,68,68,0.4), 0 0 18px rgba(185,28,28,0.35)"
                     : (isTallied
                         ? "0 0 0 1px rgba(141,33,33,0.36), 0 0 18px rgba(93,18,18,0.3)"
-                        : "none"),
+                        : undefined),
                   cursor: hasRunnableTasks ? "pointer" : "default",
                   opacity: isRunning ? 0.7 : 1,
                 }}
@@ -1534,6 +1649,14 @@ export default function ProjectDashboard() {
             </div>
           );
         })}
+        {items.length === 0 ? (
+          <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 pointer-events-none">
+            <span style={{ fontSize: 13, color: t.textSecondary }}>This dashboard is empty.</span>
+            <span style={{ fontSize: 12, color: t.textMuted }}>
+              Press G to enter edit mode and add buttons and labels.
+            </span>
+          </div>
+        ) : null}
       </div>
     );
   }
@@ -1551,13 +1674,6 @@ export default function ProjectDashboard() {
   const workspaceContentWidth = Math.max(1, workspaceSplitHostWidth - WORKSPACE_SPLITTER_WIDTH);
   const workspaceLeftPaneWidth = Math.round(workspaceContentWidth * 0.4);
   const workspaceRightPaneWidth = Math.max(1, workspaceContentWidth - workspaceLeftPaneWidth);
-  const sequencePreviewScale = editorItem
-    ? Math.min(
-        1,
-        118 / Math.max(editorItem.w, 1),
-        38 / Math.max(editorItem.h, 1),
-      )
-    : 1;
   const dashboardSaveLabel =
     dashboardSaveStatus === "saving"
       ? "Saving..."
@@ -1603,6 +1719,21 @@ export default function ProjectDashboard() {
                       </button>
                     );
                   })}
+                  <button
+                    className="flex items-center justify-center border"
+                    style={{
+                      width: 72,
+                      height: DASHBOARD_BUTTON_HEIGHT,
+                      backgroundColor: "#101828",
+                      borderColor: "rgba(255,255,255,0.1)",
+                      color: "#f9fafb",
+                      marginLeft: 8,
+                    }}
+                    onClick={() => setDashboardEditModeState(false)}
+                    title="Exit edit mode (Esc)"
+                  >
+                    <span style={{ fontSize: 11, lineHeight: 1, color: "#f9fafb" }}>Done</span>
+                  </button>
                 </div>
               ) : null}
               {dashboardSaveLabel ? (
@@ -1694,6 +1825,7 @@ export default function ProjectDashboard() {
                       e.stopPropagation();
                       setSelId(item.id); setCtxMenu(null);
                       if (tool==="select"||tool==="move") {
+                        dragStartItemsRef.current = cloneCanvasItems(items);
                         dragRef.current = { kind:"move", id:item.id,
                           mx0:e.clientX, my0:e.clientY, x0:item.x, y0:item.y };
                       }
@@ -1722,6 +1854,7 @@ export default function ProjectDashboard() {
                         }}
                           onMouseDown={e => {
                             e.stopPropagation(); e.preventDefault();
+                            dragStartItemsRef.current = cloneCanvasItems(items);
                             dragRef.current = { kind:"resize", id:item.id, handle:h,
                               mx0:e.clientX, my0:e.clientY, x0:item.x, y0:item.y, w0:item.w, h0:item.h };
                           }}/>
@@ -1760,7 +1893,7 @@ export default function ProjectDashboard() {
               )}
               {showTaskWorkspace && editorItem && (
                 <div
-                  className="absolute inset-0 z-[80]"
+                  className="fixed inset-0 z-[80]"
                   style={{ backgroundColor: "rgba(3,7,18,0.55)" }}
                   onClick={e => e.stopPropagation()}
                   onMouseDown={e => e.stopPropagation()}
@@ -1770,7 +1903,7 @@ export default function ProjectDashboard() {
                   className="relative flex min-h-0 flex-col overflow-hidden border"
                   style={workspaceWindowPos
                     ? {
-                        position: "absolute",
+                        position: "fixed",
                         left: workspaceWindowPos.x,
                         top: workspaceWindowPos.y,
                         width: workspaceWindowSize.width,
@@ -1780,7 +1913,7 @@ export default function ProjectDashboard() {
                         boxShadow: "0 24px 64px rgba(0,0,0,0.52)",
                       }
                     : {
-                        position: "absolute",
+                        position: "fixed",
                         left: "50%",
                         top: "50%",
                         transform: "translate(-50%, -50%)",
@@ -1813,13 +1946,10 @@ export default function ProjectDashboard() {
                       onMouseDown={(e) => {
                         e.stopPropagation();
                         const win = workspaceWindowRef.current;
-                        const canvas = canvasRef.current;
-                        if (!win || !canvas) return;
+                        if (!win) return;
                         const wr = win.getBoundingClientRect();
-                        const cr = canvas.getBoundingClientRect();
-                        const x0 = wr.left - cr.left;
-                        const y0 = wr.top - cr.top;
-                        setWorkspaceWindowPos({ x: x0, y: y0 });
+                        const x0 = workspaceWindowPos?.x ?? wr.left;
+                        const y0 = workspaceWindowPos?.y ?? wr.top;
                         workspaceDragRef.current = { mx0: e.clientX, my0: e.clientY, x0, y0 };
                       }}
                     >
@@ -1829,6 +1959,7 @@ export default function ProjectDashboard() {
                       <button
                         className="ml-auto flex items-center justify-center transition-colors hover:bg-red-500/20"
                         style={{ width: 28, height: 28, color: "#f9fafb" }}
+                        onMouseDown={(e) => e.stopPropagation()}
                         onClick={closeEditorWindow}
                         title="Close task editor"
                       >
@@ -1841,9 +1972,9 @@ export default function ProjectDashboard() {
                     >
                       <div className="grid grid-cols-[minmax(0,1.8fr)_72px_72px_120px] gap-[14px]">
                         <div className="flex min-w-0 flex-col gap-[6px]">
-                          <span style={{ fontSize: 12, color: "#f9fafb" }}>Name</span>
+                          <span style={{ fontSize: 11, color: P.muted500, letterSpacing: "0.04em", textTransform: "uppercase" }}>Name</span>
                           <input
-                            className="w-full outline-none border px-3"
+                            className="w-full outline-none border px-3 transition-colors focus:border-[#8E51FF] focus:shadow-[0_0_0_1px_rgba(142,81,255,0.35)]"
                             style={{
                               height: DASHBOARD_BUTTON_HEIGHT,
                               backgroundColor: P.ink950,
@@ -1856,9 +1987,9 @@ export default function ProjectDashboard() {
                           />
                         </div>
                         <div className="flex flex-col gap-[6px]">
-                          <span style={{ fontSize: 12, color: "#f9fafb" }}>BG</span>
+                          <span style={{ fontSize: 11, color: P.muted500, letterSpacing: "0.04em", textTransform: "uppercase" }}>BG</span>
                           <label
-                            className="flex items-center justify-center border cursor-pointer"
+                            className="flex items-center justify-center border cursor-pointer transition-colors hover:border-[#8E51FF]"
                             style={{
                               height: DASHBOARD_BUTTON_HEIGHT,
                               backgroundColor: P.ink950,
@@ -1882,9 +2013,9 @@ export default function ProjectDashboard() {
                           </label>
                         </div>
                         <div className="flex flex-col gap-[6px]">
-                          <span style={{ fontSize: 12, color: "#f9fafb" }}>FG</span>
+                          <span style={{ fontSize: 11, color: P.muted500, letterSpacing: "0.04em", textTransform: "uppercase" }}>FG</span>
                           <label
-                            className="flex items-center justify-center border cursor-pointer"
+                            className="flex items-center justify-center border cursor-pointer transition-colors hover:border-[#8E51FF]"
                             style={{
                               height: DASHBOARD_BUTTON_HEIGHT,
                               backgroundColor: P.ink950,
@@ -1908,9 +2039,9 @@ export default function ProjectDashboard() {
                           </label>
                         </div>
                         <div className="flex flex-col gap-[6px]">
-                          <span style={{ fontSize: 12, color: "#f9fafb" }}>Text(px)</span>
+                          <span style={{ fontSize: 11, color: P.muted500, letterSpacing: "0.04em", textTransform: "uppercase" }}>Text(px)</span>
                           <input
-                            className="w-full outline-none border px-3"
+                            className="w-full outline-none border px-3 transition-colors focus:border-[#8E51FF] focus:shadow-[0_0_0_1px_rgba(142,81,255,0.35)]"
                             type="number"
                             min={1}
                             step={1}
@@ -1946,13 +2077,17 @@ export default function ProjectDashboard() {
                       >
                         <div className="flex min-h-0 flex-1 flex-col" style={{ borderColor: "#32353e" }}>
                           <div
-                            className="shrink-0 flex items-center justify-center border-b"
+                            className="shrink-0 flex items-center border-b"
                             style={{
                               height: 30,
+                              paddingLeft: 12,
                               backgroundColor: P.surface700,
                               borderColor: P.surface600,
-                              fontSize: 14,
-                              color: P.text50,
+                              fontSize: 10,
+                              fontWeight: 600,
+                              letterSpacing: "0.07em",
+                              textTransform: "uppercase",
+                              color: P.muted500,
                             }}
                           >
                             Tasks List
@@ -2603,7 +2738,7 @@ export default function ProjectDashboard() {
                       onMouseDown={(event) => startWindowResize("editor", event)}
                       title="Resize window"
                     >
-                      //
+                      {"//"}
                     </button>
                   </div>
                 </div>
@@ -2845,8 +2980,9 @@ interface EditorPanelProps {
   t: AppTheme;
 }
 function EditorPanel({
-  item, onClose, onSaveAndClose, onUpdate, onDelete, onOpenTaskWorkspace, onMoveTask, onDeleteTask,
-  selectedTaskId, onSelectTask, t
+  item, onClose, onSaveAndClose, onUpdate, onDelete, onOpenTaskWorkspace,
+  onMoveTask: _onMoveTask, onDeleteTask: _onDeleteTask,
+  selectedTaskId: _selectedTaskId, onSelectTask, t
 }: EditorPanelProps) {
   return (
     <div
@@ -2988,4 +3124,3 @@ function EditorPanel({
     </div>
   );
 }
-

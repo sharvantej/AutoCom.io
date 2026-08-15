@@ -1,4 +1,4 @@
-import type { Connection, LogEntry, Project } from "../types";
+import type { Connection, LogEntry } from "../types";
 import {
   buildBackendConnectionsPayload,
   parseBackendConnectionsPayload,
@@ -85,20 +85,6 @@ function asArray<T>(value: unknown): T[] {
   return Array.isArray(value) ? (value as T[]) : [];
 }
 
-export async function loadProjects(): Promise<Project[]> {
-  const response = await requestRuntimeState<unknown>("GET", "/api/projects");
-  return asArray<Project>(ensureSuccess(response, "Failed to load projects"));
-}
-
-export async function saveProjects(projects: Project[]): Promise<void> {
-  const response = await requestRuntimeState<Record<string, unknown>>(
-    "POST",
-    "/api/projects",
-    projects,
-  );
-  ensureSuccess(response, "Failed to save projects");
-}
-
 export async function loadConnections(): Promise<Connection[]> {
   const response = await requestRuntimeState<unknown>("GET", "/api/connections");
   return parseBackendConnectionsPayload(
@@ -117,6 +103,69 @@ export async function saveConnections(
   ensureSuccess(response, "Failed to save connections");
 }
 
+/** Read-only, explicit-path variant of `loadConnections` — for reading a
+ *  specific (possibly non-active) project's connections. Needed by Stream
+ *  Deck button execution, whose mappings reference whichever project they
+ *  were created in, not necessarily whatever's active right now. */
+export async function loadConnectionsForProject(projectPath: string): Promise<Connection[]> {
+  const response = await requestRuntimeState<unknown>("GET", "/api/connections", { path: projectPath });
+  return parseBackendConnectionsPayload(
+    ensureSuccess(response, "Failed to load project connections"),
+  );
+}
+
+export type ActiveProjectState = {
+  activeProjectPath: string | null;
+  recentProjectPaths: string[];
+};
+
+function asActiveProjectState(value: unknown): ActiveProjectState {
+  const body =
+    value && typeof value === "object" ? (value as Record<string, unknown>) : {};
+  const activeProjectPath =
+    typeof body.activeProjectPath === "string" ? body.activeProjectPath : null;
+  const recentProjectPaths = Array.isArray(body.recentProjectPaths)
+    ? body.recentProjectPaths.filter((p): p is string => typeof p === "string")
+    : [];
+  return { activeProjectPath, recentProjectPaths };
+}
+
+export async function loadActiveProject(): Promise<ActiveProjectState> {
+  const response = await requestRuntimeState<unknown>("GET", "/api/active-project");
+  return asActiveProjectState(ensureSuccess(response, "Failed to load active project"));
+}
+
+export async function saveActiveProject(
+  activeProjectPath: string | null,
+): Promise<ActiveProjectState> {
+  const response = await requestRuntimeState<unknown>(
+    "POST",
+    "/api/active-project",
+    { activeProjectPath },
+  );
+  return asActiveProjectState(ensureSuccess(response, "Failed to save active project"));
+}
+
+/** Native "Open" file dialog for choosing a project file directly off disk —
+ *  returns the chosen absolute path, or null if the dialog was cancelled. */
+export async function pickOpenProjectFile(): Promise<string | null> {
+  return tauriInvoke<string | null>("pick_open_project_file");
+}
+
+/** Native "Save As" dialog for choosing where a new project file should
+ *  live; the backend writes a blank project there immediately. Returns the
+ *  chosen absolute path, or null if the dialog was cancelled. */
+export async function pickNewProjectFile(): Promise<string | null> {
+  return tauriInvoke<string | null>("pick_new_project_file");
+}
+
+/** Native "Save As" dialog — copies the currently active project's file to
+ *  a new location (backend-driven, so it can't race with in-memory
+ *  frontend state). Returns the new path, or null if cancelled. */
+export async function pickSaveProjectAs(): Promise<string | null> {
+  return tauriInvoke<string | null>("pick_save_project_as");
+}
+
 export async function loadLogs(): Promise<LogEntry[]> {
   const response = await requestRuntimeState<unknown>("GET", "/api/logs");
   return asArray<LogEntry>(ensureSuccess(response, "Failed to load logs"));
@@ -131,10 +180,11 @@ export async function saveLogs(logs: LogEntry[]): Promise<void> {
   ensureSuccess(response, "Failed to save logs");
 }
 
-export async function loadDashboardLayout<T>(projectId: string): Promise<T[]> {
+export async function loadDashboardLayout<T>(projectPath: string): Promise<T[]> {
   const response = await requestRuntimeState<unknown>(
     "GET",
-    `/api/layout/${projectId}`,
+    "/api/layout",
+    { path: projectPath },
   );
   const body = ensureSuccess(response, "Failed to load dashboard layout");
   const layout =
@@ -145,13 +195,13 @@ export async function loadDashboardLayout<T>(projectId: string): Promise<T[]> {
 }
 
 export async function saveDashboardLayout<T>(
-  projectId: string,
+  projectPath: string,
   items: T[],
 ): Promise<void> {
   const response = await requestRuntimeState<Record<string, unknown>>(
     "POST",
-    `/api/layout/${projectId}`,
-    { items },
+    "/api/layout",
+    { path: projectPath, items },
   );
   ensureSuccess(response, "Failed to save dashboard layout");
 }

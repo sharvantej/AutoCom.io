@@ -24,14 +24,6 @@
 
 // ── Domain models ─────────────────────────────────────────────────────────────
 //
-// Rust equivalent:
-//   pub struct Project { pub id: u32, pub name: String }
-
-export type Project = {
-  id:   number;
-  name: string;
-};
-
 // Rust equivalent (with #[serde(rename_all = "camelCase")]):
 //   pub struct Connection {
 //     pub id:         u32,

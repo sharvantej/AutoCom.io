@@ -57,6 +57,71 @@ pub(crate) struct StreamDeckButtonEvent {
 
 static PREVIOUS_BUTTON_STATES: OnceLock<Mutex<HashMap<String, Vec<bool>>>> = OnceLock::new();
 
+/// Persistent per-device connections, keyed by serial number. Reused across
+/// every sync/poll call instead of opening a fresh HID handle each time —
+/// matches how mature Stream Deck drivers (e.g. Bitfocus Companion's own
+/// surface driver) keep one connection open for the device's lifetime
+/// rather than reconnecting on every operation. Reconnecting ~11 times a
+/// second (the button-poll interval) plus again on every image sync is
+/// needless HID churn and a real source of flakiness — two callers racing
+/// to open the same physical device concurrently is exactly the kind of
+/// thing that produces intermittent failures.
+static DECK_CONNECTIONS: OnceLock<Mutex<HashMap<String, StreamDeck>>> = OnceLock::new();
+
+fn connections_store() -> &'static Mutex<HashMap<String, StreamDeck>> {
+  DECK_CONNECTIONS.get_or_init(|| Mutex::new(HashMap::new()))
+}
+
+/// Resolves (opening and caching if needed) a connection for `serial_number`
+/// — or the first detected device if `None` — then runs `f` against it. On
+/// error the cached connection is dropped so the *next* call reconnects
+/// fresh instead of repeatedly failing forever (handles unplug/replug or a
+/// handle that's gone stale).
+fn with_deck<T>(
+  serial_number: Option<&str>,
+  f: impl FnOnce(&str, Kind, &StreamDeck) -> Result<T, String>,
+) -> Result<T, String> {
+  let mut connections = connections_store().lock().map_err(|e| e.to_string())?;
+
+  let serial = match serial_number {
+    Some(serial) if connections.contains_key(serial) => serial.to_string(),
+    Some(serial) => {
+      let hid = new_hidapi().map_err(|e| e.to_string())?;
+      let Some((kind, resolved_serial)) = list_devices(&hid).into_iter().find(|(_, s)| s == serial) else {
+        return Err("No Stream Deck devices found".to_string());
+      };
+      let deck = StreamDeck::connect(&hid, kind, &resolved_serial).map_err(|e| e.to_string())?;
+      connections.insert(resolved_serial.clone(), deck);
+      resolved_serial
+    }
+    None => {
+      // No explicit serial requested — fall back to the first detected
+      // device (matches the previous behaviour), reusing a cached
+      // connection for it if one is already open.
+      let hid = new_hidapi().map_err(|e| e.to_string())?;
+      let Some((kind, resolved_serial)) = list_devices(&hid).into_iter().next() else {
+        return Err("No Stream Deck devices found".to_string());
+      };
+      if !connections.contains_key(&resolved_serial) {
+        let deck = StreamDeck::connect(&hid, kind, &resolved_serial).map_err(|e| e.to_string())?;
+        connections.insert(resolved_serial.clone(), deck);
+      }
+      resolved_serial
+    }
+  };
+
+  let deck = connections
+    .get(&serial)
+    .expect("connection was just inserted or already present");
+  match f(&serial, deck.kind(), deck) {
+    Ok(value) => Ok(value),
+    Err(err) => {
+      connections.remove(&serial);
+      Err(err)
+    }
+  }
+}
+
 fn put_pixel_safe(image: &mut ImageBuffer<Rgba<u8>, Vec<u8>>, x: i32, y: i32, color: Rgba<u8>) {
   if x < 0 || y < 0 {
     return;
@@ -288,87 +353,81 @@ pub(crate) fn streamdeck_list_devices() -> Result<Vec<StreamDeckDeviceSummary>, 
 
 #[tauri::command]
 pub(crate) fn streamdeck_sync_surface(payload: StreamDeckSyncRequest) -> Result<(), String> {
-  let hid = new_hidapi().map_err(|e| e.to_string())?;
-  let devices = list_devices(&hid);
-  let Some((kind, serial)) = (if let Some(serial) = payload.serial_number.as_deref() {
-    devices
-      .into_iter()
-      .find(|(_, detected_serial)| detected_serial == serial)
-  } else {
-    devices.into_iter().next()
-  }) else {
-    return Err("No Stream Deck devices found".to_string());
-  };
-  let deck = StreamDeck::connect(&hid, kind, &serial).map_err(|e| e.to_string())?;
-  let key_count = deck.kind().key_count();
+  with_deck(payload.serial_number.as_deref(), |_serial, kind, deck| {
+    let key_count = kind.key_count();
 
-  for index in 0..key_count {
-    deck.clear_button_image(index).map_err(|e| e.to_string())?;
-  }
-
-  for key in payload.keys {
-    let Some(index) = key_index(key.row, key.col, payload.cols) else {
-      continue;
-    };
-    if index >= key_count {
-      continue;
+    for index in 0..key_count {
+      deck.clear_button_image(index).map_err(|e| e.to_string())?;
     }
-    let img = build_key_image(kind, &key);
-    deck
-      .set_button_image(index, img)
-      .map_err(|e| e.to_string())?;
-  }
 
-  Ok(())
+    for key in &payload.keys {
+      let Some(index) = key_index(key.row, key.col, payload.cols) else {
+        continue;
+      };
+      if index >= key_count {
+        continue;
+      }
+      let img = build_key_image(kind, key);
+      deck
+        .set_button_image(index, img)
+        .map_err(|e| e.to_string())?;
+    }
+
+    // `clear_button_image`/`set_button_image` only stage image data in an
+    // in-memory cache (per the crate's own doc comments) — nothing reaches
+    // the physical device until `flush()` sends the batch over HID. Without
+    // this, every sync silently no-ops: keys stay black and newly mapped
+    // buttons never appear on the hardware.
+    deck.flush().map_err(|e| e.to_string())?;
+
+    Ok(())
+  })
 }
 
 #[tauri::command]
 pub(crate) fn streamdeck_poll_button_events(
   payload: StreamDeckPollRequest,
 ) -> Result<Vec<StreamDeckButtonEvent>, String> {
-  let hid = new_hidapi().map_err(|e| e.to_string())?;
-  let devices = list_devices(&hid);
-  let Some((kind, serial)) = (if let Some(serial) = payload.serial_number.as_deref() {
-    devices
-      .into_iter()
-      .find(|(_, detected_serial)| detected_serial == serial)
-  } else {
-    devices.into_iter().next()
-  }) else {
-    return Ok(Vec::new());
-  };
-  let deck = StreamDeck::connect(&hid, kind, &serial).map_err(|e| e.to_string())?;
-  let input = deck
-    .read_input(Some(Duration::from_millis(1)))
-    .map_err(|e| e.to_string())?;
-  let StreamDeckInput::ButtonStateChange(next_states) = input else {
-    return Ok(Vec::new());
-  };
+  let result = with_deck(payload.serial_number.as_deref(), |serial, kind, deck| {
+    let input = deck
+      .read_input(Some(Duration::from_millis(1)))
+      .map_err(|e| e.to_string())?;
+    let StreamDeckInput::ButtonStateChange(next_states) = input else {
+      return Ok(Vec::new());
+    };
 
-  let previous_states_store = PREVIOUS_BUTTON_STATES.get_or_init(|| Mutex::new(HashMap::new()));
-  let mut previous_states = previous_states_store.lock().map_err(|e| e.to_string())?;
-  let previous = previous_states
-    .entry(serial.clone())
-    .or_insert_with(|| vec![false; next_states.len()]);
+    let previous_states_store = PREVIOUS_BUTTON_STATES.get_or_init(|| Mutex::new(HashMap::new()));
+    let mut previous_states = previous_states_store.lock().map_err(|e| e.to_string())?;
+    let previous = previous_states
+      .entry(serial.to_string())
+      .or_insert_with(|| vec![false; next_states.len()]);
 
-  if previous.len() != next_states.len() {
-    *previous = vec![false; next_states.len()];
-  }
-
-  let mut events = Vec::new();
-  for (index, now_pressed) in next_states.iter().enumerate() {
-    let was_pressed = previous[index];
-    if was_pressed == *now_pressed {
-      continue;
+    if previous.len() != next_states.len() {
+      *previous = vec![false; next_states.len()];
     }
-    if let Some((row, col)) = index_to_row_col(index, kind.column_count()) {
-      events.push(StreamDeckButtonEvent {
-        row,
-        col,
-        pressed: *now_pressed,
-      });
+
+    let mut events = Vec::new();
+    for (index, now_pressed) in next_states.iter().enumerate() {
+      let was_pressed = previous[index];
+      if was_pressed == *now_pressed {
+        continue;
+      }
+      if let Some((row, col)) = index_to_row_col(index, kind.column_count()) {
+        events.push(StreamDeckButtonEvent {
+          row,
+          col,
+          pressed: *now_pressed,
+        });
+      }
     }
+    *previous = next_states;
+    Ok(events)
+  });
+
+  // No devices found is a normal "nothing to report" case for polling
+  // (unlike sync, where it should surface as an error the UI can show).
+  match result {
+    Ok(events) => Ok(events),
+    Err(_) => Ok(Vec::new()),
   }
-  *previous = next_states;
-  Ok(events)
 }

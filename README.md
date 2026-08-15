@@ -2,7 +2,7 @@
 
 ![AutoCom Logo](public/autocom-title.ico)
 
-[![Release](https://img.shields.io/github/v/release/sharvantej/AutoCom.io?label=v2.0.0&color=blue)](https://github.com/sharvantej/AutoCom.io/releases/latest)
+[![Release](https://img.shields.io/github/v/release/sharvantej/auto?label=v2.0.0-alpha&include_prereleases&color=blue)](https://github.com/sharvantej/auto/releases/latest)
 [![License](https://img.shields.io/badge/license-UNLICENSED-red.svg)](#license)
 
 ## 🚀 Overview
@@ -13,7 +13,7 @@ It supports many transport protocols with low-latency Rust backend and a modern 
 - Protocols: `OSC`, `Art-Net`, `DMX`, `RossTalk`, `UDP`, `TCP`, `WebSocket`, `HTTP`
 - UI: React + Vite + Tailwind
 - Desktop: Tauri v2 (`Rust + WebView2` on Windows)
-- Bundle: NSIS installer (Windows) + DMG (macOS)
+- Bundle: NSIS installer (Windows) + DMG (macOS) + AppImage/.deb (Linux)
 
 ## 💡 Why AutoCom
 
@@ -28,6 +28,7 @@ It supports many transport protocols with low-latency Rust backend and a modern 
 - Project & connection persistence on disk
 - Reliable reconnect for UDP/TCP/WebSocket bridges
 - Adaptive UI panel layouts and filterable logs
+- Windows native behavior: single-instance app, tray icon, configurable close-to-tray, launch-at-login, and start-minimized
 - Playback automation and scheduling (future roadmap)
 
 ## 📁 Repository Structure
@@ -46,6 +47,7 @@ It supports many transport protocols with low-latency Rust backend and a modern 
 - Tauri prerequisites:
   - Windows: Visual Studio Build Tools, C++ toolchain, WebView2 SDK
   - macOS: Xcode Command Line Tools
+  - Linux: `libwebkit2gtk-4.1-dev build-essential curl wget file libxdo-dev libssl-dev libayatana-appindicator3-dev librsvg2-dev`
 
 ## 🛠️ Install
 
@@ -59,7 +61,7 @@ npm ci
 npm run dev
 ```
 
-Open <http://localhost:1430> in browser and see live reload.
+Open <http://localhost:5000> in browser and see live reload.
 
 ## 🏗  Build (Production)
 
@@ -81,11 +83,45 @@ npm run build:windows
 npm run build:macos
 ```
 
+- Output installer: `build/macos/*.dmg`
+
+## 🐧 Build Linux package
+
+```bash
+npm run build:linux
+```
+
+- Output packages: `build/linux/*.AppImage` and `build/linux/*.deb`
+- Run the AppImage directly: `chmod +x build/linux/*.AppImage && ./build/linux/*.AppImage`
+  (if your environment has no FUSE, use `--appimage-extract-and-run` instead)
+
 ## 🧹 Clean
 
 ```bash
 npm run clean
 ```
+
+Removes `dist/` and `src-tauri/target/` (the Rust build cache — this is what
+grows to several GB over time; safe to delete anytime, the next build just
+recompiles from scratch).
+
+## ✅ Verification Commands
+
+Run these before committing, matched to what you changed:
+
+| When | Command | Why |
+|---|---|---|
+| Iterating on frontend or Rust code | `npm run dev` | Starts Vite + a live app window; frontend hot-reloads, Rust auto-rebuilds on save. |
+| After any `.ts`/`.tsx` change | `npx tsc --noEmit -p .` | Type-check with no emit. |
+| " | `npm run lint` | ESLint (`npm run lint:fix` to auto-fix). |
+| " | `npm run test:run` | Runs the Vitest suite once (`npm run test` for watch mode). |
+| " | `npm run web:build` | Production Vite build — catches build-only errors tests/lint miss. |
+| After any `src-tauri/*.rs` change | `cd src-tauri && cargo check` | Fast compile-check without a full build. |
+| After adding/removing an **npm** dependency | `npm install` (or `npm ci` for a clean install matching the lockfile), then re-run the frontend checks above | |
+| After adding/removing a **Rust** crate | `cargo check` inside `src-tauri/` (updates `Cargo.lock`) | |
+| After *any* dependency bump | `npm run dev` once, end-to-end | `cargo check` doesn't link or run the binary — only an actual dev run proves the app still starts. Dependency updates are the most common thing that silently breaks a build. |
+| You want a shippable installer | `npm run build:windows` / `build:macos` / `build:linux` | Full release compile — slow (30+ min from a clean cache), only needed for real artifacts, not routine changes. |
+| Disk space getting out of hand | `npm run clean` | See above. |
 
 ## 🧠 Backend commands (from UI)
 
@@ -129,8 +165,19 @@ or
 ## 📦 Release process
 
 - Push to `main`
-- Create GitHub release tag e.g. `v2.0.0`
-- Attach installer from `build/windows`
+- Create and push a GitHub release tag e.g. `v2.0.0` — CI builds Windows/macOS/Linux installers, signs them, generates `latest.json`, and publishes them all to the GitHub Release automatically
+- The app checks `latest.json` on that release feed for updates (Settings → About)
+
+### Updater signing key
+
+Auto-updates require two repo secrets so CI can sign release artifacts:
+
+- `TAURI_SIGNING_PRIVATE_KEY` — the updater's private signing key
+- `TAURI_SIGNING_PRIVATE_KEY_PASSWORD` — its password
+
+Generate a new keypair with `npx tauri signer generate -w <path>`. The public key goes in
+`src-tauri/tauri.conf.json` under `plugins.updater.pubkey` (already set); the private key and
+password must **only** live in GitHub Actions secrets — never commit them.
 
 ## 📝 License
 

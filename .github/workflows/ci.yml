@@ -54,12 +54,17 @@ jobs:
 
     - name: Build Tauri app (Windows)
       run: npm run build
+      env:
+        TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+        TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
 
     - name: Upload Windows artifact
       uses: actions/upload-artifact@v4
       with:
         name: autocom-windows
-        path: build/windows/*.exe
+        path: |
+          build/windows/*.exe
+          build/windows/*.exe.sig
 
   build-macos:
     runs-on: macos-latest
@@ -84,21 +89,69 @@ jobs:
 
     - name: Build Tauri app (macOS)
       run: npm run build
+      env:
+        TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+        TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
 
     - name: Upload macOS artifact
       uses: actions/upload-artifact@v4
       with:
         name: autocom-macos
-        path: build/macos/*.dmg
+        path: |
+          build/macos/*.dmg
+          build/macos/*.dmg.sig
+
+  build-linux:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+        cache: 'npm'
+
+    - name: Install Rust toolchain
+      uses: dtolnay/rust-toolchain@stable
+
+    - name: Install Linux build dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y libwebkit2gtk-4.1-dev build-essential curl wget file libxdo-dev libssl-dev libayatana-appindicator3-dev librsvg2-dev
+
+    - name: Install dependencies
+      run: npm ci
+
+    - name: Build Tauri app (Linux)
+      run: npm run build
+      env:
+        TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+        TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
+
+    - name: Upload Linux artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: autocom-linux
+        path: |
+          build/linux/*.AppImage
+          build/linux/*.AppImage.sig
+          build/linux/*.deb
 
   create-release:
-    needs: [build-windows, build-macos]
+    needs: [build-windows, build-macos, build-linux]
     runs-on: ubuntu-latest
     if: startsWith(github.ref, 'refs/tags/')
 
     steps:
     - uses: actions/checkout@v4
-    
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+
     - name: Download Windows build
       uses: actions/download-artifact@v4
       with:
@@ -109,12 +162,30 @@ jobs:
       with:
         name: autocom-macos
 
+    - name: Download Linux build
+      uses: actions/download-artifact@v4
+      with:
+        name: autocom-linux
+
+    - name: Generate updater manifest (latest.json)
+      run: node scripts/generate-latest-json.js
+      env:
+        GITHUB_REF_NAME: ${{ github.ref_name }}
+        GITHUB_REPOSITORY: ${{ github.repository }}
+
     - name: Create Release
       uses: softprops/action-gh-release@v1
       with:
         files: |
           *.exe
+          *.exe.sig
           *.dmg
-        body_path: docs/RELEASE_NOTES_v2.0.0.md
+          *.dmg.sig
+          *.AppImage
+          *.AppImage.sig
+          *.deb
+          latest.json
+        body_path: docs/RELEASE_NOTES.md
+        prerelease: ${{ contains(github.ref_name, '-alpha') || contains(github.ref_name, '-beta') || contains(github.ref_name, '-rc') }}
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN}}
