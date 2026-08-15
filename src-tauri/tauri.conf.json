@@ -39,7 +39,7 @@
     "active": true,
     "createUpdaterArtifacts": true,
     "targets": ["nsis", "dmg", "deb", "appimage"],
-    "license": "Proprietary",
+    "license": "Apache-2.0",
     "licenseFile": "../LICENSE",
     "windows": {
       "digestAlgorithm": "sha256",

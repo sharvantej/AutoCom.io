@@ -3,7 +3,7 @@
 ![AutoCom Logo](public/autocom-title.ico)
 
 [![Release](https://img.shields.io/github/v/release/sharvantej/AutoCom.io?label=v2.0.0-alpha&include_prereleases&color=blue)](https://github.com/sharvantej/AutoCom.io/releases/latest)
-[![License](https://img.shields.io/badge/license-proprietary-red.svg)](#license)
+[![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](LICENSE)
 
 ## What is AutoCom
 
@@ -57,15 +57,16 @@ keyboard shortcut list (customizable in **Settings → Shortcuts**).
 - **Bug reports / feature requests:** [open an issue](https://github.com/sharvantej/AutoCom.io/issues)
 - **Email:** hello@autocom.app
 
-## 🛠️ Building from source
+## 🛠️ Building from source & contributing
 
-Not needed to just use the app — only if you want to build it yourself or contribute.
-See the [development guide](docs/DEVELOPMENT.md).
+AutoCom is open source — contributions are welcome. Not needed to just use the app,
+only if you want to build it yourself or contribute. See the [development guide](docs/DEVELOPMENT.md).
 
 ## 📝 License
 
-AutoCom is proprietary software — see the full terms in [LICENSE](LICENSE).
-The Windows installer shows this agreement during setup; you'll need to accept it to install.
+Licensed under the [Apache License, Version 2.0](LICENSE) — free to use, modify, and
+redistribute (including commercially), provided you keep the license/[NOTICE](NOTICE)
+and note what you changed. See [LICENSE](LICENSE) for the full terms.
 
 ---
 
