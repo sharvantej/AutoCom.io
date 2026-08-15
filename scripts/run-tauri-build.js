@@ -8,6 +8,33 @@ const BUNDLE_DIR = path.join(RELEASE_DIR, "bundle");
 const SIMPLE_BUILD_DIR = path.join(ROOT, "build");
 const EXTRA_ARGS = process.argv.slice(2).filter((arg) => arg !== "--");
 
+// Loads local-only secrets (signing key/password) from .env for developer
+// machines. CI never has a .env file — it gets these as real GitHub Actions
+// secrets already present in process.env, which this never overrides.
+function loadDotEnv() {
+  const envPath = path.join(ROOT, ".env");
+  if (!fs.existsSync(envPath)) return;
+  const lines = fs.readFileSync(envPath, "utf8").split("\n");
+  for (const rawLine of lines) {
+    const line = rawLine.trim();
+    if (!line || line.startsWith("#")) continue;
+    const eqIndex = line.indexOf("=");
+    if (eqIndex === -1) continue;
+    const key = line.slice(0, eqIndex).trim();
+    let value = line.slice(eqIndex + 1).trim();
+    if (
+      (value.startsWith('"') && value.endsWith('"')) ||
+      (value.startsWith("'") && value.endsWith("'"))
+    ) {
+      value = value.slice(1, -1);
+    }
+    if (!(key in process.env)) {
+      process.env[key] = value;
+    }
+  }
+}
+loadDotEnv();
+
 function gitValue(args, fallback) {
   try {
     return execSync(`git ${args}`, {

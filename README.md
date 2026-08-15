@@ -170,14 +170,20 @@ or
 
 ### Updater signing key
 
-Auto-updates require two repo secrets so CI can sign release artifacts:
+Auto-updates require two secrets so builds can sign release artifacts:
 
 - `TAURI_SIGNING_PRIVATE_KEY` — the updater's private signing key
 - `TAURI_SIGNING_PRIVATE_KEY_PASSWORD` — its password
 
+**CI** reads these from GitHub Actions repo secrets (Settings → Secrets and variables → Actions).
+
+**Local signed builds** (`npm run build:*`) read them from a `.env` file at the repo root —
+copy `.env.example` to `.env` and fill in real values. `.env` is gitignored and never leaves
+your machine; `npm run dev` and the verification commands don't need it at all.
+
 Generate a new keypair with `npx tauri signer generate -w <path>`. The public key goes in
 `src-tauri/tauri.conf.json` under `plugins.updater.pubkey` (already set); the private key and
-password must **only** live in GitHub Actions secrets — never commit them.
+password must **only** live in `.env` (local) or GitHub Actions secrets (CI) — never commit them.
 
 ## 📝 License
 
