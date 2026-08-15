@@ -15,6 +15,7 @@
         "build:linux": "node scripts/run-tauri-build.js",
         "web:dev": "vite",
         "web:build": "vite build",
+        "typecheck": "tsc --noEmit -p .",
         "test": "vitest",
         "test:run": "vitest run",
         "lint": "eslint src --ext .ts,.tsx",
