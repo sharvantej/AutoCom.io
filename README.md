@@ -3,7 +3,7 @@
 ![AutoCom Logo](public/autocom-title.ico)
 
 [![Release](https://img.shields.io/github/v/release/sharvantej/AutoCom.io?label=v2.0.0-alpha&include_prereleases&color=blue)](https://github.com/sharvantej/AutoCom.io/releases/latest)
-[![License](https://img.shields.io/badge/license-UNLICENSED-red.svg)](#license)
+[![License](https://img.shields.io/badge/license-proprietary-red.svg)](#license)
 
 ## What is AutoCom
 
@@ -64,7 +64,8 @@ See the [development guide](docs/DEVELOPMENT.md).
 
 ## 📝 License
 
-This project is `UNLICENSED` in this repository.
+AutoCom is proprietary software — see the full terms in [LICENSE](LICENSE).
+The Windows installer shows this agreement during setup; you'll need to accept it to install.
 
 ---
 

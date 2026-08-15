@@ -39,6 +39,8 @@
     "active": true,
     "createUpdaterArtifacts": true,
     "targets": ["nsis", "dmg", "deb", "appimage"],
+    "license": "Proprietary",
+    "licenseFile": "../LICENSE",
     "windows": {
       "digestAlgorithm": "sha256",
       "timestampUrl": "http://timestamp.sectigo.com",
